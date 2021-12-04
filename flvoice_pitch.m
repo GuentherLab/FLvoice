@@ -11,15 +11,16 @@ function [f0,t,w]=flvoice_pitch(s,fs,varargin)
 %
 %   windowsize      : window size (s) (default 0.050)
 %   stepsize        : window step-size (s) (default 0.001)
-%   range           : F0 range (Hz) (default [50 500])
-%   methods         : pitch estimation method(s) used {'PEF' 'NCF' 'CEP' 'LHS' 'SRH'} (default 'CEP'; other methods require Matlab audio toolbox)
-%   hr_min          : harmonic ratio threshold (default 0.7)
+%   range           : F0 range (Hz) (default [50 300])
+%   methods         : pitch estimation method(s) used {'PEF' 'NCF' 'CEP' 'LHS' 'SRH'} (default 'CEP'; note: other methods require Matlab audio toolbox)
+%   hr_min          : harmonic ratio threshold (default 0.5)
 %   viterbifilter   : 1/0 uses viterbi filter for temporal interpolation (default 1; for CEP method use 0-inf viterbifilter values, higher values favour stable trajectories)
 %   medianfilter    : 1/0 uses windowsize median filter (default 1)
-%   meanfilter      : 1/0 uses windowsize smoothing filter (default 0)
+%   meanfilter      : 1/0 uses windowsize smoothing filter (default 0.5)
 %   outlierfilter   : 1/0 detect&interpolate outlier values (default 0)
 %   f0_fs           : pitch output sampling rate (Hz) (default 1000)
 %   f0_t            : pitch output sample timepoints (s) (default [], when f0_t is specified f0_fs is disregarded)
+%   plot            : 1/0 create plots displaying sound and pitch trajectories (default 0)
 %
 % alternative syntax:
 %
@@ -52,6 +53,7 @@ params=struct(  'windowsize',.050,...           % s
                 'filename_out','',...
                 'viterbi_nf0',2,...             %
                 'useaudiotoolbox',false,...     %
+                'plot',false,...                %
                 'pitch_options',{{}});              
 for n1=1:2:numel(varargin), assert(isfield(params,lower(varargin{n1})),'unrecognized parameter %s',varargin{n1}); params=setfield(params,lower(varargin{n1}),varargin{n1+1}); end
 
@@ -147,6 +149,21 @@ if ~isempty(params.filename_out)
     if ~isempty(regexp(params.filename_out,'\.mat$')), fs=params.f0_fs; save(params.filename_out, 'f0', 'fs'); 
     else save(params.filename_out,'f0','-ascii');
     end
+end
+
+if params.plot
+    figure;
+    h3=axes('units','norm','position',[.2 .2 .6 .6]);
+    set(h3,'YAxisLocation','right','ycolor','r','box','off','xtick',[],'ylim',[0 600],'ytick',0:100:600);
+    ylabel('pitch (Hz)');
+    h1=axes('units','norm','position',[.2 .2 .6 .6]);
+    plot((0:numel(s)-1)/fs,s); set(gca,'xlim',[0 numel(s)/fs],'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
+    xlabel('time (s)');
+    grid on;
+    h2=axes('units','norm','position',[.2 .2 .6 .6]);
+    pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
+    hold off;
+    set(h2,'visible','off','ylim',[0 600])
 end
 
 end
