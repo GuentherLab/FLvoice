@@ -27,7 +27,7 @@ function [f0,t,w]=flvoice_pitch(s,fs,varargin)
 % flvoice_pitch(filename_in, filename_out)
 %   estimates voice pitch (output saved to .txt or .mat file filename_out) from audio sample (read from audio file filename_in)
 %
-% [f0,hr,t]=flvoice_pitch(...)
+% [f0,t,hr]=flvoice_pitch(...)
 %   returns hr harmonic ratio vector (0-1 range)
 %           t  timesamples vector (s)
 % 
@@ -80,6 +80,7 @@ for methods=reshape(cellstr(params.methods),1,[])
             ceps=real(ifft(log(abs(fft(s2,2^nextpow2(2*windowlength-1))).^2)));
             idx0=(floor(fs/params.range(2)):ceil(fs/params.range(1)))';
             R=ceps(idx0,:);
+            R(isnan(R))=0;
             if params.viterbifilter
                 idx=flvoice_pathsearch(fs/1024*R/max(abs(R(:)))/params.viterbifilter)';
             else

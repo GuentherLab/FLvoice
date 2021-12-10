@@ -49,6 +49,8 @@ windowoverlap=round(data.overlap*fs);
 medianfilter=2*round(data.medianfilter/(data.windowsize-data.overlap)/2)+1;  % median filtering (in samples)
 k1=data.stepsize/.005;
 
+%k=reshape(s(2:end),[],1)\reshape(s(1:end-1),[],1);
+%s1=convn(s(:),[1;-k],'same');
 s1=convn(s(:),[1;-.98],'same');
 s2=flvoice_samplewindow(s1,windowsize,windowoverlap,'none','same');
 Nt=size(s2,2);

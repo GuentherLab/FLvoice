@@ -1,7 +1,7 @@
 function varargout = flvoice(varargin)
 % FLVOICE  Frank Lab voice tools
 %
-% FLVOICE UPDATE    : processes audio data from aud/som experiment (see "help flvoice_update")
+% FLVOICE LOAD      : loads and processes audio data from aud/som experiment (see "help flvoice_load")
 % FLVOICE PITCH     : estimates pitch from sound sample (see "help flvoice_pitch")
 % FLVOICE FORMANTS  : estimates formants from sound sample (see "help flvoice_formants")
 %
