@@ -4,7 +4,7 @@ function varargout = flvoice(varargin)
 % FLVOICE LOAD      : loads and processes audio data from aud/som experiment (see "help flvoice_load")
 % FLVOICE PITCH     : estimates pitch from sound sample (see "help flvoice_pitch")
 % FLVOICE FORMANTS  : estimates formants from sound sample (see "help flvoice_formants")
-%
+% 
 
 
 if ~isempty(which(sprintf('flvoice_%s',lower(varargin{1})))),
