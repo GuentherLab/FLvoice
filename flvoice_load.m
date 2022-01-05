@@ -6,28 +6,34 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %   RUN             : run number (e.g. 1 or 'run-1')
 %   TASK            : task type 'aud' or 'som'
 %
-% Input data files: sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-audio.mat
+% Input data files: $ROOT$/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-audio.mat
 %   Variables:
 %       gender                       : subject gender 'male', 'female' (alternatively gender = expParams.gender) 
 %       trialData(n)                 : trial data structure
-%             trialData(n).s                 : audiowave timeseries (alternatively s = trialData(n).audapData.signalIn for Audapter data with fs=16000Hz; alternatively s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz)
+%             trialData(n).s                 : audiowave timeseries
 %             trialData(n).fs                : sampling frequency (Hz)
 %             trialData(n).t                 : time of initial sample (seconds) (default 0)
-%             trialData(n).reference_time    : reference time for time-alignment (seconds) (alternatively reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2)) (default 0)
+%             trialData(n).reference_time    : reference time for time-alignment (seconds)  (default 0)
 %             trialData(n).condLabel         : condition label/name associated with this trial (default 'unknown')
-%             trialData(n).dataLabel         : data labels (if trialData(n).s is a cell array defining multiple timeseries, trialData(n).labels defines the labels of each element) (default {''})
+%             trialData(n).dataLabel         : data labels (default '')
 %
-% Output data files: derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
-% Output data files: derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
+%   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
+%                         may alternatively be defined implicitly as trialData(n).s = {trialData(n).audapData.signalIn,trialData(n).audapData.signalOut} for Audapter data with fs=16000Hz
+%                         may alternatively be defined implicitly as trialData(n).s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz
+%          trialData(n).reference_time may alternatively be defined implicitly as reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
+%          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t and trialData(n).dataLabel may be defined as a cell array as well to indicate a different value per timeseries
+%
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : formant and pitch timeseries (cell array)
 %             trialData(n).fs                : sampling frequency (Hz)
 %             trialData(n).t                 : time of initial sample (seconds)
 %             trialData(n).condLabel         : condition label/name associated with this trial
-%             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Int','rawF0','rawF1','rawF2','rawInt'}
+%             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %
-% Output data files: derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : summary measures (cell array)
@@ -35,14 +41,14 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).dataLabel         : data labels (cell array)
 %
 % data = flvoice_load(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options (see below)
+%   'FILEPATH'        : (default current directory -pwd-) path to $ROOT$ folder containing data from all subjects
 %   'NLPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
 %   'FMT_ARGS'        : additional arguments for FLVOICE_FORMANTS (default {})
 %   'F0_ARGS'         : additional arguments for FLVOICE_PITCH (default {})
-%   'OUT_WINDOW'      : time-window for formant&pitch estimation around time-alignment reference_time (s) (default [-0.2 1.0])
+%   'OUT_WINDOW'      : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
 %   'OUT_FS'          : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
 %   'OVERWRITE'       : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
-%   'FILEPATH'        : (default '/projectnb/busplab/Experiments/SAP-PILOT/') path to folder containing all subject's data
 %   'DOSAVE'          : (default 0) 1/0 save formant&pitch trajectory files
 %   'DOPRINT'         : (default 1) 1/0 save jpg files with formant&pitch trajectories
 %   'DOREMOTE'        : (default 0) 1/0 work remotely (0: work from SCC computer; 1: work remotely -run "conn remotely on" first from your home computer to connect to SCC; for first-time initialization run on remote server "conn remotely setup")
@@ -187,6 +193,7 @@ for nsample=1:numel(RUNS)
                 
                 %Nlpc=round(1.25*in_trialData(trialNum).p.nLPC);
                 t0=0;
+                labels={''}; 
                 if isfield(data,'audapData'), % audapter format
                     if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
                     else s=data.audapData.signalIn;
@@ -203,8 +210,9 @@ for nsample=1:numel(RUNS)
                     end
                     if isfield(data,'t'), t0=data.t; end
                 end
-                if ~iscell(s), s={s}; labels={''}; end
+                if ~iscell(s), s={s}; end
                 if ~iscell(t0), t0={t0}; end
+                if ~iscell(labels), labels={labels}; end
                 if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
                 assert(numel(t0)==numel(s),'mismatch number of elements in s (%d) and t (%d)',numel(s),numel(t0));
                 assert(numel(labels)==numel(s),'mismatch number of elements in s (%d) and dataLabel (%d)',numel(s),numel(labels));
@@ -232,7 +240,7 @@ for nsample=1:numel(RUNS)
                     out_trialData(trialNum).dataLabel{ns,1} = ['raw-F0',labels{ns}]; % F0 (Hz)
                     out_trialData(trialNum).dataLabel{ns,2} = ['raw-F1',labels{ns}]; % F1 (Hz)
                     out_trialData(trialNum).dataLabel{ns,3} = ['raw-F2',labels{ns}]; % F2 (Hz)
-                    out_trialData(trialNum).dataLabel{ns,4} = ['raw-Int',labels{ns}];% Intensity (dB)
+                    out_trialData(trialNum).dataLabel{ns,4} = ['raw-Amp',labels{ns}];% Intensity (dB)
                     out_trialData(trialNum).t{ns,1} = t0{ns};
                     out_trialData(trialNum).t{ns,2} = t0{ns};
                     out_trialData(trialNum).t{ns,3} = t0{ns};
@@ -308,23 +316,22 @@ for nsample=1:numel(RUNS)
         % plots
         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
         lnames=unique([out_trialData.dataLabel]);
+        for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
         for trialNum=reshape(find(keepData),1,[])
             for ns=1:numel(out_trialData(trialNum).s),
                 t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
                 x=out_trialData(trialNum).s{ns};
                 [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); title(lnames{idx});
-                hold all; 
-                h=plot(t,x,'.-');
+                h=plot(t,x,'.-','parent',hax(idx));
                 set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
-                axis tight; grid on;
             end
         end
+        for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
         drawnow
         if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
         
 %         % aggregated data cross runs
-%         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Int'}];
+%         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Amp'}];
 %         cLabels = unique(condLabel);
 %         for cidx = 0:length(cLabels)
 %             if cidx,
