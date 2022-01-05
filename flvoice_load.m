@@ -12,11 +12,12 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : audiowave timeseries (alternatively s = trialData(n).audapData.signalIn for Audapter data with fs=16000Hz; alternatively s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz)
 %             trialData(n).fs                : sampling frequency (Hz)
-%             trialData(n).t                 : time of initial sample (seconds)
-%             trialData(n).reference_time    : reference time in trialData(n).s for time-alignment (s) (alternatively reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
-%             trialData(n).condLabel         : condition label/name associated with this trial
-%             trialData(n).dataLabel         : data labels (if trialData(n).s is a cell array defining multiple timeseries, trialData(n).labels defines the labels of each element)
+%             trialData(n).t                 : time of initial sample (seconds) (default 0)
+%             trialData(n).reference_time    : reference time for time-alignment (seconds) (alternatively reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2)) (default 0)
+%             trialData(n).condLabel         : condition label/name associated with this trial (default 'unknown')
+%             trialData(n).dataLabel         : data labels (if trialData(n).s is a cell array defining multiple timeseries, trialData(n).labels defines the labels of each element) (default {''})
 %
+% Output data files: derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
 % Output data files: derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
@@ -59,7 +60,7 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',false,'OVERWRITE',true,'DOREMOTE',false,'FILEPATH',pwd,'NLPC',[],'F0RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end %'/projectnb/busplab/Experiments/SAP-PILOT/'); end    
+if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',true,'OVERWRITE',true,'DOREMOTE',false,'FILEPATH',pwd,'NLPC',[],'F0RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end %'/projectnb/busplab/Experiments/SAP-PILOT/'); end    
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), assert(isfield(DEFAULTS,upper(SES)),'unrecognized default field %s',SES); DEFAULTS.(upper(SES))=RUN; fprintf('default %s value changed to %s\n',upper(SES),mat2str(RUN)); return; end
 
@@ -218,11 +219,6 @@ for nsample=1:numel(RUNS)
                 elseif isequal(lower(gender),'male'), f0range=[50 200];
                 else f0range=[50 300];
                 end
-                if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time;
-                elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
-                else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
-                end
-                time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); %Find time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
                 
                 fprintf('estimating formants trial #%d\n',trialNum);
                 if fs~=16000, for ns=1:numel(s), s{ns}=resample(s{ns},16000,fs); end; fs=16000; end
@@ -247,9 +243,14 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
+                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - t0{ns}; % note: pertOnset relative to beginning of audio sample
+                    elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
+                    else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
+                    end
+                    time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); % e.g. defines time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
                     out_trialData(trialNum).s{end+1} = interp1(time1, out_trialData(trialNum).s{ns}, time2, 'lin', nan);       % time-alignment
                     out_trialData(trialNum).dataLabel{end+1} = regexprep(out_trialData(trialNum).dataLabel{ns},'^raw-','');     % note: timealigned data first sample is at t = reference_time + OUT_WINDOW(1)
-                    out_trialData(trialNum).t{end+1} = time2(1);
+                    out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
                 end
                 out_trialData(trialNum).fs=OPTIONS.OUT_FS;
                 if isfield(out_trialData(trialNum),'condLabel')&&~isempty(out_trialData(trialNum).condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
@@ -305,9 +306,9 @@ for nsample=1:numel(RUNS)
         end
 
         % plots
-        figure('name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-audio.mat',SUB,SES,RUN,TASK));
+        figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
         lnames=unique([out_trialData.dataLabel]);
-        for trialNum=1:numel(in_trialData)
+        for trialNum=reshape(find(keepData),1,[])
             for ns=1:numel(out_trialData(trialNum).s),
                 t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
                 x=out_trialData(trialNum).s{ns};
@@ -316,9 +317,12 @@ for nsample=1:numel(RUNS)
                 hold all; 
                 h=plot(t,x,'.-');
                 set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+                axis tight; grid on;
             end
         end
         drawnow
+        if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
+        
 %         % aggregated data cross runs
 %         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Int'}];
 %         cLabels = unique(condLabel);
