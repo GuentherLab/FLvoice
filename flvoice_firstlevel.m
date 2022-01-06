@@ -1,33 +1,20 @@
 
-function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
-% data = flvoice_load(SUB,RUN,SES,TASK) : imports audio data, and computes formant and pitch trajectories for each trial
-%   SUB             : subject id (e.g. 'test244' or 'sub-test244')
-%   SES             : session number (e.g. 1 or 'ses-1')
-%   RUN             : run number (e.g. 1 or 'run-1')
-%   TASK            : task type 'aud' or 'som'
+function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK,MEASURE,DESIGN,CONTRAST, varargin)
+% data = flvoice_firstlevel(SUB,RUN,SES,TASK) : runs first-level model estimation on audio data
+%   SUB              : subject id (e.g. 'test244' or 'sub-test244')
+%   SES              : session number (e.g. 1 or 'ses-1')
+%   RUN              : run number (e.g. 1 or 'run-1')
+%   TASK             : task type 'aud' or 'som'
+%   MEASURE          : condLabel value (e.g. 'F1-mic')
+%   DESIGN           : condition names defining first-level contrast
+%                          e.g. {'U1','N1'}
+%                      alternatively, function defining one row of design matrix (one row per trial)
+%                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of values associated with this trial
+%                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
+%   CONTRAST         : condition weights defining first-level contrast
+%                          e.g. [1, -1]
 %
-%  notes: define SES and/or RUN as 'all' to specify all sessions/runs for the specified subject
-%         define SUB/SES/RUN as cell arrays with the same number of elements to specify complex combinations of SUB/SES/RUN values
-%
-% Input data files: $ROOT$/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-audio.mat
-%   Variables:
-%       gender                       : subject gender 'male', 'female' (alternatively gender = expParams.gender) 
-%       trialData(n)                 : trial data structure
-%             trialData(n).s                 : audiowave timeseries
-%             trialData(n).fs                : sampling frequency (Hz)
-%             trialData(n).t                 : time of initial sample (seconds) (default 0)
-%             trialData(n).reference_time    : reference time for time-alignment (seconds)  (default 0)
-%             trialData(n).condLabel         : condition label/name associated with this trial (default 'unknown')
-%             trialData(n).dataLabel         : data labels (default '')
-%
-%   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
-%                         may alternatively be defined implicitly as trialData(n).s = {trialData(n).audapData.signalIn,trialData(n).audapData.signalOut} for Audapter data with fs=16000Hz
-%                         may alternatively be defined implicitly as trialData(n).s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz
-%          trialData(n).reference_time may alternatively be defined implicitly as reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
-%          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t and trialData(n).dataLabel may be defined as a cell array as well to indicate a different value per timeseries
-%
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
+% Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : formant and pitch timeseries (cell array)
@@ -36,40 +23,14 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
-%   Variables:
-%       trialData(n)                 : trial data structure
-%             trialData(n).s                 : summary measures (cell array)
-%             trialData(n).condLabel         : condition label/name associated with this trial
-%             trialData(n).dataLabel         : data labels (cell array)
-%
-% data = flvoice_load(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options
-%   'NLPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
-%   'F0RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
-%   'FMT_ARGS'        : additional arguments for FLVOICE_FORMANTS (default {})
-%   'F0_ARGS'         : additional arguments for FLVOICE_PITCH (default {})
-%   'OUT_WINDOW'      : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
-%   'OUT_FS'          : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
-%   'OVERWRITE'       : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
-%   'DOSAVE'          : (default 0) 1/0 save formant&pitch trajectory files
-%   'DOPRINT'         : (default 1) 1/0 save jpg files with formant&pitch trajectories
-%
-% flvoice_load('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_load commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
-%
-% Alternative syntax:
-%   flvoice_load                         : returns list of available subjects
-%   flvoice_load SUB                     : returns list of available sessions for this subject
-%   flvoice_load SUB SES                 : returns list of available runs for this subject & session
-%   flvoice_load SUB SES RUN             : returns list of available tasks for this subject & session & run
-%   flvoice_load SUB all RUN TASK ...    : runs flvoice_load using data from all available sessions for this subject & run & task
-%   flvoice_load SUB SES all TASK ...    : runs flvoice_load using data from all available runs for this subject & session & task
-%   flvoice_load default <optionname> <defaultvalue>  : defines default options
-%
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',true,'OVERWRITE',true,'NLPC',[],'F0RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',true,'OVERWRITE',true); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
+    if nargin>=7, varargin=[{CONTRAST},varargin]; end
+    if nargin>=6, varargin=[{DESIGN},varargin]; end
+    if nargin>=5, varargin=[{MEASURE},varargin]; end
     if nargin>=4, varargin=[{TASK},varargin]; end
     if nargin>=3, varargin=[{RUN},varargin]; end
     if nargin>=2, varargin=[{SES},varargin]; end
@@ -86,11 +47,12 @@ if nargin<3||isempty(RUN), RUN=[]; end
 if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
+if nargin<5||isempty(MEASURE), MEASURE='F1'; end
+if nargin<6||isempty(DESIGN), DESIGN={}; end
+if nargin<7||isempty(CONTRAST), CONTRAST=[]; end
 
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
-if ischar(OPTIONS.NLPC), OPTIONS.NLPC=str2num(OPTIONS.NLPC); end
-if ischar(OPTIONS.F0RANGE), OPTIONS.F0RANGE=str2num(OPTIONS.F0RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.DOSAVE), OPTIONS.DOSAVE=str2num(OPTIONS.DOSAVE); end
 if ischar(OPTIONS.DOPRINT), OPTIONS.DOPRINT=str2num(OPTIONS.DOPRINT); end
@@ -174,125 +136,14 @@ for nsample=1:numel(RUNS)
     RUN=RUNS(nsample);
     SES=SESS(nsample);
     SUB=SUBS{nsample};
-    filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-audio.mat',SUB,SES,RUN,TASK));
     filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
-    if ~conn_existfile(filename_trialData),
-        fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
-        filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
-    end
-    if ~conn_existfile(filename_trialData), fprintf('file %s not found, skipping this run\n',filename_trialData);
+    if ~conn_existfile(filename_fmtData), fprintf('file %s not found, skipping this run\n',filename_fmtData);
     else
-        fprintf('loading file %s\n',filename_trialData);
-        tdata=conn_loadmatfile(filename_trialData,'-cache');
-        assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_trialData);
-        in_trialData = tdata.trialData;
-        if isfield(tdata,'gender'), gender=tdata.gender; 
-        elseif isfield(tdata,'expParams')&&isfield(tdata.expParams,'gender'), gender=tdata.expParams.gender;
-        else gender='unknown'; 
-        end
-        
-        out_trialData=[];
-        showwarn=true;
-        %offlineFmts=[];
-        %offlinePrms=[];
-        if OPTIONS.OVERWRITE||~conn_existfile(filename_fmtData)
-            for trialNum=1:numel(in_trialData)
-                data=in_trialData(trialNum);
-                
-                %Nlpc=round(1.25*in_trialData(trialNum).p.nLPC);
-                t0=0;
-                labels={''}; 
-                if isfield(data,'audapData'), % audapter format
-                    if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
-                    else s=data.audapData.signalIn;
-                    end
-                    fs=16000;
-                elseif isfield(data,'audioData') % audiodevicereader format
-                    s=data.audioData.signalIn;
-                    fs=48000;
-                else % raw audio format
-                    s=data.s;
-                    fs=data.fs;
-                    if isfield(data,'dataLabel'), labels=data.dataLabel; 
-                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
-                    end
-                    if isfield(data,'t'), t0=data.t; end
-                end
-                if ~iscell(s), s={s}; end
-                if ~iscell(t0), t0={t0}; end
-                if ~iscell(labels), labels={labels}; end
-                if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
-                assert(numel(t0)==numel(s),'mismatch number of elements in s (%d) and t (%d)',numel(s),numel(t0));
-                assert(numel(labels)==numel(s),'mismatch number of elements in s (%d) and dataLabel (%d)',numel(s),numel(labels));
-                if ~isempty(OPTIONS.NLPC), Nlpc=OPTIONS.NLPC;
-                elseif isfield(in_trialData(trialNum),'p')&&isfield(in_trialData(trialNum).p,'nLPC'), Nlpc=in_trialData(trialNum).p.nLPC;
-                elseif isequal(lower(gender),'female'), Nlpc=15;
-                elseif isequal(lower(gender),'male'), Nlpc=17;
-                else Nlpc=17;
-                end
-                if ~isempty(OPTIONS.F0RANGE), f0range=OPTIONS.F0RANGE;
-                elseif isequal(lower(gender),'female'), f0range=[150 300];
-                elseif isequal(lower(gender),'male'), f0range=[50 200];
-                else f0range=[50 300];
-                end
-                
-                fprintf('estimating formants trial #%d\n',trialNum);
-                if fs~=16000, for ns=1:numel(s), s{ns}=resample(s{ns},16000,fs); end; fs=16000; end
-                for ns=1:numel(s)
-                    [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
-                    f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,OPTIONS.F0_ARGS{:});                                                           % pitch estimation
-                    out_trialData(trialNum).s{ns,1} = interp1(t', f0,(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);
-                    out_trialData(trialNum).s{ns,2} = interp1(t',fmt(1,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            % note: (raw = implicit timing) these data starts at t=0 and it is sampled at out_trialData(trialNum).fs rate
-                    out_trialData(trialNum).s{ns,3} = interp1(t',fmt(2,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            
-                    out_trialData(trialNum).s{ns,4} = interp1(t', 10*log10(svar(:))+100,(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);
-                    out_trialData(trialNum).dataLabel{ns,1} = ['raw-F0',labels{ns}]; % F0 (Hz)
-                    out_trialData(trialNum).dataLabel{ns,2} = ['raw-F1',labels{ns}]; % F1 (Hz)
-                    out_trialData(trialNum).dataLabel{ns,3} = ['raw-F2',labels{ns}]; % F2 (Hz)
-                    out_trialData(trialNum).dataLabel{ns,4} = ['raw-Amp',labels{ns}];% Intensity (dB)
-                    out_trialData(trialNum).t{ns,1} = t0{ns};
-                    out_trialData(trialNum).t{ns,2} = t0{ns};
-                    out_trialData(trialNum).t{ns,3} = t0{ns};
-                    out_trialData(trialNum).t{ns,4} = t0{ns};
-                end
-                out_trialData(trialNum).s=reshape(out_trialData(trialNum).s,1,[]);
-                out_trialData(trialNum).dataLabel=reshape(out_trialData(trialNum).dataLabel,1,[]);
-                out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
-                for ns=1:numel(out_trialData(trialNum).dataLabel), 
-                    time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
-                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - t0{ns}; % note: pertOnset relative to beginning of audio sample
-                    elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
-                    else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
-                    end
-                    time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); % e.g. defines time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
-                    out_trialData(trialNum).s{end+1} = interp1(time1, out_trialData(trialNum).s{ns}, time2, 'lin', nan);       % time-alignment
-                    out_trialData(trialNum).dataLabel{end+1} = regexprep(out_trialData(trialNum).dataLabel{ns},'^raw-','');     % note: timealigned data first sample is at t = reference_time + OUT_WINDOW(1)
-                    out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
-                end
-                out_trialData(trialNum).fs=OPTIONS.OUT_FS;
-                if isfield(out_trialData(trialNum),'condLabel')&&~isempty(out_trialData(trialNum).condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
-                else out_trialData(trialNum).condLabel='unknown';
-                end
-            end
-            out_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
-            out_INFO.options=OPTIONS;
-            try, out_INFO.pertSize = arrayfun(@(n)max([nan in_trialData(n).pertSize]),1:numel(in_trialData));
-            catch, out_INFO.pertSize = nan(1,numel(out_trialData));
-            end
-            
-            if OPTIONS.DOSAVE
-                conn_fileutils('mkdir',fileparts(filename_fmtData));
-                trialData = out_trialData; INFO=out_INFO; conn_savematfile(filename_fmtData,'trialData','INFO');
-            end
+        fprintf('loading file %s\n',filename_fmtData);
+        tdata=conn_loadmatfile(filename_fmtData,'-cache');
+        assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_fmtData);
+        out_trialData = tdata.trialData;
 
-        else
-            assert(conn_existfile(filename_fmtData),'file %s not found',filename_fmtData);
-            fprintf('loading file %s\n',filename_fmtData);
-            tdata=conn_loadmatfile(filename_fmtData,'-cache');
-            assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_fmtData);
-            out_trialData = tdata.trialData;
-            if isfield(tdata,'INFO'), out_INFO=tdata.INFO; end
-        end
-        
         filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
         if conn_existfile(filename_qcData), 
             fprintf('loading file %s\n',filename_qcData);
@@ -304,23 +155,6 @@ for nsample=1:numel(RUNS)
             keepData=true(1,numel(out_trialData)); 
         end
         
-        sum_trialData=[];
-        filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
-        for trialNum=1:numel(in_trialData)
-            for ns=1:numel(out_trialData(trialNum).s),
-                time1=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                sum_trialData(trialNum).s{ns} = mean(out_trialData(trialNum).s{ns}(time1>0),'omitnan'); % average value for t>0 
-                sum_trialData(trialNum).dataLabel{ns}=out_trialData(trialNum).dataLabel{ns};
-            end
-            sum_trialData(trialNum).condLabel=out_trialData(trialNum).condLabel;
-        end
-        sum_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
-        sum_INFO.options=OPTIONS;
-        if OPTIONS.DOSAVE
-            conn_fileutils('mkdir',fileparts(filename_summaryData));
-            trialData = sum_trialData; INFO=sum_INFO; conn_savematfile(filename_summaryData,'trialData','INFO');
-        end
-
         % plots
         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
         lnames=unique([out_trialData.dataLabel]);
@@ -336,7 +170,7 @@ for nsample=1:numel(RUNS)
         end
         for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
         drawnow
-        if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
+        %if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
         
 %         % aggregated data cross runs
 %         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Amp'}];
