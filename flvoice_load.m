@@ -9,7 +9,7 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %  notes: define SES and/or RUN as 'all' to specify all sessions/runs for the specified subject
 %         define SUB/SES/RUN as cell arrays with the same number of elements to specify complex combinations of SUB/SES/RUN values
 %
-% Input data files: $ROOT$/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-audio.mat
+% Input data files: $ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat
 %   Variables:
 %       gender                       : subject gender 'male', 'female' (alternatively gender = expParams.gender) 
 %       trialData(n)                 : trial data structure
@@ -26,8 +26,8 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %          trialData(n).reference_time may alternatively be defined implicitly as reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
 %          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t and trialData(n).dataLabel may be defined as a cell array as well to indicate a different value per timeseries
 %
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : formant and pitch timeseries (cell array)
@@ -36,7 +36,7 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %
-% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
+% Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
 %   Variables:
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : summary measures (cell array)
@@ -44,15 +44,16 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).dataLabel         : data labels (cell array)
 %
 % data = flvoice_load(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options
-%   'NLPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
-%   'F0RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
-%   'FMT_ARGS'        : additional arguments for FLVOICE_FORMANTS (default {})
-%   'F0_ARGS'         : additional arguments for FLVOICE_PITCH (default {})
-%   'OUT_WINDOW'      : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
-%   'OUT_FS'          : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
-%   'OVERWRITE'       : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
-%   'DOSAVE'          : (default 0) 1/0 save formant&pitch trajectory files
-%   'DOPRINT'         : (default 1) 1/0 save jpg files with formant&pitch trajectories
+%   'N_LPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
+%   'F0_RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
+%   'FMT_ARGS'         : additional arguments for FLVOICE_FORMANTS (default {})
+%   'F0_ARGS'          : additional arguments for FLVOICE_PITCH (default {})
+%   'OUT_WINDOW'       : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
+%   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
+%   'SKIP_CONDITIONS'  : list of conditions labels (condLabel values) to be disregarded (default {})
+%   'OVERWRITE'        : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
+%   'SAVE'             : (default 0) 1/0 save formant&pitch trajectory files
+%   'PRINT'            : (default 1) 1/0 save jpg files with formant&pitch trajectories
 %
 % flvoice_load('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_load commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
@@ -67,13 +68,13 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',true,'OVERWRITE',true,'NLPC',[],'F0RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
     if nargin>=3, varargin=[{RUN},varargin]; end
     if nargin>=2, varargin=[{SES},varargin]; end
-    for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); DEFAULTS.(upper(varargin{n}))=varargin{n+1}; fprintf('default %s value changed to %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end
+    for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); DEFAULTS.(upper(varargin{n}))=varargin{n+1}; end %fprintf('default %s value changed to %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end
     return
 end
 
@@ -88,12 +89,12 @@ if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 
 OPTIONS=DEFAULTS;
-if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
-if ischar(OPTIONS.NLPC), OPTIONS.NLPC=str2num(OPTIONS.NLPC); end
-if ischar(OPTIONS.F0RANGE), OPTIONS.F0RANGE=str2num(OPTIONS.F0RANGE); end
+if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
+if ischar(OPTIONS.N_LPC), OPTIONS.N_LPC=str2num(OPTIONS.N_LPC); end
+if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
-if ischar(OPTIONS.DOSAVE), OPTIONS.DOSAVE=str2num(OPTIONS.DOSAVE); end
-if ischar(OPTIONS.DOPRINT), OPTIONS.DOPRINT=str2num(OPTIONS.DOPRINT); end
+if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
+if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -129,7 +130,11 @@ if isempty(RUN)||isequal(RUN,0),
     RUNS={};
     for nSUB=1:numel(SUB)
         for nSES=1:numel(SES)
-            [nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'run-*'),'-dir','-R','-cell'),'uni',0);
+            [nill,runs1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh',sprintf('sub-%s_ses-%d_run-*_desc-audio.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
+            [nill,runs2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh',sprintf('sub-%s_ses-%d_run-*.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
+            runs=union(runs1,runs2);
+            runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
+            %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
             RUNS=[RUNS; runs(:)];
             SESS=[SESS; SES(nSES)+zeros(numel(runs),1)];
             SUBS=[SUBS; repmat(SUB(nSUB),numel(runs),1)];
@@ -158,8 +163,8 @@ if isempty(TASK)
         RUN=RUNS(nsample);
         SES=SESS(nsample);
         SUB=SUBS{nsample};
-        [nill,tasks1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-*_desc-audio.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
-        [nill,tasks2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-*_expParams.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
+        [nill,tasks1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-*_desc-audio.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
+        [nill,tasks2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-*.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
         tasks=union(tasks1,tasks2);
         TASKS=[TASKS; tasks(:)];
     end
@@ -174,14 +179,16 @@ for nsample=1:numel(RUNS)
     RUN=RUNS(nsample);
     SES=SESS(nsample);
     SUB=SUBS{nsample};
-    filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-audio.mat',SUB,SES,RUN,TASK));
-    filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+    filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-audio.mat',SUB,SES,RUN,TASK));
+    filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
     if ~conn_existfile(filename_trialData),
         fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
-        filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
+        filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
     end
     if ~conn_existfile(filename_trialData), fprintf('file %s not found, skipping this run\n',filename_trialData);
     else
+        hfig=[];
+        starttif=true;
         fprintf('loading file %s\n',filename_trialData);
         tdata=conn_loadmatfile(filename_trialData,'-cache');
         assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_trialData);
@@ -193,6 +200,7 @@ for nsample=1:numel(RUNS)
         
         out_trialData=[];
         showwarn=true;
+        if OPTIONS.SAVE||OPTIONS.PRINT, conn_fileutils('mkdir',fileparts(filename_fmtData)); end
         %offlineFmts=[];
         %offlinePrms=[];
         if OPTIONS.OVERWRITE||~conn_existfile(filename_fmtData)
@@ -224,13 +232,13 @@ for nsample=1:numel(RUNS)
                 if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
                 assert(numel(t0)==numel(s),'mismatch number of elements in s (%d) and t (%d)',numel(s),numel(t0));
                 assert(numel(labels)==numel(s),'mismatch number of elements in s (%d) and dataLabel (%d)',numel(s),numel(labels));
-                if ~isempty(OPTIONS.NLPC), Nlpc=OPTIONS.NLPC;
+                if ~isempty(OPTIONS.N_LPC), Nlpc=OPTIONS.N_LPC;
                 elseif isfield(in_trialData(trialNum),'p')&&isfield(in_trialData(trialNum).p,'nLPC'), Nlpc=in_trialData(trialNum).p.nLPC;
                 elseif isequal(lower(gender),'female'), Nlpc=15;
                 elseif isequal(lower(gender),'male'), Nlpc=17;
                 else Nlpc=17;
                 end
-                if ~isempty(OPTIONS.F0RANGE), f0range=OPTIONS.F0RANGE;
+                if ~isempty(OPTIONS.F0_RANGE), f0range=OPTIONS.F0_RANGE;
                 elseif isequal(lower(gender),'female'), f0range=[150 300];
                 elseif isequal(lower(gender),'male'), f0range=[50 200];
                 else f0range=[50 300];
@@ -239,8 +247,10 @@ for nsample=1:numel(RUNS)
                 fprintf('estimating formants trial #%d\n',trialNum);
                 if fs~=16000, for ns=1:numel(s), s{ns}=resample(s{ns},16000,fs); end; fs=16000; end
                 for ns=1:numel(s)
+                    
                     [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
-                    f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,OPTIONS.F0_ARGS{:});                                                           % pitch estimation
+                    f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,OPTIONS.F0_ARGS{:});                                                                   % pitch estimation
+                    
                     out_trialData(trialNum).s{ns,1} = interp1(t', f0,(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);
                     out_trialData(trialNum).s{ns,2} = interp1(t',fmt(1,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            % note: (raw = implicit timing) these data starts at t=0 and it is sampled at out_trialData(trialNum).fs rate
                     out_trialData(trialNum).s{ns,3} = interp1(t',fmt(2,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            
@@ -269,8 +279,40 @@ for nsample=1:numel(RUNS)
                     out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
                 end
                 out_trialData(trialNum).fs=OPTIONS.OUT_FS;
-                if isfield(out_trialData(trialNum),'condLabel')&&~isempty(out_trialData(trialNum).condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
+                if isfield(data,'condLabel')&&~isempty(data.condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
                 else out_trialData(trialNum).condLabel='unknown';
+                end
+                
+                if OPTIONS.PRINT,
+                    if any(ishandle(hfig)), close(hfig(ishandle(hfig))); end
+                    hfig=figure;
+                    for ns=1:numel(s)
+                        clf
+                        h3=axes('units','norm','position',[.1 .5 .7 .4]);
+                        set(h3,'YAxisLocation','right','ycolor','r','box','off','xtick',[],'ylim',[0 600],'ytick',0:100:600);
+                        ylabel('pitch (Hz)');
+                        title(sprintf('sub-%s ses-%d run-%d task-%s trial_%d cond_%s (%s)',SUB,SES,RUN,TASK,trialNum,labels{ns},data.condLabel),'interpreter','none');
+                        h1=axes('units','norm','position',[.1 .5 .7 .4]);
+                        plot((0:numel(s{ns})-1)/fs,s{ns}); set(gca,'xlim',[0 numel(s{ns})/fs],'xtick',.5:.5:numel(s{ns})/fs,'ylim',max(abs(s{ns}))*[-1.1 1.1],'ytick',max(abs(s{ns}))*linspace(-1.1,1.1,7),'yticklabel',[]);
+                        xline(pertOnset,'y:','linewidth',2);
+                        grid on;
+                        h2=axes('units','norm','position',[.1 .5 .7 .4]);
+                        pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s{ns})/fs]);
+                        hold off;
+                        set(h2,'visible','off','ylim',[0 600])
+                        h3=axes('units','norm','position',[.1 .1 .7 .4]);
+                        spectrogram(s{ns},round(.015*fs),round(.014*fs),[],fs,'yaxis');
+                        hold on; plot(t,fmt'/1e3,'k.-'); hold off;
+                        set(h3, 'units','norm','position',[.1 .1 .7 .4],'yaxislocation','right', 'xlim',[0 numel(s{ns})/fs],'xtick',.5:.5:numel(s{ns})/fs);
+                        xlabel('Time (s)'); ylabel('formants (KHz)');
+                        [im,cmap] = rgb2ind(frame2im(getframe(hfig)),256); 
+                        if starttif
+                            conn_fileutils('imwrite',im,cmap,conn_prepend('',filename_fmtData,'.tif'),'tiff');
+                            starttif=false;
+                            fprintf('Saved file: %s\n',conn_prepend('',filename_fmtData,'.tif'));
+                        else, conn_fileutils('imwrite',im,cmap,conn_prepend('',filename_fmtData,'.tif'),'tiff','WriteMode','append');
+                        end
+                    end
                 end
             end
             out_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
@@ -279,9 +321,10 @@ for nsample=1:numel(RUNS)
             catch, out_INFO.pertSize = nan(1,numel(out_trialData));
             end
             
-            if OPTIONS.DOSAVE
+            if OPTIONS.SAVE
                 conn_fileutils('mkdir',fileparts(filename_fmtData));
                 trialData = out_trialData; INFO=out_INFO; conn_savematfile(filename_fmtData,'trialData','INFO');
+                fprintf('Saved file: %s\n',filename_fmtData);
             end
 
         else
@@ -293,19 +336,22 @@ for nsample=1:numel(RUNS)
             if isfield(tdata,'INFO'), out_INFO=tdata.INFO; end
         end
         
-        filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
+        filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
         if conn_existfile(filename_qcData), 
             fprintf('loading file %s\n',filename_qcData);
             tdata=conn_loadmatfile(filename_qcData,'-cache');
             assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
-            keepData=tdata.keepData;
+            keepData=reshape(tdata.keepData,1,[]);
         else
             fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
             keepData=true(1,numel(out_trialData)); 
         end
+        if ~isempty(OPTIONS.SKIP_CONDITIONS)
+            keepData=keepData&~arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
+        end
         
         sum_trialData=[];
-        filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
+        filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
         for trialNum=1:numel(in_trialData)
             for ns=1:numel(out_trialData(trialNum).s),
                 time1=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
@@ -316,9 +362,10 @@ for nsample=1:numel(RUNS)
         end
         sum_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
         sum_INFO.options=OPTIONS;
-        if OPTIONS.DOSAVE
+        if OPTIONS.SAVE
             conn_fileutils('mkdir',fileparts(filename_summaryData));
             trialData = sum_trialData; INFO=sum_INFO; conn_savematfile(filename_summaryData,'trialData','INFO');
+            fprintf('Saved file: %s\n',filename_summaryData);
         end
 
         % plots
@@ -336,7 +383,7 @@ for nsample=1:numel(RUNS)
         end
         for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
         drawnow
-        if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
+        if OPTIONS.PRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
         
 %         % aggregated data cross runs
 %         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Amp'}];
@@ -387,14 +434,14 @@ end
 %     for ncond=1:3, try, axes('units','norm','position',[.1+.8/3*(ncond-1) .1 .8/3 .4]); x=ch2subData.(dispconds{ncond}).F1; mx=mean(x(t0:end,:),1,'omitnan'); x=x(:,sum(mx(:)>=[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1);  h=[h;plot(x,'.-')]; k=median(median(x(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3]); grid on; title(dispconds{ncond}); xline(t0,'linewidth',3); if ncond==1, ylabel('headphones F1 (Hz)'); else set(gca,'yticklabel',[]); end; xlabel('time (ms)'); end
 %     for ncond=1:3, try, axes('units','norm','position',[.1+.8/3*(ncond-1) .5 .8/3 .4]);    x=subData.(dispconds{ncond}).F1; mx=mean(x(t0:end,:),1,'omitnan'); x=x(:,sum(mx(:)>=[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1);  h=[h;plot(x,'.-')]; k=median(median(x(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3]); grid on; title(dispconds{ncond}); xline(t0,'linewidth',3); if ncond==1, ylabel('mic F1 (Hz)'); else set(gca,'yticklabel',[]); end; set(gca,'xticklabel',[]); end
 %     try, cellfun(@(n)set(n,'ylim',[min(cellfun(@min,get(h,'ydata'))) min(1000,max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0); end
-%     if OPTIONS.DOPRINT, conn_print(sprintf('fig_effectF1a_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
+%     if OPTIONS.PRINT, conn_print(sprintf('fig_effectF1a_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
 %     if all(ismember({'D0','N0','U0'},condLabel))
 %         figure('units','norm','position',[.2 .0 .6 .7]);
 %         h=[];
 %         for ncond=1:3, try, axes('units','norm','position',[.1+.8/3*(ncond-1) .1 .8/3 .4]); x=ch2subData.(dispconds{3+ncond}).F0; mx=mean(x(t0:end,:),1,'omitnan'); x=x(:,sum(mx(:)>=[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1);  h=[h;plot(x,'.-')]; k=median(median(x(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3]); grid on; title(dispconds{3+ncond}); xline(t0,'linewidth',3); if ncond==1, ylabel('headphones F0 (Hz)'); else set(gca,'yticklabel',[]); end; xlabel('time (ms)'); end
 %         for ncond=1:3, try, axes('units','norm','position',[.1+.8/3*(ncond-1) .5 .8/3 .4]);    x=subData.(dispconds{3+ncond}).F0; mx=mean(x(t0:end,:),1,'omitnan'); x=x(:,sum(mx(:)>=[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1);  h=[h;plot(x,'.-')]; k=median(median(x(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3]); grid on; title(dispconds{3+ncond}); xline(t0,'linewidth',3); if ncond==1, ylabel('mic F0 (Hz)'); else set(gca,'yticklabel',[]); end; set(gca,'xticklabel',[]); end
 %         try, cellfun(@(n)set(n,'ylim',[min(cellfun(@min,get(h,'ydata'))) min(500,max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0); end
-%         if OPTIONS.DOPRINT, conn_print(sprintf('fig_effectF0a_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
+%         if OPTIONS.PRINT, conn_print(sprintf('fig_effectF0a_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
 %     end
 %     
 %     % summary plots
@@ -404,7 +451,7 @@ end
 %     set(gca,'ylim',100*[-1 1]); %cellfun(@(n)set(n,'ylim',[max(400,.8*min(cellfun(@min,get(h,'ydata')))) min(1000,1.2*max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0);
 %     h=[]; axes('units','norm','position',[.1 .5 .8 .4]); for ncond=1:3, x=subData.(dispconds{ncond}).F1-subData.(dispconds{1}).F1(:,round(linspace(1,size(subData.(dispconds{1}).F1,2),size(subData.(dispconds{ncond}).F1,2))));                mx=mean((diff(x(t0:end,:),1,1)),1,'omitnan'); x=x(:,sum(mx(:)>=[-eps,eps]+[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1); x=x-mean(x(1:t0,:),1,'omitnan'); h=[h plot(mean(x,2,'omitnan'),'-','linewidth',3,'color',color(ncond,:))]; hold all; patch([1:size(x,1),fliplr(1:size(x,1))]',[mean(x,2,'omitnan')-1.96*std(x,1,2,'omitnan')./max(eps,sqrt(sum(~isnan(x),2))); flipud(mean(x,2,'omitnan')+1.96*std(x,1,2,'omitnan')./max(eps,sqrt(sum(~isnan(x),2))))],'k','edgecolor','none','facecolor',get(h(end),'color'),'facealpha',.25); end; set(gca,'ylim',[0 1e3],'xticklabel',[]); grid on; xline(t0,'linewidth',3); yline(0); xlabel('time (ms)'); ylabel('mic F1 (Hz)'); legend(h,dispconds(1:3));
 %     set(gca,'ylim',50*[-1 1]); %cellfun(@(n)set(n,'ylim',[max(400,.8*min(cellfun(@min,get(h,'ydata')))) min(1000,1.2*max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0);
-%     if OPTIONS.DOPRINT, conn_print(sprintf('fig_effectF1b_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
+%     if OPTIONS.PRINT, conn_print(sprintf('fig_effectF1b_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
 %     
 %     if all(ismember({'D0','N0','U0'},condLabel))
 %         figure('units','norm','position',[.2 .0 .6 .7]);
@@ -412,7 +459,7 @@ end
 %         set(gca,'ylim',20*[-1 1]); %cellfun(@(n)set(n,'ylim',[max(40,.9*min(cellfun(@min,get(h,'ydata')))) min(300,1.1*max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0);
 %         h=[]; axes('units','norm','position',[.1 .5 .8 .4]); for ncond=4:6, x=subData.(dispconds{ncond}).F0-subData.(dispconds{4}).F0(:,round(linspace(1,size(subData.(dispconds{4}).F0,2),size(subData.(dispconds{ncond}).F0,2))));            mx=mean((diff(x(t0:end,:),1,1)),1,'omitnan'); x=x(:,sum(mx(:)>=[-eps,eps]+[prctile(mx,25) prctile(mx,75)]*[2.5 -1.5;-1.5 2.5],2)==1);  x=x-mean(x(1:t0,:),1,'omitnan'); h=[h plot(mean(x,2,'omitnan'),'-','linewidth',3,'color',color(ncond-3,:))]; hold all; patch([1:size(x,1),fliplr(1:size(x,1))]',[mean(x,2,'omitnan')-1.96*std(x,1,2,'omitnan')./max(eps,sqrt(sum(~isnan(x),2))); flipud(mean(x,2,'omitnan')+1.96*std(x,1,2,'omitnan')./max(eps,sqrt(sum(~isnan(x),2))))],'k','edgecolor','none','facecolor',get(h(end),'color'),'facealpha',.25); end; set(gca,'ylim',[0 1e3],'xticklabel',[]); grid on; xline(t0,'linewidth',3); yline(0); xlabel('time (ms)'); ylabel('mic F0 (Hz)'); legend(h,dispconds(4:6));
 %         set(gca,'ylim',10*[-1 1]); %cellfun(@(n)set(n,'ylim',[max(40,.9*min(cellfun(@min,get(h,'ydata')))) min(300,1.1*max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0);
-%         if OPTIONS.DOPRINT, conn_print(sprintf('fig_effectF0b_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
+%         if OPTIONS.PRINT, conn_print(sprintf('fig_effectF0b_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
 %     end
 % else
 %     dispconds={'S','Js','Ls','S','Fs','Ls'};
@@ -425,14 +472,14 @@ end
 %     try, axes('units','norm','position',[.1+.8/3*1 .5 .8/3 .4]); h=[h plot(subData.(dispconds{2}).F1,'.-')]; k=mean(median(subData.(dispconds{2}).F1(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3],'xticklabel',[]); grid on; title(dispconds{5}); set(gca,'yticklabel',[]); xline(t0,'linewidth',3); 
 %     try, axes('units','norm','position',[.1+.8/3*2 .5 .8/3 .4]); h=[h plot(subData.(dispconds{3}).F1,'.-')]; k=mean(median(subData.(dispconds{3}).F1(ceil(t0):end,:))); disp(k);yline(max(0,k)); end; set(gca,'ylim',[0 1e3],'xticklabel',[]); grid on; title(dispconds{6}); set(gca,'yticklabel',[]); xline(t0,'linewidth',3); 
 %     cellfun(@(n)set(n,'ylim',[min(cellfun(@min,get(h,'ydata'))) min(1000,max(cellfun(@max,get(h,'ydata'))))]), get(h,'parent'), 'uni',0);
-%     if OPTIONS.DOPRINT, conn_print(sprintf('fig_effectF0F1_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
+%     if OPTIONS.PRINT, conn_print(sprintf('fig_effectF0F1_sub-%s_ses-%d_run-%d_task-%s.jpg',SUB,SES,RUN,TASK),'-nogui'); end
 % end
 % drawnow
 % 
 % varargout={subData,ch2subData};
 
 % if 0
-%     DOPRINT=true;
+%     PRINT=true;
 %     OVERWRITE=true;
 %     figure(1);
 %     names={'7 (jason)','3 (rohan)','6 (ricky)','2 (liam)','8 (latane)','5 (jackie)','4 (bobbie)','1 (dave)'};

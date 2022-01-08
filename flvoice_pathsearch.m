@@ -1,5 +1,9 @@
 function [Indices, Energy]=flvoice_pathsearch(C,D,varargin);
 % PATHSEARCH Optimal path full Viterbi search
+% [Idx, E]=flvoice_pathsearch(C)
+% find Idx that maximizes E = sum_t{ C(idx(t),t) } + sum_{t>1}{ (idx(t-1)-idx(t))^2 } ...
+% C [N x T] is the energy function over the N path nodes over the T time steps
+%
 % [Idx, E]=flvoice_pathsearch(C,D)
 % find Idx that maximizes E = sum_t{ C(idx(t),t) } + sum_{t>1}{ D(idx(t-1),idx(t),t-1) } ...
 % C [N x T] is the energy function over the N path nodes over the T time steps

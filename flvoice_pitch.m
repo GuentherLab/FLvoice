@@ -20,7 +20,7 @@ function [f0,t,w]=flvoice_pitch(s,fs,varargin)
 %   outlierfilter   : 1/0 detect&interpolate outlier values (default 0)
 %   f0_fs           : pitch output sampling rate (Hz) (default 1000)
 %   f0_t            : pitch output sample timepoints (s) (default [], when f0_t is specified f0_fs is disregarded)
-%   plot            : 1/0 create plots displaying sound and pitch trajectories (default 0)
+%   plot            : 1/0 create plots displaying sound and pitch trajectories (default 0) (note plot>1 display plots and pause for user to strike a key before continuing) 
 %
 % alternative syntax:
 %
@@ -165,6 +165,7 @@ if params.plot
     pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
     hold off;
     set(h2,'visible','off','ylim',[0 600])
+    if params.plot>1, pause; end
 end
 
 end
