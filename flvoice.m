@@ -42,6 +42,10 @@ elseif numel(varargin)>=1&&ischar(varargin{1}) % other
             if DEFAULTS.REMOTE, varargout={fullfile('/CONNSERVER',ROOT)};
             else varargout={ROOT};
             end
+        case 'IMPORT.INPUT'
+            [varargout{1:nargout}]=flvoice_import(varargin{2:end},'input');
+        case 'IMPORT.OUTPUT'
+            [varargout{1:nargout}]=flvoice_import(varargin{2:end},'output');
         otherwise
             error('unrecognized option %s',varargin{1});
     end
