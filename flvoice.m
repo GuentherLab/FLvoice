@@ -29,7 +29,13 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
     if numel(varargin)>1
         DEFAULTS.(upper(varargin{1}))=varargin{2};
         fprintf('default %s value changed to %s\n',upper(varargin{1}),mat2str(varargin{2}));
-        if strcmpi(upper(varargin{1}),'REMOTE')&&ischar(DEFAULTS.REMOTE), DEFAULTS.REMOTE=str2num(DEFAULTS.REMOTE); end
+        if strcmpi(upper(varargin{1}),'REMOTE')&&ischar(DEFAULTS.REMOTE), 
+            DEFAULTS.REMOTE=str2num(DEFAULTS.REMOTE); 
+            if DEFAULTS.REMOTE&&~conn_server('isconnected')
+                fprintf('Starting new remote connection to server\n');
+                conn remotely on;
+            end
+        end
     elseif nargout>0, varargout={DEFAULTS.(upper(varargin{1}))};
     else disp(DEFAULTS.(upper(varargin{1})));
     end
