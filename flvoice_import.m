@@ -1,6 +1,6 @@
 
-function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
-% data = flvoice_load(SUB,RUN,SES,TASK) : imports audio data, and computes formant and pitch trajectories for each trial
+function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
+% flvoice_import(SUB,RUN,SES,TASK) : imports audio data, and computes formant and pitch trajectories for each trial
 %   SUB             : subject id (e.g. 'test244' or 'sub-test244')
 %   SES             : session number (e.g. 1 or 'ses-1')
 %   RUN             : run number (e.g. 1 or 'run-1')
@@ -19,6 +19,7 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).reference_time    : reference time for time-alignment (seconds)  (default 0)
 %             trialData(n).condLabel         : condition label/name associated with this trial (default 'unknown')
 %             trialData(n).dataLabel         : data labels (default '')
+%             trialData(n).dataUnits         : data units (default '')
 %
 %   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
 %                         may alternatively be defined implicitly as trialData(n).s = {trialData(n).audapData.signalIn,trialData(n).audapData.signalOut} for Audapter data with fs=16000Hz
@@ -35,6 +36,7 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).t                 : time of initial sample (seconds)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
+%             trialData(n).dataUnits         : data units (cell array) {'Hz','Hz','Hz','dB','Hz','Hz','Hz','dB'}
 %
 % Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
 %   Variables:
@@ -42,33 +44,39 @@ function varargout=flvoice_load(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).s                 : summary measures (cell array)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array)
+%             trialData(n).dataUnits         : data units (cell array)
 %
-% data = flvoice_load(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options
+% trialData = flvoice_import(..., 'trialData') : returns output trialData array for the selected subject/session/run/task
+% data = flvoice_import(..., 'data') : returns all output data variables stored in $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat for the selected subject/session/run/task
+% filename = flvoice_import(..., 'file') : returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
+%
+% flvoice_import(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options
 %   'N_LPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0_RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
 %   'FMT_ARGS'         : additional arguments for FLVOICE_FORMANTS (default {})
 %   'F0_ARGS'          : additional arguments for FLVOICE_PITCH (default {})
 %   'OUT_WINDOW'       : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
-%   'SKIP_CONDITIONS'  : list of conditions labels (condLabel values) to be disregarded (default {})
+%   'SKIP_CONDITIONS'  : skip specific conditions; list of conditions labels (condLabel values) to be disregarded (default {})
+%   'SKIP_LOWAMP'      : skip low-amplitude trials; minimum value of average 'Amp' value (default [])
 %   'OVERWRITE'        : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 0) 1/0 save formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 save jpg files with formant&pitch trajectories
 %
-% flvoice_load('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_load commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
+% flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
 % Alternative syntax:
-%   flvoice_load                         : returns list of available subjects
-%   flvoice_load SUB                     : returns list of available sessions for this subject
-%   flvoice_load SUB SES                 : returns list of available runs for this subject & session
-%   flvoice_load SUB SES RUN             : returns list of available tasks for this subject & session & run
-%   flvoice_load SUB all RUN TASK ...    : runs flvoice_load using data from all available sessions for this subject & run & task
-%   flvoice_load SUB SES all TASK ...    : runs flvoice_load using data from all available runs for this subject & session & task
-%   flvoice_load default <optionname> <defaultvalue>  : defines default options
+%   flvoice_import                         : returns list of available subjects
+%   flvoice_import SUB                     : returns list of available sessions for this subject
+%   flvoice_import SUB SES                 : returns list of available runs for this subject & session
+%   flvoice_import SUB SES RUN             : returns list of available tasks for this subject & session & run
+%   flvoice_import SUB all RUN TASK ...    : runs flvoice_import using data from all available sessions for this subject & run & task
+%   flvoice_import SUB SES all TASK ...    : runs flvoice_import using data from all available runs for this subject & session & task
+%   flvoice_import default <optionname> <defaultvalue>  : defines default options
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -95,6 +103,7 @@ if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
+if ischar(OPTIONS.SKIP_LOWAMP), OPTIONS.SKIP_LOWAMP=str2num(OPTIONS.SKIP_LOWAMP); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -175,6 +184,7 @@ if isempty(TASK)
     return
 end
 
+fileout={};
 for nsample=1:numel(RUNS)
     RUN=RUNS(nsample);
     SES=SESS(nsample);
@@ -185,7 +195,19 @@ for nsample=1:numel(RUNS)
         fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
         filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
     end
-    if ~conn_existfile(filename_trialData), fprintf('file %s not found, skipping this run\n',filename_trialData);
+    if rem(numel(varargin),2)==1&&ischar(varargin{end})
+        switch(lower(varargin{end}))
+            case 'file'
+                fileout{nsample}=filename_fmtData;
+            case 'data'
+                fileout{nsample}=conn_loadmatfile(filename_fmtData,'-cache');
+            case 'trialdata'
+                tdata=conn_loadmatfile(filename_fmtData,'trialData','-cache');
+                fileout{nsample}=tdata.trialData;
+            otherwise
+                error('unknown option %s',varargin{end});
+        end
+    elseif ~conn_existfile(filename_trialData), fprintf('file %s not found, skipping this run\n',filename_trialData);
     else
         hfig=[];
         starttif=true;
@@ -259,6 +281,10 @@ for nsample=1:numel(RUNS)
                     out_trialData(trialNum).dataLabel{ns,2} = ['raw-F1',labels{ns}]; % F1 (Hz)
                     out_trialData(trialNum).dataLabel{ns,3} = ['raw-F2',labels{ns}]; % F2 (Hz)
                     out_trialData(trialNum).dataLabel{ns,4} = ['raw-Amp',labels{ns}];% Intensity (dB)
+                    out_trialData(trialNum).dataUnits{ns,1} = 'Hz';
+                    out_trialData(trialNum).dataUnits{ns,2} = 'Hz';
+                    out_trialData(trialNum).dataUnits{ns,3} = 'Hz';
+                    out_trialData(trialNum).dataUnits{ns,4} = 'dB';
                     out_trialData(trialNum).t{ns,1} = t0{ns};
                     out_trialData(trialNum).t{ns,2} = t0{ns};
                     out_trialData(trialNum).t{ns,3} = t0{ns};
@@ -266,6 +292,7 @@ for nsample=1:numel(RUNS)
                 end
                 out_trialData(trialNum).s=reshape(out_trialData(trialNum).s,1,[]);
                 out_trialData(trialNum).dataLabel=reshape(out_trialData(trialNum).dataLabel,1,[]);
+                out_trialData(trialNum).dataUnits=reshape(out_trialData(trialNum).dataUnits,1,[]);
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
@@ -276,6 +303,7 @@ for nsample=1:numel(RUNS)
                     time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); % e.g. defines time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
                     out_trialData(trialNum).s{end+1} = interp1(time1, out_trialData(trialNum).s{ns}, time2, 'lin', nan);       % time-alignment
                     out_trialData(trialNum).dataLabel{end+1} = regexprep(out_trialData(trialNum).dataLabel{ns},'^raw-','');     % note: timealigned data first sample is at t = reference_time + OUT_WINDOW(1)
+                    out_trialData(trialNum).dataUnits{end+1} = out_trialData(trialNum).dataUnits{ns};
                     out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
                 end
                 out_trialData(trialNum).fs=OPTIONS.OUT_FS;
@@ -349,6 +377,9 @@ for nsample=1:numel(RUNS)
         if ~isempty(OPTIONS.SKIP_CONDITIONS)
             keepData=keepData&~arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
         end
+        if ~isempty(OPTIONS.SKIP_LOWAMP)
+            keepData=keepData&arrayfun(@(n)mean(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)},'omitnan')>OPTIONS.SKIP_LOWAMP,1:numel(out_trialData));
+        end
         
         sum_trialData=[];
         filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
@@ -357,6 +388,7 @@ for nsample=1:numel(RUNS)
                 time1=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
                 sum_trialData(trialNum).s{ns} = mean(out_trialData(trialNum).s{ns}(time1>0),'omitnan'); % average value for t>0 
                 sum_trialData(trialNum).dataLabel{ns}=out_trialData(trialNum).dataLabel{ns};
+                sum_trialData(trialNum).dataUnits{ns}=out_trialData(trialNum).dataUnits{ns};
             end
             sum_trialData(trialNum).condLabel=out_trialData(trialNum).condLabel;
         end
@@ -372,18 +404,30 @@ for nsample=1:numel(RUNS)
         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
         lnames=unique([out_trialData.dataLabel]);
         for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+        initax=false(1,numel(hax));
         for trialNum=reshape(find(keepData),1,[])
             for ns=1:numel(out_trialData(trialNum).s),
                 t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
                 x=out_trialData(trialNum).s{ns};
                 [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                h=plot(t,x,'.-','parent',hax(idx));
+                h=plot(t,x,'-','parent',hax(idx));
+                if ~initax(idx)
+                    xlabel('Time (s)');
+                    ylabel(out_trialData(trialNum).dataUnits{ns});
+                    if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                        xline(0,'parent',hax(idx),'linewidth',3);
+                    end
+                    initax(idx)=true;
+                end
                 set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
             end
         end
         for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
         drawnow
-        if OPTIONS.PRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
+        if OPTIONS.PRINT, 
+            conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); 
+            savefig(conn_prepend('',filename_fmtData,'.fig'));
+        end
         
 %         % aggregated data cross runs
 %         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Amp'}];
@@ -422,6 +466,7 @@ for nsample=1:numel(RUNS)
 %         end
     end
 end
+varargout={fileout};
 
 % t0=1000*DATA(1).pertaligned_delta;
 % fs=DATA(1).fs;
@@ -484,7 +529,7 @@ end
 %     figure(1);
 %     names={'7 (jason)','3 (rohan)','6 (ricky)','2 (liam)','8 (latane)','5 (jackie)','4 (bobbie)','1 (dave)'};
 %     subnames={'','sub-test244','sub-test245','sub-test249','sub-test250','sub-test252','sub-test257','sub-test258'};
-%     for nsub=1:numel(subnames), if ~isempty(subnames{nsub}), filepath=fullfile(pwd,subnames{nsub}); flvoice_load; end; end
+%     for nsub=1:numel(subnames), if ~isempty(subnames{nsub}), filepath=fullfile(pwd,subnames{nsub}); flvoice_import; end; end
 % end
 
                 

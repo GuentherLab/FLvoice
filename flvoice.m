@@ -2,7 +2,7 @@ function varargout = flvoice(varargin)
 % FLVOICE  Frank Lab voice tools
 %
 % Main functions:
-% FLVOICE LOAD       : loads and processes trial audio data from aud/som experiment (see "help flvoice_load")
+% FLVOICE IMPORT     : imports and preprocesses trial audio data from aud/som experiment (see "help flvoice_import")
 % FLVOICE FIRSTLEVEL : first-level analysis of subjects audio data (see "help flvoice_firstlevel")
 %
 % Internal functions:
@@ -17,14 +17,15 @@ function varargout = flvoice(varargin)
 
 persistent DEFAULTS;
 if isempty(DEFAULTS), DEFAULTS=struct('ROOT',[],'REMOTE',true); end
+if ~isempty(varargin)&&ischar(varargin{1})&&strcmpi(varargin{1},'load'), varargin{1}='IMPORT'; end % back-compatibility
 
 varargout=cell(1,nargout);
-if ~isempty(which(sprintf('flvoice_%s',lower(varargin{1})))),
+if ~isempty(which(sprintf('flvoice_%s',lower(varargin{1})))), % calls to flvoice_*.m functions
     fh=eval(sprintf('@flvoice_%s',lower(varargin{1})));
     if ~nargout, feval(fh,varargin{2:end});
     else [varargout{1:nargout}]=feval(fh,varargin{2:end});
     end
-elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{1}))
+elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{1})) % sets FLVOICE default parameters
     if numel(varargin)>1
         DEFAULTS.(upper(varargin{1}))=varargin{2};
         fprintf('default %s value changed to %s\n',upper(varargin{1}),mat2str(varargin{2}));
@@ -32,12 +33,17 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
     elseif nargout>0, varargout={DEFAULTS.(upper(varargin{1}))};
     else disp(DEFAULTS.(upper(varargin{1})));
     end
-elseif numel(varargin)>=1&&ischar(varargin{1})&&strcmpi(varargin{1},'PRIVATE.ROOT')
-    if isempty(DEFAULTS.ROOT), ROOT=pwd;
-    else ROOT=DEFAULTS.ROOT;
-    end
-    if DEFAULTS.REMOTE, varargout={fullfile('/CONNSERVER',ROOT)};
-    else varargout={ROOT};
+elseif numel(varargin)>=1&&ischar(varargin{1}) % other
+    switch(upper(varargin{1}))
+        case 'PRIVATE.ROOT'
+            if isempty(DEFAULTS.ROOT), ROOT=pwd;
+            else ROOT=DEFAULTS.ROOT;
+            end
+            if DEFAULTS.REMOTE, varargout={fullfile('/CONNSERVER',ROOT)};
+            else varargout={ROOT};
+            end
+        otherwise
+            error('unrecognized option %s',varargin{1});
     end
 else
     error('unrecognized option %s or flvoice_%s function',varargin{1},varargin{1});
