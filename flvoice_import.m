@@ -46,11 +46,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).dataLabel         : data labels (cell array)
 %             trialData(n).dataUnits         : data units (cell array)
 %
-% trialData = flvoice_import(..., 'trialData') : returns output trialData array for the selected subject/session/run/task
-% data = flvoice_import(..., 'data') : returns all output data variables stored in $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat for the selected subject/session/run/task
-% filename = flvoice_import(..., 'file') : returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
-%
-% flvoice_import(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : overrides default options
+% flvoice_import(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : imports/processes data using non-default options
 %   'N_LPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0_RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
 %   'FMT_ARGS'         : additional arguments for FLVOICE_FORMANTS (default {})
@@ -65,6 +61,11 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
+% trialData = flvoice_import(SUB,RUN,SES,TASK, 'input') : (does not import/process data) returns input trialData array for the selected subject/session/run/task
+% trialData = flvoice_import(SUB,RUN,SES,TASK, 'output') : (does not import/process data) returns output trialData array for the selected subject/session/run/task
+% filename = flvoice_import(SUB,RUN,SES,TASK, 'input_file') : (does not import/process data) returns input data filename(s) ($ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat) for the selected subject/session/run/task
+% filename = flvoice_import(SUB,RUN,SES,TASK, 'output_file') : (does not import/process data) returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
+%
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
 %   flvoice_import SUB                     : returns list of available sessions for this subject
@@ -72,7 +73,6 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   flvoice_import SUB SES RUN             : returns list of available tasks for this subject & session & run
 %   flvoice_import SUB all RUN TASK ...    : runs flvoice_import using data from all available sessions for this subject & run & task
 %   flvoice_import SUB SES all TASK ...    : runs flvoice_import using data from all available runs for this subject & session & task
-%   flvoice_import default <optionname> <defaultvalue>  : defines default options
 %
 
 persistent DEFAULTS;
@@ -185,6 +185,8 @@ if isempty(TASK)
 end
 
 fileout={};
+somethingout=false;
+
 for nsample=1:numel(RUNS)
     RUN=RUNS(nsample);
     SES=SESS(nsample);
@@ -196,14 +198,22 @@ for nsample=1:numel(RUNS)
         filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
     end
     if rem(numel(varargin),2)==1&&ischar(varargin{end})
+        somethingout=true;
         switch(lower(varargin{end}))
-            case 'file'
+            case 'input_file'
+                fileout{nsample}=filename_trialData;
+            case 'output_file'
                 fileout{nsample}=filename_fmtData;
-            case 'data'
-                fileout{nsample}=conn_loadmatfile(filename_fmtData,'-cache');
-            case 'trialdata'
+            case 'input'
+                tdata=conn_loadmatfile(filename_trialData,'trialData','-cache');
+                fileout{nsample}=tdata.trialData;
+            case 'output'
                 tdata=conn_loadmatfile(filename_fmtData,'trialData','-cache');
                 fileout{nsample}=tdata.trialData;
+            case 'input_all'
+                fileout{nsample}=conn_loadmatfile(filename_trialData,'-cache');
+            case 'output_all'
+                fileout{nsample}=conn_loadmatfile(filename_fmtData,'-cache');
             otherwise
                 error('unknown option %s',varargin{end});
         end
@@ -466,7 +476,7 @@ for nsample=1:numel(RUNS)
 %         end
     end
 end
-varargout={fileout};
+if somethingout, varargout={fileout}; end
 
 % t0=1000*DATA(1).pertaligned_delta;
 % fs=DATA(1).fs;
