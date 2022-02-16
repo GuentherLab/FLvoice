@@ -61,10 +61,10 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
-% trialData = flvoice_import(SUB,RUN,SES,TASK, 'input') : (does not import/process data) returns input trialData array for the selected subject/session/run/task
-% trialData = flvoice_import(SUB,RUN,SES,TASK, 'output') : (does not import/process data) returns output trialData array for the selected subject/session/run/task
-% filename = flvoice_import(SUB,RUN,SES,TASK, 'input_file') : (does not import/process data) returns input data filename(s) ($ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat) for the selected subject/session/run/task
-% filename = flvoice_import(SUB,RUN,SES,TASK, 'output_file') : (does not import/process data) returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
+% trialData = flvoice_import(SUB,SES,RUN,TASK, 'input') : (does not import/process data) returns input trialData array for the selected subject/session/run/task
+% trialData = flvoice_import(SUB,SES,RUN,TASK, 'output') : (does not import/process data) returns output trialData array for the selected subject/session/run/task
+% filename = flvoice_import(SUB,SES,RUN,TASK, 'input_file') : (does not import/process data) returns input data filename(s) ($ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat) for the selected subject/session/run/task
+% filename = flvoice_import(SUB,SES,RUN,TASK, 'output_file') : (does not import/process data) returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
 %
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
@@ -232,6 +232,7 @@ for nsample=1:numel(RUNS)
         
         out_trialData=[];
         showwarn=true;
+        modified=false;
         if OPTIONS.SAVE||OPTIONS.PRINT, conn_fileutils('mkdir',fileparts(filename_fmtData)); end
         %offlineFmts=[];
         %offlinePrms=[];
@@ -261,6 +262,9 @@ for nsample=1:numel(RUNS)
                 if ~iscell(s), s={s}; end
                 if ~iscell(t0), t0={t0}; end
                 if ~iscell(labels), labels={labels}; end
+                if ~isfield(data,'s'), in_trialData(trialNum).s=s; modified=true; end
+                if ~isfield(data,'fs'), in_trialData(trialNum).fs=fs; modified=true; end
+                if ~isfield(data,'dataLabel'), in_trialData(trialNum).dataLabel=labels; end
                 if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
                 assert(numel(t0)==numel(s),'mismatch number of elements in s (%d) and t (%d)',numel(s),numel(t0));
                 assert(numel(labels)==numel(s),'mismatch number of elements in s (%d) and dataLabel (%d)',numel(s),numel(labels));
@@ -363,6 +367,10 @@ for nsample=1:numel(RUNS)
                 conn_fileutils('mkdir',fileparts(filename_fmtData));
                 trialData = out_trialData; INFO=out_INFO; conn_savematfile(filename_fmtData,'trialData','INFO');
                 fprintf('Saved file: %s\n',filename_fmtData);
+                if modified
+                    trialData = in_trialData;
+                    conn_savematfile(filename_trialData,'trialData','-append');
+                end
             end
 
         else

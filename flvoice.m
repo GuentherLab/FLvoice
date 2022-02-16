@@ -11,12 +11,12 @@ function varargout = flvoice(varargin)
 % 
 % Default options:
 % FLVOICE ROOT [root_folder]    : returns/defines path to $ROOT$ folder containing data from all subjects (default current folder -pwd-)
-% FLVOICE REMOTE [0/1]        : (default 0) 1/0 work remotely (0: when working from SCC computer or on a dataset saved locally on your computer; 1: when working remotely -run "conn remotely on" first from your home computer to connect to SCC; for first-time initialization run on remote server "conn remotely setup")
+% FLVOICE REMOTE [on/off]       : work remotely (default off) (0/off: when working from SCC computer or on a dataset saved locally on your computer; 1/on: when working remotely -run "conn remotely on" first from your home computer to connect to SCC; for first-time initialization run on remote server "conn remotely setup")
 %
 
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('ROOT',[],'REMOTE',true); end
+if isempty(DEFAULTS), DEFAULTS=struct('ROOT',[],'REMOTE',false); end
 if ~isempty(varargin)&&ischar(varargin{1})&&strcmpi(varargin{1},'load'), varargin{1}='IMPORT'; end % back-compatibility
 
 varargout=cell(1,nargout);
@@ -30,7 +30,13 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
         DEFAULTS.(upper(varargin{1}))=varargin{2};
         fprintf('default %s value changed to %s\n',upper(varargin{1}),mat2str(varargin{2}));
         if strcmpi(upper(varargin{1}),'REMOTE')
-            if ischar(DEFAULTS.REMOTE), DEFAULTS.REMOTE=str2num(DEFAULTS.REMOTE); end
+            if ischar(DEFAULTS.REMOTE)
+                switch(lower(DEFAULTS.REMOTE))
+                    case 'on',  DEFAULTS.REMOTE=1;
+                    case 'off', DEFAULTS.REMOTE=0;
+                    otherwise, DEFAULTS.REMOTE=str2num(DEFAULTS.REMOTE); 
+                end
+            end
             if DEFAULTS.REMOTE&&~conn_server('isconnected')
                 fprintf('Starting new remote connection to server\n');
                 conn remotely on;
