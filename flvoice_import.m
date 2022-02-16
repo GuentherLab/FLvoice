@@ -245,13 +245,12 @@ for nsample=1:numel(RUNS)
                 labels={''}; 
                 if isfield(data,'audapData'), % audapter format (back-compatibility)
                     if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
-                    else s=data.audapData.signalIn;
+                    else
+                        s=data.audapData.signalIn;
+                        if ~iscell(s), s={s}; end
+                        labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0);
                     end
-                    if ~iscell(s), s={s}; end
                     fs=16000;
-                    if isfield(data,'dataLabel'), labels=data.dataLabel; 
-                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
-                    end
                     in_trialData(trialNum).s=s; 
                     in_trialData(trialNum).fs=fs;
                     in_trialData(trialNum).dataLabel=labels; 
@@ -260,9 +259,7 @@ for nsample=1:numel(RUNS)
                     s=data.audioData.signalIn;
                     if ~iscell(s), s={s}; end
                     fs=48000;
-                    if isfield(data,'dataLabel'), labels=data.dataLabel; 
-                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
-                    end
+                    labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
                     in_trialData(trialNum).s=s; 
                     in_trialData(trialNum).fs=fs; 
                     in_trialData(trialNum).dataLabel=labels; 
@@ -272,7 +269,7 @@ for nsample=1:numel(RUNS)
                     fs=data.fs;
                     if ~iscell(s), s={s}; end
                     if isfield(data,'dataLabel'), labels=data.dataLabel; 
-                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
+                    else labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
                     end
                     if isfield(data,'t'), t0=data.t; end
                 end
