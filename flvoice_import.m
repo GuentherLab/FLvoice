@@ -248,9 +248,16 @@ for nsample=1:numel(RUNS)
                     else s=data.audapData.signalIn;
                     end
                     fs=16000;
+                    in_trialData(trialNum).s=s; 
+                    in_trialData(trialNum).fs=fs;
+                    in_trialData(trialNum).dataLabel=labels; 
+                    modified=true; 
                 elseif isfield(data,'audioData') % audiodevicereader format
                     s=data.audioData.signalIn;
                     fs=48000;
+                    in_trialData(trialNum).s=s; 
+                    in_trialData(trialNum).fs=fs; 
+                    modified=true; 
                 else % raw audio format
                     s=data.s;
                     fs=data.fs;
@@ -262,9 +269,6 @@ for nsample=1:numel(RUNS)
                 if ~iscell(s), s={s}; end
                 if ~iscell(t0), t0={t0}; end
                 if ~iscell(labels), labels={labels}; end
-                if ~isfield(data,'s'), in_trialData(trialNum).s=s; modified=true; end
-                if ~isfield(data,'fs'), in_trialData(trialNum).fs=fs; modified=true; end
-                if ~isfield(data,'dataLabel'), in_trialData(trialNum).dataLabel=labels; end
                 if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
                 assert(numel(t0)==numel(s),'mismatch number of elements in s (%d) and t (%d)',numel(s),numel(t0));
                 assert(numel(labels)==numel(s),'mismatch number of elements in s (%d) and dataLabel (%d)',numel(s),numel(labels));
