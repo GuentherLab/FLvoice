@@ -364,13 +364,10 @@ for nsample=1:numel(RUNS)
             end
             
             if OPTIONS.SAVE
+                if modified trialData = in_trialData; conn_savematfile(filename_trialData,'trialData','-append'); end
                 conn_fileutils('mkdir',fileparts(filename_fmtData));
                 trialData = out_trialData; INFO=out_INFO; conn_savematfile(filename_fmtData,'trialData','INFO');
                 fprintf('Saved file: %s\n',filename_fmtData);
-                if modified
-                    trialData = in_trialData;
-                    conn_savematfile(filename_trialData,'trialData','-append');
-                end
             end
 
         else
