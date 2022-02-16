@@ -243,30 +243,39 @@ for nsample=1:numel(RUNS)
                 %Nlpc=round(1.25*in_trialData(trialNum).p.nLPC);
                 t0=0;
                 labels={''}; 
-                if isfield(data,'audapData'), % audapter format
+                if isfield(data,'audapData'), % audapter format (back-compatibility)
                     if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
                     else s=data.audapData.signalIn;
                     end
+                    if ~iscell(s), s={s}; end
                     fs=16000;
+                    if isfield(data,'dataLabel'), labels=data.dataLabel; 
+                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
+                    end
                     in_trialData(trialNum).s=s; 
                     in_trialData(trialNum).fs=fs;
                     in_trialData(trialNum).dataLabel=labels; 
                     modified=true; 
-                elseif isfield(data,'audioData') % audiodevicereader format
+                elseif isfield(data,'audioData') % audiodevicereader format (back-compatibility)
                     s=data.audioData.signalIn;
+                    if ~iscell(s), s={s}; end
                     fs=48000;
+                    if isfield(data,'dataLabel'), labels=data.dataLabel; 
+                    elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
+                    end
                     in_trialData(trialNum).s=s; 
                     in_trialData(trialNum).fs=fs; 
+                    in_trialData(trialNum).dataLabel=labels; 
                     modified=true; 
                 else % raw audio format
                     s=data.s;
                     fs=data.fs;
+                    if ~iscell(s), s={s}; end
                     if isfield(data,'dataLabel'), labels=data.dataLabel; 
                     elseif iscell(s), labels=arrayfun(@(n)sprintf('measure%d',n),1:numel(s),'uni',0); 
                     end
                     if isfield(data,'t'), t0=data.t; end
                 end
-                if ~iscell(s), s={s}; end
                 if ~iscell(t0), t0={t0}; end
                 if ~iscell(labels), labels={labels}; end
                 if numel(s)>1&&numel(t0)==1, t0=repmat(t0,1,numel(s)); end
