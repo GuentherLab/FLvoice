@@ -451,7 +451,7 @@ for nsample=1:numel(RUNS)
         drawnow
         if OPTIONS.PRINT, 
             conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); 
-            savefig(conn_prepend('',filename_fmtData,'.fig'));
+            conn_fileutils('savefig',conn_prepend('',filename_fmtData,'.fig'));
         end
         
 %         % aggregated data cross runs
