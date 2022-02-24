@@ -57,22 +57,22 @@ switch(lower(option))
         data.handles.subPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .89 .742 .08],'Parent',data.handles.hfig);
         % Sub
         data.handles.subText=uicontrol('Style', 'text','String','Subject:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.01 .15 .08 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.subDrop=uicontrol('Style', 'popupmenu','String','Sub01','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.095 .16 .12 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.subDrop=uicontrol('Style', 'popupmenu','String','Sub01','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.095 .16 .12 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @subDrop);
         % Sess
         data.handles.sessionText=uicontrol('Style', 'text','String','Sess:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.22 .18 .05 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.sessionDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.274 .16 .07 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.sessionDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.274 .16 .07 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @sessDrop);
         % Run
         data.handles.runText=uicontrol('Style', 'text','String','Run:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.35 .18 .04 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.runDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.395 .16 .07 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.runDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.395 .16 .07 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @runDrop);
         % Task
         data.handles.taskText=uicontrol('Style', 'text','String','Task:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.47 .18 .045 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.taskDrop=uicontrol('Style', 'popupmenu','String','aud','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.52 .16 .06 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.taskDrop=uicontrol('Style', 'popupmenu','String','aud','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.52 .16 .06 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @taskDrop);
         % Trial
         data.handles.trialText=uicontrol('Style', 'text','String','Trial:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.585 .18 .05 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.638 .16 .045 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.638 .16 .048 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @trialDrop);
         % Cond
         data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.69 .18 .055 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
-        data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.75 .16 .035 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+        data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.75 .16 .042 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
         %data.handles.conditionDrop=uicontrol('Style', 'popupmenu','String','N0','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.74 .16 .05 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
         % Prev / Next Buttons
         data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.805 .15 .09 .7],'Parent',data.handles.subPanel,'Callback', @prevTrial);
@@ -80,40 +80,9 @@ switch(lower(option))
         
         %set defaults:
         %%% root set here for testing, generally root would be defined beforehand: %%%
-        % flvoice_import SUB SES RUN
+        % flvoice_import SUB RUN SES TASK
         flvoice('ROOT','C:\Users\RickyFals\Documents\0BU\0GuentherLab\LabGit\SAPdata');
-        subList = flvoice('import');
-        set(data.handles.subDrop, 'String', subList, 'Value', 1);
-        
-        disp('Loading default data from root folder:')
-        curSub = subList{get(data.handles.subDrop, 'Value')};
-        sessList = flvoice('import', curSub);
-        set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
-        
-        curSess = sessList{get(data.handles.sessionDrop, 'Value')};
-        runList = flvoice('import', curSub,curSess);
-        set(data.handles.runDrop, 'String', runList, 'Value', 1);
-               
-        curRun = runList{get(data.handles.runDrop, 'Value')};
-        taskList = flvoice('import', curSub,curSess, curRun);
-        set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-        
-        curTask = taskList{get(data.handles.taskDrop, 'Value')};
-        curDerivsFile = flvoice_import(curSub,curSess,curRun,curTask, 'output_file')
-        %curSubPath = fullfile(flvoice('ROOT'), 'derivatives', 'acoustic', curSub, curSess);
-        %curSubFileName =  sprintf('%s_%s_%s_task-%s_desc-formants.mat',curSub, curSess, curRun, curTask);
-        %curSubFile = fullfile(curSubPath,curSubFileName);
-        %subFile = sprintf('%s_%s_%s_task-%s.mat',curSub, curSess, curRun, curTask);
-        
-        load(curDerivsFile{1}, 'INFO','trialData');        
-        trialList = (1:size(trialData,2));
-        set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
-        
-        curTrial = num2str(get(data.handles.trialDrop, 'Value'));
-        curCond = trialData(curTrial).condLabel;
-        set(data.handles.condVal, 'String', curCond);
-        
-        
+       
         % Axes (Mic / Head / Spectograms) Panel
         data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .86],'Parent',data.handles.hfig);        
         data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.76, 1.14, 0.25], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
@@ -127,23 +96,13 @@ switch(lower(option))
         data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06],'Parent',data.handles.axes1Panel,'Callback', @changeReference);
         data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Save &<br/>Exit</html>','Units','norm','FontUnits','norm','FontSize',0.35,'HorizontalAlignment', 'left','Position',[.92 .02 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @saveExit);
         
-        % Plot Mic and Head axes:
-        %micAudioPath = fullfile(flvoice('ROOT'), curSub, curSess, 'beh', curRun);
-        %micAudioFileName =  sprintf('%s_%s_%s_task-%s_trial-%s_mic.wav',curSub, curSess, curRun, curTask, curTrial);
-        %micAudioFile = fullfile(micAudioPath,micAudioFileName);
-        %data.handles.curMicAudioFile = micAudioFile;
-        %[micWav, micFs] = audioread(micAudioFile);
-        %micTime = [0:1/micFs:length(micWav)/micFs];
-        %micTime = micTime(1:(length(micTime)-1));
-        %data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-        
-        %runIdx = regexp(curRun, '\d*', 'Match')
-        runIdx = get(data.handles.runDrop, 'Value');
-        micWav = trialData(curTrial).s{4};
-        micTime = (trialData(curTrial).t{runIdx}+(0:numel(micWav)-1*1/trialData(curTrial).fs));
-        data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-               
-       set(data.handles.hfig,'userdata',data);
+        % Update GUI to current sub / trial
+        updateSubj(data);       
+        %updateSubj(data, 'sub-SAP04', 'ses-1', 'run-1', 'som', '10');       
+             
+        %data = data.handles.hfig.UserData;
+        data = data.handles.hfig.UserData;
+        set(data.handles.hfig,'userdata',data);
         
         
     case 'update'
@@ -151,9 +110,6 @@ switch(lower(option))
         data=get(hfig,'userdata');
         set(data.handles.hfig,'userdata',data);
         
-        
-        
-    
 end
 
     function updateSettings(ObjH, EventData)
@@ -169,27 +125,143 @@ end
 
     %set(data.handles.hfig,'userdata',data);
     end
+
+    function subDrop(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
     
+    subList = data.vars.subList;
+    newSubIdx = get(data.handles.subDrop, 'Value');
+    newSub = subList{newSubIdx};
+    updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, '1');
+    data.vars.curSub = newSub;
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function sessDrop(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    sessList = data.vars.sessList;
+    newSessIdx = get(data.handles.sessDrop, 'Value');
+    newSess = sessList{newSessIdx};
+    updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, data.vars.curTask, '1');
+    data.vars.curSess = newSess;
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function runDrop(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    runList = data.vars.runList;
+    newRunIdx = get(data.handles.runDrop, 'Value');
+    newRun = runList{newRunIdx};
+    updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, '1');
+    data.vars.curRun = newRun;
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function taskDrop(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    taskList = data.vars.taskList;
+    newTaskIdx = get(data.handles.taskDrop, 'Value');
+    newTask = taskList{newTaskIdx};
+    updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, newTask, '1');
+    data.vars.curTask = newTask;
+    set(data.handles.hfig,'userdata',data);
+    end
+    
+    function trialDrop(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    newTrial = num2str(get(data.handles.trialDrop, 'Value'));
+    updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, newTrial);
+    data.vars.curTrial = newTrial;
+    set(data.handles.hfig,'userdata',data);
+    end
+
     function prevTrial(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
-
-    %set(data.handles.hfig,'userdata',data);
+    
+    curTrial = str2num(data.vars.curTrial);
+    prevTrial = num2str(curTrial - 1);
+    trialList = data.vars.trialList;
+    if curTrial == trialList(1)
+        choice = questdlg('This is the first trial for this run, attempt to load previous run?', 'Change runs?', 'Yes', 'No', 'opts');
+        switch choice
+            case 'Yes'
+                curRun = regexp(data.vars.curRun,'\d*','Match');
+                runList = data.vars.runList;
+                runIdx = find(runList == str2num(curRun));
+                prevIdx = runIdx-1;
+                if prevIdx < numel(runList) || prevIdx > numel(runList);
+                    warning = msgbox('Previous run does not exist, consider changing session?')
+                else
+                    prevRun = runList(prevIdx);
+                    taskList = data.vars.taskList;
+                    updateSubj(data, data.vars.curSub, data.vars.curSess, prevRun, taskList{1}, '1') % maybe should load last trial of prev run
+                    data.vars.curRun = prevRun;
+                    data.vars.curTrial = prevTrial;
+                end
+                case 'No'
+                    return 
+        end
+    else
+        updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, num2str(prevTrial));
+        data.vars.curTrial = prevTrial;
+    end
+   
+    set(data.handles.hfig,'userdata',data);
     end
     
     function nextTrial(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
 
-    %set(data.handles.hfig,'userdata',data);
+    curTrial = str2num(data.vars.curTrial);
+    nextTrial = num2str(curTrial + 1);
+    trialList = data.vars.trialList;
+    if curTrial == trialList(end)
+        choice = questdlg('This is the last trial for this run, attempt to load next run?', 'Change runs?', 'Yes', 'No', 'opts');
+        switch choice
+            case 'Yes'
+                curRun = regexp(data.vars.curRun,'\d*','Match');
+                runList = data.vars.runList;
+                runIdx = find(runList == str2num(curRun));
+                nextIdx = runIdx+1;
+                if nextIdx < numel(runList) || nextIdx > numel(runList);
+                    warning = msgbox('Previous run does not exist, consider changing session?')
+                else
+                    nextRun = runList(nextIdx);
+                    taskList = data.vars.taskList;
+                    updateSubj(data, data.vars.curSub, data.vars.curSess, nextRun, taskList{1}, '1') % maybe should load last trial of prev run
+                    data.vars.curRun = nextRun;
+                    data.vars.curTrial = nextTrial;
+                end
+                case 'No'
+                    return 
+        end
+    else
+        updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, num2str(nextTrial));
+        data.vars.curTrial = nextTrial;
+    end
+   
+    set(data.handles.hfig,'userdata',data);
     end
 
     function playMic(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
-    %[micWav, micFs] = audioread(data.handles.curMicAudioFile);
-    soundsc(micWav, trialData(curTrial).fs );
+    curTrial = data.vars.curTrial;
+    micWav = data.vars.micWav;
+    fs = data.vars.curTrialData(curTrial).fs;
+    soundsc(micWav, fs);
     
 
     %set(data.handles.hfig,'userdata',data);
@@ -222,6 +294,125 @@ end
 
     %set(data.handles.hfig,'userdata',data);
     end
+    
+    function updateSubj(data,varargin)
+    % Helper function that updates the GUI based on current sub / trial 
+    if numel(varargin) < 1
+        init = 1;
+    else
+        init = 0;
+        sub = varargin{1};
+        sess = varargin{2};
+        run = varargin{3};
+        task = varargin{4};
+        trial = varargin{5};
+    end 
+    if init % set values to first value in each droplist
+        % update subjects
+        subList = flvoice('import');
+        set(data.handles.subDrop, 'String', subList, 'Value', 1);
+        disp('Loading default data from root folder:')
+        curSub = subList{get(data.handles.subDrop, 'Value')};
+        data.vars.subList = subList;
+        data.vars.curSub = curSub;
+        
+        % update sess
+        sessList = flvoice('import', curSub);
+        set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
+        curSess = sessList{get(data.handles.sessionDrop, 'Value')};
+        data.vars.sessList = sessList;
+        data.vars.curSess = curSess;
+        
+        % update run
+        runList = flvoice('import', curSub,curSess);
+        set(data.handles.runDrop, 'String', runList, 'Value', 1);
+        curRun = runList{get(data.handles.runDrop, 'Value')};
+        data.vars.runList = runList;
+        data.vars.curRun = curRun;
+        
+        % update task
+        taskList = flvoice('import', curSub,curSess, curRun);
+        set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+        curTask = taskList{get(data.handles.taskDrop, 'Value')};
+        data.vars.taskList = taskList;
+        data.vars.curTask = curTask;
+        
+        % get trial data
+        curInputData = flvoice_import(curSub,curSess,curRun,curTask,'input');
+        curTrialData = curInputData{1};
+        % update trial
+        trialList = (1:size(curTrialData,2));
+        set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
+        curTrial = num2str(get(data.handles.trialDrop, 'Value'));
+        curCond = curTrialData(curTrial).condLabel;
+        set(data.handles.condVal, 'String', curCond);
+        data.vars.trialList = trialList;
+        data.vars.curTrial = curTrial;
+        
+        % update plots
+        runIdx = get(data.handles.runDrop, 'Value');
+        micWav = curTrialData(curTrial).s{1};
+        micTime = (0+(0:numel(micWav)-1*1/curTrialData(curTrial).fs));
+        data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
+        data.vars.micWav = micWav;
+        data.vars.micTime = micTime;
+        % update spectogram plots
 
+        
+    else % set values based on given inputs
+        % update subjects
+        subList = flvoice('import');
+        subIdx = find(contains(subList,sub));
+        set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
+        disp('Loading default data from root folder:')
+        data.vars.subList = subList;
+        data.vars.curSub = sub;
+        
+        % update sess
+        sessList = flvoice('import', sub);
+        sessIdx = find(contains(sessList,sess));
+        set(data.handles.sessionDrop, 'String', sessList, 'Value', sessIdx);
+        data.vars.sessList = sessList;
+        data.vars.curSess = sess;
+        
+        % update run
+        runList = flvoice('import', sub,sess);
+        runIdx = find(contains(runList,run));
+        set(data.handles.runDrop, 'String', runList, 'Value', runIdx);
+        data.vars.runList = runList;
+        data.vars.curRun = run;
+        
+        % update task
+        taskList = flvoice('import', sub,sess,run);
+        taskIdx = find(contains(taskList,task));
+        set(data.handles.taskDrop, 'String', taskList, 'Value', taskIdx);
+        data.vars.taskList = taskList;
+        data.vars.curTask = task;
+        
+        % get trial data
+        curInputData = flvoice_import(sub,sess,run,task,'input');
+        curTrialData = curInputData{1};
+        % update trial
+        trialList = (1:size(curTrialData,2));
+        trialIdx = find(trialList == str2num(trial)); % most likely unecessary but useful for futureproofing
+        set(data.handles.trialDrop, 'String', trialList, 'Value', trialIdx);
+        curCond = curTrialData(trial).condLabel;
+        set(data.handles.condVal, 'String', curCond);
+        data.vars.trialList = trialList;
+        data.vars.curTrial = trial;
+        
+        % update mic plot
+        micWav = curTrialData(str2num(trial)).s{1};
+        micTime = (0+(0:numel(micWav)-1*1/curTrialData(str2num(trial)).fs));
+        data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
+        data.vars.micWav = micWav;
+        data.vars.micTime = micTime;
+        % update spectogram plots
+ 
+    end
+        % save curr data
+        data.vars.curTrialData = curTrialData;
+        set(data.handles.hfig,'userdata',data);
+    end 
 
 end
