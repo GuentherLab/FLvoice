@@ -1,18 +1,32 @@
 
-function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK,MEASURE,DESIGN,CONTRAST, varargin)
-% data = flvoice_firstlevel(SUB,RUN,SES,TASK) : runs first-level model estimation on audio data
+function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
+% data = flvoice_firstlevel(SUB,RUN,SES,TASK, CONTRAST_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
 %   TASK             : task type 'aud' or 'som'
-%   MEASURE          : condLabel value (e.g. 'F1-mic')
-%   DESIGN           : condition names defining first-level contrast
+%   CONTRAST_NAME    : new first-level analysis contrast name
+%   MEASURE          : input data value (valid values from input data .dataLabel)
+%                          e.g. 'F1-mic'
+%   DESIGN           : condition names defining first-level contrast (valid values from input data .condLabel field)
 %                          e.g. {'U1','N1'}
+%                      the GLM 1st-level design matrix will be defined in this case as N 0/1 columns each identifying one individual condition
 %                      alternatively, function defining one row of design matrix (one row per trial)
 %                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of values associated with this trial
 %                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
-%   CONTRAST         : condition weights defining first-level contrast
+%                      the GLM 1st-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per trial (across all selected sessions and runs)
+%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector)
 %                          e.g. [1, -1]
+%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints)
+%                          e.g. [0 0 0 0 1 1 1 1 0 0 0 0 0]
+%                      alternatively, function defining contrast values for each timepoint
+%                          e.g. @(t) (t>0&t<.200) - (t<0)
+%
+% flvoice_firstlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs first-level model estimation using non-default options
+%   'REFERENCE'         : 1/0 uses samples before t=0 as implicit baseline/reference (default = 1)
+%                         alternatively, function defining timewindow to be used as baseline/reference
+%                          e.g. @(t) (t>-.100&t<0)
+%%   'SCALE'             : 1/0 scales CONTRAST_TIME vector to maintain original data units (default = 1) (sum of positive values = 1, and if applicable sum of negative values = -1)
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
@@ -25,16 +39,18 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK,MEASURE,DESIGN,CONTRAST, 
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('DOSAVE',true,'DOPRINT',true,'OVERWRITE',true); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'SCALE',true,'DOSAVE',true,'DOPLOT',true,'DOPRINT',false,'OVERWRITE',true); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
-    if nargin>=7, varargin=[{CONTRAST},varargin]; end
-    if nargin>=6, varargin=[{DESIGN},varargin]; end
-    if nargin>=5, varargin=[{MEASURE},varargin]; end
+    if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
+    if nargin>=8, varargin=[{CONTRAST_VECTOR},varargin]; end
+    if nargin>=7, varargin=[{DESIGN},varargin]; end
+    if nargin>=6, varargin=[{MEASURE},varargin]; end
+    if nargin>=5, varargin=[{CONTRAST_NAME},varargin]; end
     if nargin>=4, varargin=[{TASK},varargin]; end
     if nargin>=3, varargin=[{RUN},varargin]; end
     if nargin>=2, varargin=[{SES},varargin]; end
-    for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); DEFAULTS.(upper(varargin{n}))=varargin{n+1}; fprintf('default %s value changed to %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end
+    for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); DEFAULTS.(upper(varargin{n}))=varargin{n+1}; end %fprintf('default %s value changed to %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end
     return
 end
 
@@ -47,12 +63,19 @@ if nargin<3||isempty(RUN), RUN=[]; end
 if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
-if nargin<5||isempty(MEASURE), MEASURE='F1'; end
-if nargin<6||isempty(DESIGN), DESIGN={}; end
-if nargin<7||isempty(CONTRAST), CONTRAST=[]; end
+if nargin<5||isempty(CONTRAST_NAME), CONTRAST_NAME=[]; end
+if nargin<6||isempty(MEASURE), MEASURE='F1'; end
+if nargin<7||isempty(DESIGN), DESIGN={}; end
+if ischar(DESIGN), DESIGN={DESIGN}; end
+if nargin<8||isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=[]; end
+if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); end
+if nargin<9||isempty(CONTRAST_TIME), CONTRAST_TIME=[]; end
+if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); end
 
 OPTIONS=DEFAULTS;
-if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
+if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
+if ischar(OPTIONS.REFERENCE), OPTIONS.REFERENCE=str2num(OPTIONS.REFERENCE); end
+if ischar(OPTIONS.SCALE), OPTIONS.SCALE=str2num(OPTIONS.SCALE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.DOSAVE), OPTIONS.DOSAVE=str2num(OPTIONS.DOSAVE); end
 if ischar(OPTIONS.DOPRINT), OPTIONS.DOPRINT=str2num(OPTIONS.DOPRINT); end
@@ -91,7 +114,9 @@ if isempty(RUN)||isequal(RUN,0),
     RUNS={};
     for nSUB=1:numel(SUB)
         for nSES=1:numel(SES)
-            [nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'run-*'),'-dir','-R','-cell'),'uni',0);
+            [nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),sprintf('sub-%s_ses-%d_run-*_desc-formants.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
+            runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
+            %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
             RUNS=[RUNS; runs(:)];
             SESS=[SESS; SES(nSES)+zeros(numel(runs),1)];
             SUBS=[SUBS; repmat(SUB(nSUB),numel(runs),1)];
@@ -120,57 +145,195 @@ if isempty(TASK)
         RUN=RUNS(nsample);
         SES=SESS(nsample);
         SUB=SUBS{nsample};
-        [nill,tasks1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-*_desc-audio.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
-        [nill,tasks2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-*_expParams.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
-        tasks=union(tasks1,tasks2);
+        [nill,tasks]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-*_desc-formants.mat',SUB,SES,RUN)),'-R','-cell'),'uni',0);
         TASKS=[TASKS; tasks(:)];
     end
-    TASKS=unique(regexprep(TASKS,{'^.*_task-','_expParams$|_desc-audio$'},''));
+    TASKS=unique(regexprep(TASKS,{'^.*_task-','_expParams$|_desc-formants$'},''));
     disp('available tasks:');
     disp(char(TASKS));
     if nargout, varargout={TASKS}; end
     return
 end
 
-for nsample=1:numel(RUNS)
-    RUN=RUNS(nsample);
-    SES=SESS(nsample);
-    SUB=SUBS{nsample};
-    filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
-    if ~conn_existfile(filename_fmtData), fprintf('file %s not found, skipping this run\n',filename_fmtData);
-    else
-        fprintf('loading file %s\n',filename_fmtData);
-        tdata=conn_loadmatfile(filename_fmtData,'-cache');
-        assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_fmtData);
-        out_trialData = tdata.trialData;
-
-        filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('run-%d',RUN),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
-        if conn_existfile(filename_qcData), 
-            fprintf('loading file %s\n',filename_qcData);
-            tdata=conn_loadmatfile(filename_qcData,'-cache');
-            assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
-            keepData=tdata.keepData;
+USUBS=unique(SUBS);
+for nsub=1:numel(USUBS)
+    X=[]; 
+    Y=[];
+    T=[];
+    C=[];
+    Tlabel='time (ms)';
+    Ylabel='';
+    for nsample=reshape(find(strcmp(USUBS{nsub},SUBS)),1,[])
+        RUN=RUNS(nsample);
+        SES=SESS(nsample);
+        SUB=SUBS{nsample};
+        filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+        if ~conn_existfile(filename_fmtData), fprintf('file %s not found, skipping this run\n',filename_fmtData);
         else
-            fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
-            keepData=true(1,numel(out_trialData)); 
-        end
-        
-        % plots
-        figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
-        lnames=unique([out_trialData.dataLabel]);
-        for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
-        for trialNum=reshape(find(keepData),1,[])
-            for ns=1:numel(out_trialData(trialNum).s),
-                t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                x=out_trialData(trialNum).s{ns};
-                [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                h=plot(t,x,'.-','parent',hax(idx));
-                set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+            fprintf('loading file %s\n',filename_fmtData);
+            tdata=conn_loadmatfile(filename_fmtData,'-cache');
+            assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_fmtData);
+            in_trialData = tdata.trialData;
+            filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
+            if conn_existfile(filename_qcData),
+                fprintf('loading file %s\n',filename_qcData);
+                tdata=conn_loadmatfile(filename_qcData,'-cache');
+                assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
+                keepData=tdata.keepData;
+            else
+                fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
+                keepData=true(1,numel(in_trialData));
+            end
+            for ntrial=1:numel(in_trialData)
+                % finds design
+                if isa(DESIGN,'functional_handle'), x=DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial); ok=true;
+                else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
+                end
+                if ok
+                    if size(X,2)<size(x,2), X=[X, zeros(size(X,1),size(x,2)-size(X,2))]; end
+                    if size(x,2)<size(X,2), x=[x, zeros(size(x,1),size(X,2)-size(x,2))]; end
+                    X=[X;x];
+                    % finds data
+                    idx=find(strcmp(MEASURE,in_trialData(ntrial).dataLabel));
+                    assert(numel(idx)==1,'unable to find %s in trial %d (%s)',MEASURE,ntrial,sprintf('%s ',in_trialData(ntrial).dataLabel{:}));
+                    y=in_trialData(ntrial).s{idx};
+                    t=in_trialData(ntrial).t{idx}+(0:numel(y)-1)/in_trialData(ntrial).fs;
+                    if isempty(Ylabel)
+                        Ylabel=MEASURE;
+                        if isfield(in_trialData(ntrial),'dataUnits'), Ylabel=[Ylabel ' (',in_trialData(ntrial).dataUnits{idx},')']; end
+                    end
+                    if ~isempty(OPTIONS.REFERENCE)
+                        if isa(OPTIONS.REFERENCE,'function_handle'), mask=OPTIONS.REFERENCE(t);
+                        elseif OPTIONS.REFERENCE==0, mask=false;
+                        else mask=t<0;
+                        end
+                        if any(mask&~isnan(y))
+                            my=mean(y(mask&~isnan(y)));
+                            y=y-my;
+                        end
+                    end
+                    if ~isempty(CONTRAST_TIME)
+                        if isa(CONTRAST_TIME,'function_handle'), c=CONTRAST_TIME(t);
+                        else c=CONTRAST_TIME;
+                        end
+                        ny=min(numel(y),size(c,2));
+                        y=y(1:ny);
+                        c=c(:,1:ny);
+                        Tlabel='contrasts';
+                        valid=~isnan(y); % disregards samples with missing-values
+                        y=y(valid);
+                        c=c(:,valid);
+                        if OPTIONS.SCALE % re-scales contrast
+                            for n1=1:size(c,1)
+                                vmask=c(n1,:)>0; if nnz(vmask), c(n1,vmask)=c(n1,vmask)/max(eps,abs(sum(c(n1,vmask)))); end % pos-values add up to 1
+                                vmask=c(n1,:)<0; if nnz(vmask), c(n1,vmask)=c(n1,vmask)/max(eps,abs(sum(c(n1,vmask)))); end % neg-values add up to -1
+                            end
+                        end
+                        y=y*c';
+                        t=1:size(y,2);
+                    end
+                    if size(Y,2)<size(y,2), Y=[Y, nan(size(Y,1),size(y,2)-size(Y,2))]; end
+                    if size(y,2)<size(Y,2), y=[y, nan(size(y,1),size(Y,2)-size(y,2))]; end
+                    Y=[Y;y];
+                    if size(T,2)<size(t,2), T=[T, nan(size(T,1),size(t,2)-size(T,2))]; end
+                    if size(t,2)<size(T,2), t=[t, nan(size(t,1),size(T,2)-size(t,2))]; end
+                    T=[T;t];
+                end
             end
         end
-        for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
-        drawnow
-        %if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
+    end
+    valid=~isnan(Y);
+    nvalid=sum(valid,1);
+    fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoitns\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(valid,2)),max(sum(valid,2)))
+    h=[];f=[];p=[];dof=[];
+    vmask=nvalid==size(Y,1);
+    [th,tf,tp,tdof,statsname]=conn_glm(X,Y(:,vmask),CONTRAST_VECTOR,[],'collapse_predictors'); %'collapse_all_satterthwaite');
+    h=nan(size(th,1),size(Y,2));f=nan(size(tf,1),size(Y,2));p=nan(size(tp,1),size(Y,2));dof=nan(numel(tdof),size(Y,2));
+    h(:,vmask)=th;
+    f(:,vmask)=tf;
+    p(:,vmask)=tp;
+    dof(:,vmask)=repmat(tdof(:),1,nnz(vmask));
+    for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[])
+        [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(valid(:,n1),:),Y(valid(:,n1),n1),CONTRAST_VECTOR,[],'collapse_predictors');
+    end
+    pFDR=conn_fdr(p,2);
+    filename_outData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',USUBS{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',USUBS{nsub},CONTRAST_NAME));
+    stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME,'h',h,'f',f,'p',p,'pFDR',pFDR,'dof',dof,'stats',statsname);
+    effect=h;
+    if isequal(statsname,'T')|(isequal(statsname,'F')&max(dof(1,:))==1), 
+        if isequal(statsname,'T'), SE=abs(h./f);
+        else SE=abs(h./sqrt(f));
+        end
+        effect_CI=cat(1, h-spm_invTcdf(.975,dof(end,:)).*SE, h+spm_invTcdf(.975,dof(end,:)).*SE);
+    else effect_CI=[];
+    end
+    if numel(p)<10
+        for n1=1:numel(p)
+            if isequal(statsname,'T'), sstr=sprintf('%s(%s)',statsname,dof(end,n1));
+            else sstr=sprintf('%s(%d,%d)',statsname,dof(1,n1),dof(2,n1));
+            end
+            fprintf('h=%s %s=%.3f p=%.4f p-FDR=%.4f\n',mat2str(h(:,n1),5),sstr,f(n1),p(n1),pFDR(n1));
+        end
+    end
+    if OPTIONS.DOSAVE, conn_savematfile(filename_outData,'effect','effect_CI','stats'); end
+    if OPTIONS.DOPLOT,
+        t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);
+        %color=[ 0.9290/4 0.6940/4 0.1250/4; 0.6500 0.0980 0.0980; 0.8500 0.0980 0.0980];
+        color=[ .25 .25 .25; 0.0980 0.0980 0.6500 ; 0.6500 0.0980 0.0980];
+        figure('units','norm','position',[.2 .3 .6 .3],'color','w');
+        h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
+        if isequal(Tlabel,'time (ms)')
+            h=[h plot(t,effect,'.-','linewidth',2,'color',color(1,:))];
+            hold all;
+            tempx=[t,fliplr(t)];
+            tempy=[effect_CI(1,:),fliplr(effect_CI(2,:))];
+            tempy2=[effect,fliplr(effect)];
+            if 0
+                patch(tempx',tempy','k','edgecolor','none','facecolor',get(h(end),'color'),'facealpha',.25);
+            else
+                maskp1=p>.05;                         maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(1,:),'facealpha',.25);
+                maskp1=p<.05&mean(effect,1)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
+                maskp1=p<.05&mean(effect,1)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
+            end
+            grid on;
+            xline(0,'linewidth',3); yline(0);
+            xlabel(Tlabel); ylabel(Ylabel); title(CONTRAST_NAME);
+            %         legend(h,dispconds(1:3));
+            if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
+        else
+            if numel(t)>1, dx=t(2)-t(1); else dx=1; end
+            for n1=1:numel(t),
+                hpatch(n1)=patch(t(n1)+dx*[-1,-1,1,1]/2*.9,effect(n1)*[0,1,1,0],'k','facecolor',color(1,:),'edgecolor','none');
+                if p(n1)<=.05&effect(n1)<0, set(hpatch(n1),'facecolor',color(2,:)); 
+                elseif p(n1)<=.05&effect(n1)>0, set(hpatch(n1),'facecolor',color(3,:)); 
+                end
+                h=line(t(n1)+[1,-1,0,0,1,-1]*dx/8,effect_CI([1 1 1 2 2 2],n1),[1,1,1,1,1,1],'linewidth',2,'color',[.75 .75 .75]);
+            end
+            grid on;
+            xlabel(Tlabel); ylabel(Ylabel); title(CONTRAST_NAME);
+            set(gca,'xtick',t,'xticklabel',[]);
+            if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
+        end
+        if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); end
+    end
+end
+        
+%         % plots
+%         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+%         lnames=unique([out_trialData.dataLabel]);
+%         for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+%         for trialNum=reshape(find(keepData),1,[])
+%             for ns=1:numel(out_trialData(trialNum).s),
+%                 t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+%                 x=out_trialData(trialNum).s{ns};
+%                 [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+%                 h=plot(t,x,'.-','parent',hax(idx));
+%                 set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+%             end
+%         end
+%         for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
+%         drawnow
+%         %if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); end
         
 %         % aggregated data cross runs
 %         dLabels = [{'F0'}   {'F1'}  {'F2'}  {'Amp'}];
@@ -207,8 +370,8 @@ for nsample=1:numel(RUNS)
 %             end
 %             subData.(clabel).pertSize = [subData.(clabel).pertSize pertSize(keepIdx)];
 %         end
-    end
-end
+%     end
+% end
 
 % t0=1000*DATA(1).pertaligned_delta;
 % fs=DATA(1).fs;

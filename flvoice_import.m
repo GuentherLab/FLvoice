@@ -107,7 +107,6 @@ if ischar(OPTIONS.SKIP_LOWAMP), OPTIONS.SKIP_LOWAMP=str2num(OPTIONS.SKIP_LOWAMP)
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
-
 if isempty(SUB),
     [nill,SUBS]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'sub-*'),'-dir','-R','-cell'),'uni',0);
     disp('available subjects:');
