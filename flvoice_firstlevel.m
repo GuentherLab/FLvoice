@@ -26,7 +26,11 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 %   'REFERENCE'        : 1/0 (default 1) uses samples before t=0 as implicit baseline/reference
 %                         alternatively, function defining timewindow to be used as baseline/reference
 %                          e.g. @(t) (t>-.100&t<0)
-%   'SCALE'            : 1/0 (default 1) scales CONTRAST_TIME vector to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
+%   'REFERENCE_SCALE'  : type of 'REFERENCE' baseline used (default 'subtract'): 
+%                           'subtract' to subtract from timeseries average value within reference timewindow (y=x-reference)
+%                           'divide' to divide timeseries by average value within reference timewindow (y=x/reference)
+%                           'cents' to convert timeseries to 'cents' units using reference timewindow as base level (y=log(x/reference)/log(2)*1200)
+%   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_TIME vector to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
 %   'SAVE'             : (default 1) 1/0 save analysis results .mat file
 %   'PRINT'            : (default 0) 1/0 save jpg files with analysis results
 %
@@ -74,7 +78,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 % 
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',false); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',false); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -103,9 +107,9 @@ if nargin<6||isempty(MEASURE), MEASURE='F1'; end
 if nargin<7||isempty(DESIGN), DESIGN={}; end
 if ischar(DESIGN), DESIGN={DESIGN}; end
 if nargin<8||isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=[]; end
-if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); end
+if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_VECTOR input'); end
 if nargin<9||isempty(CONTRAST_TIME), CONTRAST_TIME=[]; end
-if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); end
+if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_TIME input'); end
 
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
@@ -236,7 +240,9 @@ for nsub=1:numel(USUBS)
                     t=in_trialData(ntrial).t{idx}+(0:numel(y)-1)/in_trialData(ntrial).fs;
                     if isempty(Ylabel)
                         Ylabel=MEASURE;
-                        if isfield(in_trialData(ntrial),'dataUnits'), Ylabel=[Ylabel ' (',in_trialData(ntrial).dataUnits{idx},')']; end
+                        if ~isempty(OPTIONS.REFERENCE)&&~isequal(OPTIONS.REFERENCE,0)&&isequal(OPTIONS.REFERENCE_SCALE,'cents'), Ylabel=[Ylabel ' (cents)']; 
+                        elseif isfield(in_trialData(ntrial),'dataUnits'), Ylabel=[Ylabel ' (',in_trialData(ntrial).dataUnits{idx},')']; 
+                        end
                     end
                     if ~isempty(OPTIONS.REFERENCE)
                         if isa(OPTIONS.REFERENCE,'function_handle'), mask=logical(OPTIONS.REFERENCE(t));
@@ -244,8 +250,13 @@ for nsub=1:numel(USUBS)
                         else mask=t<0;
                         end
                         if any(mask&~isnan(y))
-                            my=mean(y(mask&~isnan(y)));
-                            y=y-my;
+                            my=mean(y(mask&~isnan(y))); 
+                            switch(lower(OPTIONS.REFERENCE_SCALE))
+                                case 'subtract', y=y-my;
+                                case 'divide', y=y/my;
+                                case 'cents', y=log(y/my)/log(2)*1200;
+                                otherwise, error('unknown REFERENCE_SCALE option %s',OPTIONS.REFERENCE_SCALE);
+                            end
                         end
                     end
                     if ~isempty(CONTRAST_TIME)
