@@ -28,8 +28,9 @@ switch(lower(option))
         data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.62,'HorizontalAlignment', 'left','Position',[.2 .925 .8 .08],'Parent',data.handles.settPanel);
         % Formants (FMT_ARGS)
         % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
+        % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
         data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .87 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
-        data.handles.NLPCtxtBox=uicontrol('Style','edit','String','2+fs/1000','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .88 .45 .065],'Parent',data.handles.settPanel);    
+        data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .88 .45 .065],'Parent',data.handles.settPanel);    
         data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .8 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
         data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .81 .45 .065],'Parent',data.handles.settPanel);
         data.handles.vfiltertxt=uicontrol('Style','text','String','Viterb Filter:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .73 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
@@ -39,10 +40,10 @@ switch(lower(option))
         % Pitch Settings
         data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.62,'HorizontalAlignment', 'left','Position',[.2 .585 .8 .08],'Parent',data.handles.settPanel);
         % Pitch (F0_ARGS)
-        % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter',
-        % 'outlierfilter'
-        data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .53 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
-        data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .54 .45 .065],'Parent',data.handles.settPanel);    
+        % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
+        % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
+        data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .53 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
+        data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .54 .45 .065],'Parent',data.handles.settPanel);    
         data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .46 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
         data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .47 .45 .065],'Parent',data.handles.settPanel);
         data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .39 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
@@ -55,6 +56,7 @@ switch(lower(option))
         data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .19 .45 .065],'Parent',data.handles.settPanel);
         % General
         % 'SKIP_LOWAMP' 
+        % 'skipLowAPtxtBox'
         data.handles.skipLowAtxt=uicontrol('Style','text','String','Skip Lowamp:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .1 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
         data.handles.skipLowAPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
         
@@ -64,14 +66,14 @@ switch(lower(option))
         % QC FLAG PANEL
         data.handles.flagPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .02 .2 .42],'Parent',data.handles.hfig);
         data.handles.flagText=uicontrol('Style', 'text','String','QC Flags:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.63,'HorizontalAlignment', 'center','Position',[.2 .915 .6 .08],'Parent',data.handles.flagPanel);
-        data.handles.flag1txt=uicontrol('Style', 'checkbox','String','Performed incorrectly','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .83 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag2txt=uicontrol('Style', 'checkbox','String','Bad F0 trace','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .73 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag3txt=uicontrol('Style', 'checkbox','String','Bad F1 trace','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .63 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag4txt=uicontrol('Style', 'checkbox','String','Incorrect voice onset ','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .53 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag5txt=uicontrol('Style', 'checkbox','String','Utterance too short','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .43 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag6txt=uicontrol('Style', 'checkbox','String','Distortion / audio issues','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .33 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag7txt=uicontrol('Style', 'checkbox','String','Other:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .23 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
-        data.handles.flag7edit=uicontrol('Style', 'edit','String','"Comment"','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.2 .135 .695 .09],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel);
+        data.handles.flag1txt=uicontrol('Style', 'checkbox','String','Performed incorrectly','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .83 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel,'Callback', @checkFlag1);
+        data.handles.flag2txt=uicontrol('Style', 'checkbox','String','Bad F0 trace','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .73 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel,'Callback', @checkFlag2);
+        data.handles.flag3txt=uicontrol('Style', 'checkbox','String','Bad F1 trace','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .63 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel,'Callback', @checkFlag3);
+        data.handles.flag4txt=uicontrol('Style', 'checkbox','String','Incorrect voice onset ','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .53 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel,'Callback', @checkFlag4);
+        data.handles.flag5txt=uicontrol('Style', 'checkbox','String','Utterance too short','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .43 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag5);
+        data.handles.flag6txt=uicontrol('Style', 'checkbox','String','Distortion / audio issues','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .33 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag6);
+        data.handles.flag7txt=uicontrol('Style', 'checkbox','String','Other:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .23 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag7);
+        data.handles.flag7edit=uicontrol('Style', 'edit','String','"Comment"','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.2 .135 .695 .09],'BackgroundColor', [1 1 1], 'Enable', 'off', 'Parent',data.handles.flagPanel,'Callback', @editFlag7);
         % Save Flag Button 
         data.handles.saveFlagButton=uicontrol('Style', 'pushbutton','String','Save flags','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .1],'Parent',data.handles.flagPanel,'Callback', @saveFlags);
         
@@ -122,6 +124,9 @@ switch(lower(option))
         % Update GUI to current sub / trial
         updateSubj(data);  
         data = get(data.handles.hfig, 'userdata');
+        
+        %NLPCval = 2+ceil(data.vars.curOutputData(data.vars.curTrial).fs/1000);
+        %set(data.handles.NLPCtxtBox, 'String', NLPCval);
         %updateSubj(data, 'sub-SAP04', 'ses-1', 'run-1', 'som', '10');      
         set(data.handles.hfig,'userdata',data);
         
@@ -136,20 +141,192 @@ end
     function updateSettings(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    % Formants (FMT_ARGS)
+    % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
+    % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
+    lporder = str2num(get(data.handles.NLPCtxtBox, 'String'));
+    windowsizeF = str2num(get(data.handles.winSizeFtxtBox, 'String'));
+    viterbfilter = str2num(get(data.handles.vfiltertxtBox, 'String'));
+    medianfilterF = str2num(get(data.handles.mfilterFtxtBox, 'String'));
+    % Pitch (F0_ARGS)
+    % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
+    % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
+    windowsizeP = str2num(get(data.handles.winSizePtxtBox, 'String'));
+    methods = get(data.handles.methodstxtBox, 'String');
+    range = str2num(get(data.handles.rangetxtBox, 'String'));
+    hr_min = str2num(get(data.handles.hr_mintxtBox, 'String'));
+    medianfilterP = str2num(get(data.handles.mfilterPtxtBox, 'String'));
+    outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
+    % General
+    % 'SKIP_LOWAMP' 
+    % 'skipLowAPtxtBox'
+    SKIP_LOWAMP = str2num(get(data.handles.skipLowAPtxtBox, 'String'));
+    
+    curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask;
+    
+    choice = questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Cancel');
+        switch choice
+            case 'Current run'
+                flvoice_import(curSub,curSess,curRun,curTask, ...
+                    ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsizeF, 'viterbfilter',viterbfilter, 'medianfilter', medianfilterF}, ...
+                     'F0_ARGS', {'windowsize',windowsizeP, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
+                     'SKIP_LOWAMP', SKIP_LOWAMP]);
+                
+            case 'Just Trial'
+                %flvoice_import(curSub,curSess,curRun,curTask, ...
+                %    ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsize, 'viterbfilter',viterbfilter, 'medianfilter', medianfilter}, ...
+                %     'F0_ARGS', {'windowsize',windowsize, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilter, 'outlierfilter',outlierfilter}, ...
+                %     'SKIP_LOWAMP', SKIP_LOWAMP]);
+            
+            case 'Cancel'
+                return
+        end
+        
+    set(data.handles.hfig,'userdata',data);
+    end
 
-    %set(data.handles.hfig,'userdata',data);
+    function checkFlag1(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag1txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,1} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag2(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag2txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,2} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag3(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag3txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,3} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag4(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag4txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,4} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag5(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag5txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,5} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag6(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag6txt, 'Value');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,6} = flagVal;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function checkFlag7(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    flagVal = get(data.handles.flag7txt, 'Value');
+    QCcomment = get(data.handles.flag7edit, 'String');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    if flagVal == 1
+        set(data.handles.flag7edit, 'Enable', 'on');
+        
+        %curRunQCflags{curTrial,7} = QCcomment;
+    else
+        set(data.handles.flag7edit, 'String', '"Comment"', 'Enabled', 'off');
+        curRunQCflags{curTrial,7} = {0};
+    end
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
+    end
+
+    function editFlag7(ObjH, EventData)
+    hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+    data=get(hfig,'userdata');
+    
+    QCcomment = get(data.handles.flag7edit, 'String');
+    curTrial = data.vars.curTrial; 
+    curRunQCflags = data.vars.curRunQCflags;
+    curRunQCflags{curTrial,7} = QCcomment;
+    data.vars.curRunQCflags = curRunQCflags;
+
+    set(data.handles.hfig,'userdata',data);
     end
 
     function saveFlags(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
-
-    %set(data.handles.hfig,'userdata',data);
+    
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
+    
+    set(data.handles.hfig,'userdata',data);
     end
 
     function subDrop(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
     
     subList = data.vars.subList;
     newSubIdx = get(data.handles.subDrop, 'Value');
@@ -165,6 +342,16 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
+    
     sessList = data.vars.sessList;
     newSessIdx = get(data.handles.sessDrop, 'Value');
     newSess = sessList{newSessIdx};
@@ -178,6 +365,16 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
+    
     runList = data.vars.runList;
     newRunIdx = get(data.handles.runDrop, 'Value');
     newRun = runList{newRunIdx};
@@ -190,6 +387,16 @@ end
     function taskDrop(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
     
     taskList = data.vars.taskList;
     newTaskIdx = get(data.handles.taskDrop, 'Value');
@@ -377,7 +584,36 @@ end
         curCond = curInputData(curTrial).condLabel;
         set(data.handles.condVal, 'String', curCond);
         data.vars.trialList = trialList;
+        data.vars.curCond = curCond;
         data.vars.curTrial = curTrial;
+        
+        % Should load previous flags if they exist here
+        QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', curSub, curSess, curRun, curTask);
+        if exist(QCfileName)
+            % load proper flags
+            load(QCfileName, 'curRunQCflags')
+            data.vars.curRunQCflags = curRunQCflags; 
+        else
+            % create QC Flag cell array for storage
+            numFlags = 7;
+            curRunQCflags = cell(size(curInputData,2),numFlags);
+            curRunQCflags(:) = {0};
+            data.vars.curRunQCflags = curRunQCflags;
+        end
+        
+        set(data.handles.flag1txt, 'Value',  curRunQCflags{1,1});
+        set(data.handles.flag2txt, 'Value',  curRunQCflags{1,2});
+        set(data.handles.flag3txt, 'Value',  curRunQCflags{1,3});
+        set(data.handles.flag4txt, 'Value',  curRunQCflags{1,4});
+        set(data.handles.flag5txt, 'Value',  curRunQCflags{1,5});
+        set(data.handles.flag6txt, 'Value',  curRunQCflags{1,6});
+        if curRunQCflags{1,7} == 0
+            set(data.handles.flag7txt, 'Value',  0);
+        else
+            set(data.handles.flag7txt, 'Value',  1);
+            set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+        end
+        
         
         % update mic/ head plots
         runIdx = get(data.handles.runDrop, 'Value');
@@ -403,8 +639,8 @@ end
         axes(data.handles.ppAxis);
         f0 = curOutputData(curTrial).s{1,1};%NOTE always s{1,1}?
         fs2 = curOutputData(curTrial).fs;
-        t = (0.025:0.001:2.524); % how do I derive this from given data?
-        %t = (0:numel(f0)-1/fs2); % correct??
+        %t = (0.025:0.001:2.524); % how do I derive this from given data?
+        t = [0+(0:numel(f0)-1)/fs2]; % correct??
         pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
@@ -417,6 +653,7 @@ end
         set(data.handles.pitchAxis, 'units','norm','position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.pitchAxis, 'ylim', [0 8]) % helps  but not quite the same scale I think
         xlabel('Time (s)'); ylabel('formants (KHz)');
+        
 
         
     else % set values based on given inputs
@@ -459,7 +696,35 @@ end
         curCond = curInputData(trial).condLabel;
         set(data.handles.condVal, 'String', curCond);
         data.vars.trialList = trialList;
+        data.vars.curCond = curCond;
         data.vars.curTrial = trial;
+        
+        % Should load previous flags if they exist here
+        QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, sess, run, task);
+        if exist(QCfileName)
+            % load proper flags
+            load(QCfileName, 'curRunQCflags')
+            data.vars.curRunQCflags = curRunQCflags; 
+        else
+            % create QC Flag cell array for storage
+            numFlags = 7;
+            curRunQCflags = cell(size(curInputData,2),numFlags);
+            curRunQCflags(:) = {0};
+            data.vars.curRunQCflags = curRunQCflags;
+        end
+        
+        set(data.handles.flag1txt, 'Value',  curRunQCflags{trial,1});
+        set(data.handles.flag2txt, 'Value',  curRunQCflags{trial,2});
+        set(data.handles.flag3txt, 'Value',  curRunQCflags{trial,3});
+        set(data.handles.flag4txt, 'Value',  curRunQCflags{trial,4});
+        set(data.handles.flag5txt, 'Value',  curRunQCflags{trial,5});
+        set(data.handles.flag6txt, 'Value',  curRunQCflags{trial,6});
+        if curRunQCflags{trial,7} == 0
+            set(data.handles.flag7txt, 'Value',  0);
+        else
+            set(data.handles.flag7txt, 'Value',  1);
+            set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+        end
         
         % update mic plot
         micWav = curInputData(trial).s{1};
@@ -504,6 +769,7 @@ end
     end
         % save curr data
         data.vars.curInputData = curInputData;
+        data.vars.curOutputData = curOutputData;
         set(data.handles.hfig,'userdata',data);
     end 
 
