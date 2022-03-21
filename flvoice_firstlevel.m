@@ -23,10 +23,12 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 %                          e.g. @(t) (t>0&t<.200) - (t<0)
 %
 % flvoice_firstlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs first-level model estimation using non-default options
-%   'REFERENCE'         : 1/0 uses samples before t=0 as implicit baseline/reference (default = 1)
+%   'REFERENCE'        : 1/0 (default 1) uses samples before t=0 as implicit baseline/reference
 %                         alternatively, function defining timewindow to be used as baseline/reference
 %                          e.g. @(t) (t>-.100&t<0)
-%%   'SCALE'             : 1/0 scales CONTRAST_TIME vector to maintain original data units (default = 1) (sum of positive values = 1, and if applicable sum of negative values = -1)
+%   'SCALE'            : 1/0 (default 1) scales CONTRAST_TIME vector to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
+%   'SAVE'             : (default 1) 1/0 save analysis results .mat file
+%   'PRINT'            : (default 0) 1/0 save jpg files with analysis results
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
@@ -37,9 +39,42 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %
+% Output stats files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[CONTRAST_NAME]#.mat
+%   Variables:
+%       effect                               : effect-sizes (one value per contrast & timepoint)
+%       effect_CI                            : effect-size 95% confidence intervals
+%       stats                                : stats structure with fields
+%             X                                    : design matrix
+%             Y                                    : data matrix
+%             C1                                   : contrast vector
+%             C2                                   : original CONTRAST_TIME value used to define data
+%             h                                    : effect-sizes
+%             f                                    : statistics
+%             p                                    : p-values
+%             pFDR                                 : FDR-corrected p-values
+%             dof                                  : degrees of freedom
+%             statsname                            : name of statistics ('F' or 'T')
+%
+% Examples:
+%
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',{'U0','N0'},[1 -1]);
+%      evaluates the difference in F0-headphones timeseries when comparing the U0 to the N0 conditions (separately at each timepoint)
+% 
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',{'U0','N0'},[1 -1], @(t)(t>0));
+%      same as above but averaging across all timepoints after perturbation (t>0)
+% 
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',{'U0','N0'},[1 -1], @(t)(t>0)-(t<0))
+%      same as above but contrasting all timepoints after perturbation (t>0) vs all timepoints before perturbation (t<0)
+%
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',{'U0'},[1],[],'REFERENCE',false);
+%      displays the absolute values in F0-headphones timeseries during U0 condition (note: no reference contrast)
+% 
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',{'U0'},[1],[],'REFERENCE',@(t)(t>-0.050 & t<0));
+%      displays the absolute values in F0-headphones timeseries during U0 condition compared to the last 50ms before perturbation
+% 
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'SCALE',true,'DOSAVE',true,'DOPLOT',true,'DOPRINT',false,'OVERWRITE',true); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',false); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -76,9 +111,8 @@ OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.REFERENCE), OPTIONS.REFERENCE=str2num(OPTIONS.REFERENCE); end
 if ischar(OPTIONS.SCALE), OPTIONS.SCALE=str2num(OPTIONS.SCALE); end
-if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
-if ischar(OPTIONS.DOSAVE), OPTIONS.DOSAVE=str2num(OPTIONS.DOSAVE); end
-if ischar(OPTIONS.DOPRINT), OPTIONS.DOPRINT=str2num(OPTIONS.DOPRINT); end
+if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
+if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -180,13 +214,15 @@ for nsub=1:numel(USUBS)
                 tdata=conn_loadmatfile(filename_qcData,'-cache');
                 assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
                 keepData=tdata.keepData;
+                assert(numel(keepData)==numel(in_trialData),'incorrect dimensions of keepData variable (%d elements, expected %d)',numel(keepData),numel(in_trialData));
             else
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
                 keepData=true(1,numel(in_trialData));
             end
             for ntrial=1:numel(in_trialData)
                 % finds design
-                if isa(DESIGN,'functional_handle'), x=DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial); ok=true;
+                if ~keepData(ntrial), ok=false;
+                elseif isa(DESIGN,'functional_handle'), x=DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial); ok=true;
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
                 if ok
@@ -203,7 +239,7 @@ for nsub=1:numel(USUBS)
                         if isfield(in_trialData(ntrial),'dataUnits'), Ylabel=[Ylabel ' (',in_trialData(ntrial).dataUnits{idx},')']; end
                     end
                     if ~isempty(OPTIONS.REFERENCE)
-                        if isa(OPTIONS.REFERENCE,'function_handle'), mask=OPTIONS.REFERENCE(t);
+                        if isa(OPTIONS.REFERENCE,'function_handle'), mask=logical(OPTIONS.REFERENCE(t));
                         elseif OPTIONS.REFERENCE==0, mask=false;
                         else mask=t<0;
                         end
@@ -213,8 +249,8 @@ for nsub=1:numel(USUBS)
                         end
                     end
                     if ~isempty(CONTRAST_TIME)
-                        if isa(CONTRAST_TIME,'function_handle'), c=CONTRAST_TIME(t);
-                        else c=CONTRAST_TIME;
+                        if isa(CONTRAST_TIME,'function_handle'), c=double(CONTRAST_TIME(t));
+                        else c=double(CONTRAST_TIME);
                         end
                         ny=min(numel(y),size(c,2));
                         y=y(1:ny);
@@ -275,7 +311,10 @@ for nsub=1:numel(USUBS)
             fprintf('h=%s %s=%.3f p=%.4f p-FDR=%.4f\n',mat2str(h(:,n1),5),sstr,f(n1),p(n1),pFDR(n1));
         end
     end
-    if OPTIONS.DOSAVE, conn_savematfile(filename_outData,'effect','effect_CI','stats'); end
+    if OPTIONS.SAVE, 
+        conn_savematfile(filename_outData,'effect','effect_CI','stats'); 
+        fprintf('Output saved in file %s\n',filename_outData);
+    end
     if OPTIONS.DOPLOT,
         t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);
         %color=[ 0.9290/4 0.6940/4 0.1250/4; 0.6500 0.0980 0.0980; 0.8500 0.0980 0.0980];
@@ -284,16 +323,18 @@ for nsub=1:numel(USUBS)
         h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
         if isequal(Tlabel,'time (ms)')
             h=[h plot(t,effect,'.-','linewidth',2,'color',color(1,:))];
-            hold all;
-            tempx=[t,fliplr(t)];
-            tempy=[effect_CI(1,:),fliplr(effect_CI(2,:))];
-            tempy2=[effect,fliplr(effect)];
-            if 0
-                patch(tempx',tempy','k','edgecolor','none','facecolor',get(h(end),'color'),'facealpha',.25);
-            else
-                maskp1=p>.05;                         maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(1,:),'facealpha',.25);
-                maskp1=p<.05&mean(effect,1)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
-                maskp1=p<.05&mean(effect,1)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
+            if ~isempty(effect_CI)
+                hold all;
+                tempx=[t,fliplr(t)];
+                tempy=[effect_CI(1,:),fliplr(effect_CI(2,:))];
+                tempy2=[effect,fliplr(effect)];
+                if 0
+                    patch(tempx',tempy','k','edgecolor','none','facecolor',get(h(end),'color'),'facealpha',.25);
+                else
+                    maskp1=p>.05;                         maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(1,:),'facealpha',.25);
+                    maskp1=p<.05&mean(effect,1)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
+                    maskp1=p<.05&mean(effect,1)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
+                end
             end
             grid on;
             xline(0,'linewidth',3); yline(0);
@@ -301,20 +342,24 @@ for nsub=1:numel(USUBS)
             %         legend(h,dispconds(1:3));
             if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
         else
-            if numel(t)>1, dx=t(2)-t(1); else dx=1; end
+            if numel(t)>1, dx=(t(2)-t(1))/size(effect,1); else dx=1/size(effect,1); end
             for n1=1:numel(t),
-                hpatch(n1)=patch(t(n1)+dx*[-1,-1,1,1]/2*.9,effect(n1)*[0,1,1,0],'k','facecolor',color(1,:),'edgecolor','none');
-                if p(n1)<=.05&effect(n1)<0, set(hpatch(n1),'facecolor',color(2,:)); 
-                elseif p(n1)<=.05&effect(n1)>0, set(hpatch(n1),'facecolor',color(3,:)); 
+                for n2=1:size(effect,1)
+                    hpatch(n2,n1)=patch(t(n1)+dx*(n2-1)+dx*[-1,-1,1,1]/2*.9,effect(n2,n1)*[0,1,1,0],'k','facecolor',color(1,:)/n2,'edgecolor','none');
+                    if p(n1)<=.05&effect(n2,n1)<0, set(hpatch(n2,n1),'facecolor',color(2,:));
+                    elseif p(n1)<=.05&effect(n2,n1)>0, set(hpatch(n2,n1),'facecolor',color(3,:));
+                    end
+                    if ~isempty(effect_CI)
+                        h=line(t(n1)+dx*(n2-1)+[1,-1,0,0,1,-1]*dx/8,effect_CI([1 1 1 2 2 2],n1),[1,1,1,1,1,1],'linewidth',2,'color',[.75 .75 .75]);
+                    end
                 end
-                h=line(t(n1)+[1,-1,0,0,1,-1]*dx/8,effect_CI([1 1 1 2 2 2],n1),[1,1,1,1,1,1],'linewidth',2,'color',[.75 .75 .75]);
             end
             grid on;
             xlabel(Tlabel); ylabel(Ylabel); title(CONTRAST_NAME);
             set(gca,'xtick',t,'xticklabel',[]);
             if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
         end
-        if OPTIONS.DOPRINT, conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); end
+        if OPTIONS.PRINT, conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); end
     end
 end
         
