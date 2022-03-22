@@ -55,8 +55,9 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
 %   'SKIP_CONDITIONS'  : skip specific conditions; list of conditions labels (condLabel values) to be disregarded (default {})
 %   'SKIP_LOWAMP'      : skip low-amplitude trials; minimum value of average 'Amp' value (default [])
+%   'SINGLETRIAL'      : list of trial number(s) to re-process -expects all trials to have been processed at least once already- (default [])
 %   'OVERWRITE'        : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
-%   'SAVE'             : (default 0) 1/0 save formant&pitch trajectory files
+%   'SAVE'             : (default 1) 1/0 save formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 save jpg files with formant&pitch trajectories
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
@@ -76,7 +77,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -103,15 +104,17 @@ if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
-if ischar(OPTIONS.SKIP_LOWAMP), OPTIONS.SKIP_LOWAMP=str2num(OPTIONS.SKIP_LOWAMP); end
-OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
+if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
+TRIALSOPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
 if isempty(SUB),
     [nill,SUBS]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'sub-*'),'-dir','-R','-cell'),'uni',0);
-    disp('available subjects:');
-    disp(char(SUBS));
-    if nargout, varargout={SUBS}; end
+    if nargout, varargout={SUBS}; 
+    else
+        disp('available subjects:');
+        disp(char(SUBS));
+    end
     return
 end
 if ischar(SUB), SUB={SUB}; end
@@ -123,10 +126,12 @@ if isempty(SES)||isequal(SES,0),
         SESS=[SESS; sess(:)];
         SUBS=[SUBS; repmat(SUB(nSUB),numel(sess),1)];
     end
-    disp('available sessions:');
-    disp(char(SESS));
     if isempty(SES)
-        if nargout, varargout={SESS}; end
+        if nargout, varargout={SESS}; 
+        else
+            disp('available sessions:');
+            disp(char(SESS));
+        end
         return
     end
     SES=str2double(regexprep(SESS,'^ses-',''));
@@ -148,10 +153,12 @@ if isempty(RUN)||isequal(RUN,0),
             SUBS=[SUBS; repmat(SUB(nSUB),numel(runs),1)];
         end
     end
-    disp('available runs:');
-    disp(char(RUNS));
     if isempty(RUN)
-        if nargout, varargout={RUNS}; end
+        if nargout, varargout={RUNS}; 
+        else
+            disp('available runs:');
+            disp(char(RUNS));
+        end
         return
     end
     RUN=str2double(regexprep(RUNS,'^run-',''));
@@ -177,9 +184,11 @@ if isempty(TASK)
         TASKS=[TASKS; tasks(:)];
     end
     TASKS=unique(regexprep(TASKS,{'^.*_task-','_expParams$|_desc-audio$'},''));
-    disp('available tasks:');
-    disp(char(TASKS));
-    if nargout, varargout={TASKS}; end
+    if nargout, varargout={TASKS}; 
+    else
+        disp('available tasks:');
+        disp(char(TASKS));
+    end
     return
 end
 
@@ -229,20 +238,27 @@ for nsample=1:numel(RUNS)
         else gender='unknown'; 
         end
         
-        out_trialData=[];
         showwarn=true;
         modified=false;
-        if OPTIONS.SAVE||OPTIONS.PRINT, conn_fileutils('mkdir',fileparts(filename_fmtData)); end
-        %offlineFmts=[];
-        %offlinePrms=[];
+        if ~isempty(OPTIONS.SINGLETRIAL) % re-processes a single trial
+            starttif=false;
+            modifytrials=OPTIONS.SINGLETRIAL;
+            conn_loadmatfile(filename_fmtData);%,'trialData','INFO');
+            out_trialData=trialData; out_INFO=INFO; 
+        else
+            if OPTIONS.SAVE||OPTIONS.PRINT, conn_fileutils('mkdir',fileparts(filename_fmtData)); end
+            modifytrials=1:numel(in_trialData);
+            out_trialData=[];
+            out_INFO=[];
+        end
         if OPTIONS.OVERWRITE||~conn_existfile(filename_fmtData)
-            for trialNum=1:numel(in_trialData)
+            for trialNum=modifytrials(:)'
                 data=in_trialData(trialNum);
                 
                 %Nlpc=round(1.25*in_trialData(trialNum).p.nLPC);
                 t0=0;
                 labels={''}; 
-                if isfield(data,'audapData'), % audapter format (back-compatibility)
+                if isfield(data,'audapData')&&~isfield(data,'s'), % audapter format (back-compatibility)
                     if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
                     else
                         s=data.audapData.signalIn;
@@ -254,7 +270,7 @@ for nsample=1:numel(RUNS)
                     in_trialData(trialNum).fs=fs;
                     in_trialData(trialNum).dataLabel=labels; 
                     modified=true; 
-                elseif isfield(data,'audioData') % audiodevicereader format (back-compatibility)
+                elseif isfield(data,'audioData')&&~isfield(data,'s') % audiodevicereader format (back-compatibility)
                     s=data.audioData.signalIn;
                     if ~iscell(s), s={s}; end
                     fs=48000;
@@ -366,14 +382,16 @@ for nsample=1:numel(RUNS)
                     end
                 end
             end
-            out_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
-            out_INFO.options=OPTIONS;
-            try, out_INFO.pertSize = arrayfun(@(n)max([nan in_trialData(n).pertSize]),1:numel(in_trialData));
-            catch, out_INFO.pertSize = nan(1,numel(out_trialData));
+            if isempty(OPTIONS.SINGLETRIAL)
+                out_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
+                out_INFO.options=OPTIONS;
+                try, out_INFO.pertSize = arrayfun(@(n)max([nan in_trialData(n).pertSize]),1:numel(in_trialData));
+                catch, out_INFO.pertSize = nan(1,numel(out_trialData));
+                end
             end
             
             if OPTIONS.SAVE
-                if modified trialData = in_trialData; conn_savematfile(filename_trialData,'trialData','-append'); end
+                if modified, trialData = in_trialData; conn_savematfile(filename_trialData,'trialData','-append'); end
                 conn_fileutils('mkdir',fileparts(filename_fmtData));
                 trialData = out_trialData; INFO=out_INFO; conn_savematfile(filename_fmtData,'trialData','INFO');
                 fprintf('Saved file: %s\n',filename_fmtData);
@@ -388,69 +406,74 @@ for nsample=1:numel(RUNS)
             if isfield(tdata,'INFO'), out_INFO=tdata.INFO; end
         end
         
-        filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
-        if conn_existfile(filename_qcData), 
-            fprintf('loading file %s\n',filename_qcData);
-            tdata=conn_loadmatfile(filename_qcData,'-cache');
-            assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
-            keepData=reshape(tdata.keepData,1,[]);
-        else
-            fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
-            keepData=true(1,numel(out_trialData)); 
-        end
-        if ~isempty(OPTIONS.SKIP_CONDITIONS)
-            keepData=keepData&~arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
-        end
-        if ~isempty(OPTIONS.SKIP_LOWAMP)
-            keepData=keepData&arrayfun(@(n)mean(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)},'omitnan')>OPTIONS.SKIP_LOWAMP,1:numel(out_trialData));
-        end
-        
-        sum_trialData=[];
-        filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
-        for trialNum=1:numel(in_trialData)
-            for ns=1:numel(out_trialData(trialNum).s),
-                time1=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                sum_trialData(trialNum).s{ns} = mean(out_trialData(trialNum).s{ns}(time1>0),'omitnan'); % average value for t>0 
-                sum_trialData(trialNum).dataLabel{ns}=out_trialData(trialNum).dataLabel{ns};
-                sum_trialData(trialNum).dataUnits{ns}=out_trialData(trialNum).dataUnits{ns};
-            end
-            sum_trialData(trialNum).condLabel=out_trialData(trialNum).condLabel;
-        end
-        sum_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
-        sum_INFO.options=OPTIONS;
-        if OPTIONS.SAVE
-            conn_fileutils('mkdir',fileparts(filename_summaryData));
-            trialData = sum_trialData; INFO=sum_INFO; conn_savematfile(filename_summaryData,'trialData','INFO');
-            fprintf('Saved file: %s\n',filename_summaryData);
-        end
-
-        % plots
-        figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
-        lnames=unique([out_trialData.dataLabel]);
-        for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
-        initax=false(1,numel(hax));
-        for trialNum=reshape(find(keepData),1,[])
-            for ns=1:numel(out_trialData(trialNum).s),
-                t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                x=out_trialData(trialNum).s{ns};
-                [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                h=plot(t,x,'-','parent',hax(idx));
-                if ~initax(idx)
-                    xlabel('Time (s)');
-                    ylabel(out_trialData(trialNum).dataUnits{ns});
-                    if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
-                        xline(0,'parent',hax(idx),'linewidth',3);
-                    end
-                    initax(idx)=true;
+        if isempty(OPTIONS.SINGLETRIAL)
+            filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
+            if conn_existfile(filename_qcData),
+                fprintf('loading file %s\n',filename_qcData);
+                tdata=conn_loadmatfile(filename_qcData,'-cache');
+                assert(isfield(tdata,'keepData')|isfield(tdata,'QCflags'), 'data file %s does not contain keepData or QCflags variable',filename_qcData);
+                if isfield(tdata,'keepData'), keepData=tdata.keepData;
+                else keepData=isnan(tdata.QCflags)|tdata.QCflags==0;
                 end
-                set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+                keepData=reshape(keepData,1,[]);
+            else
+                fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
+                keepData=true(1,numel(out_trialData));
             end
-        end
-        for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
-        drawnow
-        if OPTIONS.PRINT, 
-            conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui'); 
-            conn_fileutils('savefig',conn_prepend('',filename_fmtData,'.fig'));
+            if ~isempty(OPTIONS.SKIP_CONDITIONS)
+                keepData=keepData&~arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
+            end
+            if ~isempty(OPTIONS.SKIP_LOWAMP)
+                keepData=keepData&arrayfun(@(n)mean(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)},'omitnan')>OPTIONS.SKIP_LOWAMP,1:numel(out_trialData));
+            end
+        
+            sum_trialData=[];
+            filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
+            for trialNum=1:numel(in_trialData)
+                for ns=1:numel(out_trialData(trialNum).s),
+                    time1=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                    sum_trialData(trialNum).s{ns} = mean(out_trialData(trialNum).s{ns}(time1>0),'omitnan'); % average value for t>0
+                    sum_trialData(trialNum).dataLabel{ns}=out_trialData(trialNum).dataLabel{ns};
+                    sum_trialData(trialNum).dataUnits{ns}=out_trialData(trialNum).dataUnits{ns};
+                end
+                sum_trialData(trialNum).condLabel=out_trialData(trialNum).condLabel;
+            end
+            sum_INFO.label=sprintf('Created by %s from input file %s; %s',mfilename,filename_trialData,datestr(now));
+            sum_INFO.options=OPTIONS;
+            if OPTIONS.SAVE
+                conn_fileutils('mkdir',fileparts(filename_summaryData));
+                trialData = sum_trialData; INFO=sum_INFO; conn_savematfile(filename_summaryData,'trialData','INFO');
+                fprintf('Saved file: %s\n',filename_summaryData);
+            end
+
+            % plots
+            figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+            lnames=unique([out_trialData.dataLabel]);
+            for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+            initax=false(1,numel(hax));
+            for trialNum=reshape(find(keepData),1,[])
+                for ns=1:numel(out_trialData(trialNum).s),
+                    t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                    x=out_trialData(trialNum).s{ns};
+                    [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+                    h=plot(t,x,'-','parent',hax(idx));
+                    if ~initax(idx)
+                        xlabel('Time (s)');
+                        ylabel(out_trialData(trialNum).dataUnits{ns});
+                        if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                            xline(0,'parent',hax(idx),'linewidth',3);
+                        end
+                        initax(idx)=true;
+                    end
+                    set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+                end
+            end
+            for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
+            drawnow
+            if OPTIONS.PRINT,
+                conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui');
+                conn_fileutils('savefig',conn_prepend('',filename_fmtData,'.fig'));
+            end
         end
         
 %         % aggregated data cross runs

@@ -216,8 +216,11 @@ for nsub=1:numel(USUBS)
             if conn_existfile(filename_qcData),
                 fprintf('loading file %s\n',filename_qcData);
                 tdata=conn_loadmatfile(filename_qcData,'-cache');
-                assert(isfield(tdata,'keepData'), 'data file %s does not contain keepData variable',filename_qcData);
-                keepData=tdata.keepData;
+                assert(isfield(tdata,'keepData')|isfield(tdata,'QCflags'), 'data file %s does not contain keepData or QCflags variable',filename_qcData);
+                if isfield(tdata,'keepData'), keepData=tdata.keepData;
+                else keepData=isnan(tdata.QCflags)|tdata.QCflags==0; 
+                end
+                keepData=reshape(keepData,1,[]);
                 assert(numel(keepData)==numel(in_trialData),'incorrect dimensions of keepData variable (%d elements, expected %d)',numel(keepData),numel(in_trialData));
             else
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
