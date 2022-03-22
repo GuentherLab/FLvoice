@@ -331,7 +331,7 @@ end
     subList = data.vars.subList;
     newSubIdx = get(data.handles.subDrop, 'Value');
     newSub = subList{newSubIdx};
-    updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, '1');
+    updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     
     data.vars.curSub = newSub;
@@ -355,7 +355,7 @@ end
     sessList = data.vars.sessList;
     newSessIdx = get(data.handles.sessDrop, 'Value');
     newSess = sessList{newSessIdx};
-    updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, data.vars.curTask, '1');
+    updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curSess = newSess;
     set(data.handles.hfig,'userdata',data);
@@ -378,7 +378,7 @@ end
     runList = data.vars.runList;
     newRunIdx = get(data.handles.runDrop, 'Value');
     newRun = runList{newRunIdx};
-    updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, '1');
+    updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curRun = newRun;
     set(data.handles.hfig,'userdata',data);
@@ -401,7 +401,7 @@ end
     taskList = data.vars.taskList;
     newTaskIdx = get(data.handles.taskDrop, 'Value');
     newTask = taskList{newTaskIdx};
-    updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, newTask, '1');
+    updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, newTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curTask = newTask;
     set(data.handles.hfig,'userdata',data);
@@ -429,19 +429,19 @@ end
         choice = questdlg('This is the first trial for this run, attempt to load previous run?', 'Change runs?', 'Yes', 'No', 'opts');
         switch choice
             case 'Yes'
-                curRun = regexp(data.vars.curRun,'\d*','Match');
+                curRun = data.vars.curRun;
                 runList = data.vars.runList;
-                runIdx = find(runList == str2num(curRun));
+                runIdx = find(strcmp(runList,curRun));
                 prevIdx = runIdx-1;
-                if prevIdx < numel(runList) || prevIdx > numel(runList);
+                if prevIdx > numel(runList);
                     warning = msgbox('Previous run does not exist, consider changing session?')
                 else
-                    prevRun = runList(prevIdx);
+                    prevRun = runList{prevIdx};
                     taskList = data.vars.taskList;
-                    updateSubj(data, data.vars.curSub, data.vars.curSess, prevRun, taskList{1}, '1') % maybe should load last trial of prev run
+                    updateSubj(data, data.vars.curSub, data.vars.curSess, prevRun, taskList{1}, 1) % maybe should load last trial of prev run
                     data = get(data.handles.hfig, 'userdata');
                     data.vars.curRun = prevRun;
-                    data.vars.curTrial = prevTrial;
+                    data.vars.curTrial = 1;
                 end
                 case 'No'
                     return 
@@ -466,19 +466,19 @@ end
         choice = questdlg('This is the last trial for this run, attempt to load next run?', 'Change runs?', 'Yes', 'No', 'opts');
         switch choice
             case 'Yes'
-                curRun = regexp(data.vars.curRun,'\d*','Match');
+                curRun = data.vars.curRun;
                 runList = data.vars.runList;
-                runIdx = find(runList == str2num(curRun));
+                runIdx = find(strcmp(runList,curRun));
                 nextIdx = runIdx+1;
-                if nextIdx < numel(runList) || nextIdx > numel(runList);
-                    warning = msgbox('Previous run does not exist, consider changing session?')
+                if nextIdx > numel(runList)
+                    warning = msgbox('Next run does not exist, consider changing session?')
                 else
-                    nextRun = runList(nextIdx);
+                    nextRun = runList{nextIdx};
                     taskList = data.vars.taskList;
-                    updateSubj(data, data.vars.curSub, data.vars.curSess, nextRun, taskList{1}, '1') % maybe should load last trial of prev run
+                    updateSubj(data, data.vars.curSub, data.vars.curSess, nextRun, taskList{1}, 1)
                     data = get(data.handles.hfig, 'userdata');
                     data.vars.curRun = nextRun;
-                    data.vars.curTrial = nextTrial;
+                    data.vars.curTrial = 1;
                 end
                 case 'No'
                     return 
