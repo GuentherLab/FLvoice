@@ -30,7 +30,7 @@ switch(lower(option))
         % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
         % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
         data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .87 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
-        data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .88 .45 .065],'Parent',data.handles.settPanel);    
+        data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .88 .45 .065],'Parent',data.handles.settPanel);    
         data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .8 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
         data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .81 .45 .065],'Parent',data.handles.settPanel);
         data.handles.vfiltertxt=uicontrol('Style','text','String','Viterb Filter:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .73 .4 .07],'BackgroundColor', [1 1 1], 'Parent',data.handles.settPanel);
@@ -163,8 +163,8 @@ end
     % 'skipLowAPtxtBox'
     SKIP_LOWAMP = str2num(get(data.handles.skipLowAPtxtBox, 'String'));
     
-    curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask;
-    
+    curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
+        
     choice = questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Cancel');
         switch choice
             case 'Current run'
@@ -174,10 +174,10 @@ end
                      'SKIP_LOWAMP', SKIP_LOWAMP]);
                 
             case 'Just Trial'
-                %flvoice_import(curSub,curSess,curRun,curTask, ...
-                %    ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsize, 'viterbfilter',viterbfilter, 'medianfilter', medianfilter}, ...
-                %     'F0_ARGS', {'windowsize',windowsize, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilter, 'outlierfilter',outlierfilter}, ...
-                %     'SKIP_LOWAMP', SKIP_LOWAMP]);
+                flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
+                     ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsizeF, 'viterbfilter',viterbfilter, 'medianfilter', medianfilterF}, ...
+                     'F0_ARGS', {'windowsize',windowsizeP, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
+                     'SKIP_LOWAMP', SKIP_LOWAMP]);
             
             case 'Cancel'
                 return
@@ -269,7 +269,7 @@ end
     data=get(hfig,'userdata');
     
     flagVal = get(data.handles.flag7txt, 'Value');
-    QCcomment = get(data.handles.flag7edit, 'String');
+    %QCcomment = get(data.handles.flag7edit, 'String');
     curTrial = data.vars.curTrial; 
     curRunQCflags = data.vars.curRunQCflags;
     if flagVal == 1
@@ -661,7 +661,7 @@ end
         subList = flvoice('import');
         subIdx = find(contains(subList,sub));
         set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
-        disp('Loading default data from root folder:')
+        %disp('Loading default data from root folder:')
         data.vars.subList = subList;
         data.vars.curSub = sub;
         
