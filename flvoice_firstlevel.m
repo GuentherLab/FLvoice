@@ -229,7 +229,7 @@ for nsub=1:numel(USUBS)
             for ntrial=1:numel(in_trialData)
                 % finds design
                 if ~keepData(ntrial), ok=false;
-                elseif isa(DESIGN,'functional_handle'), x=DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial); ok=true;
+                elseif isa(DESIGN,'functional_handle'), x=DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial); ok=any(x~=0);
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
                 if ok
