@@ -258,7 +258,7 @@ for nsample=1:numel(RUNS)
                 %Nlpc=round(1.25*in_trialData(trialNum).p.nLPC);
                 t0=0;
                 labels={''}; 
-                if isfield(data,'audapData')&&~isfield(data,'s'), % audapter format (back-compatibility)
+                if isfield(data,'audapData')&&(~isfield(data,'s')||isempty(data.s)), % audapter format (back-compatibility)
                     if isfield(data.audapData,'signalOut'), s={data.audapData.signalIn,data.audapData.signalOut}; labels={'-mic','-headphones'};
                     else
                         s=data.audapData.signalIn;
@@ -270,7 +270,7 @@ for nsample=1:numel(RUNS)
                     in_trialData(trialNum).fs=fs;
                     in_trialData(trialNum).dataLabel=labels; 
                     modified=true; 
-                elseif isfield(data,'audioData')&&~isfield(data,'s') % audiodevicereader format (back-compatibility)
+                elseif isfield(data,'audioData')&&(~isfield(data,'s')||isempty(data.s)) % audiodevicereader format (back-compatibility)
                     s=data.audioData.signalIn;
                     if ~iscell(s), s={s}; end
                     fs=48000;
