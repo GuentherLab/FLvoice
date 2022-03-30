@@ -309,22 +309,26 @@ for nsub=1:numel(USUBS)
             end
         end
     end
-    valid=~isnan(Y);
-    nvalid=sum(valid,1);
-    fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(valid,2)),max(sum(valid,2)));
+    validX=any(X~=0,1);
+    validY=~isnan(Y);
+    validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
+    nvalid=sum(validY,1);
+    fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
     stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME);
     options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
+    contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
     for nrepeat=1:2, % 1: combined stats; 2: separate stats for each individual contrast row
         h=[];f=[];p=[];dof=[];
         vmask=nvalid==size(Y,1);
-        [th,tf,tp,tdof,statsname]=conn_glm(X,Y(:,vmask),CONTRAST_VECTOR,[],options{nrepeat}); 
+        [th,tf,tp,tdof,statsname]=conn_glm(X(:,validX),Y(:,vmask),contrasts{nrepeat},[],options{nrepeat}); 
+        if nrepeat==2, th(~validC,:)=nan; tf(~validC,:)=nan; tp(~validC,:)=nan; end
         h=nan(size(th,1),size(Y,2));f=nan(size(tf,1),size(Y,2));p=nan(size(tp,1),size(Y,2));dof=nan(numel(tdof),size(Y,2));
         h(:,vmask)=th;
         f(:,vmask)=tf;
         p(:,vmask)=tp;
         dof(:,vmask)=repmat(tdof(:),1,nnz(vmask));
         for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[])
-            [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(valid(:,n1),:),Y(valid(:,n1),n1),CONTRAST_VECTOR,[],options{nrepeat});
+            [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),:),Y(validY(:,n1),n1),CONTRAST_VECTOR,[],options{nrepeat});
         end
         if isequal(statsname,'T'), p=2*min(p,1-p); end % two-sided
         pFDR=conn_fdr(p,2);
