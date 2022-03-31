@@ -320,8 +320,8 @@ for nsub=1:numel(USUBS)
     for nrepeat=1:2, % 1: combined stats; 2: separate stats for each individual contrast row
         h=[];f=[];p=[];dof=[];
         vmask=nvalid==size(Y,1);
-        [th,tf,tp,tdof,statsname]=conn_glm(X(:,validX),Y(:,vmask),contrasts{nrepeat},[],options{nrepeat}); 
-        if nrepeat==2, th(~validC,:)=nan; tf(~validC,:)=nan; tp(~validC,:)=nan; end
+        [th,tf,tp,tdof,statsname]=conn_glm(X(:,validX),Y(:,vmask),contrasts{nrepeat},[],options{nrepeat}); % note: skips non-estimable rows of contrast matrix for the combined stats
+        if nrepeat==2, th(~validC,:)=nan; tf(~validC,:)=nan; tp(~validC,:)=nan; end % note: mark non-estimable contrasts with NaN
         h=nan(size(th,1),size(Y,2));f=nan(size(tf,1),size(Y,2));p=nan(size(tp,1),size(Y,2));dof=nan(numel(tdof),size(Y,2));
         h(:,vmask)=th;
         f(:,vmask)=tf;

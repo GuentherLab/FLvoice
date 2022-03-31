@@ -1,6 +1,6 @@
 
 function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
-% flvoice_import(SUB,RUN,SES,TASK) : imports audio data, and computes formant and pitch trajectories for each trial
+% flvoice_import(SUB,SES,RUN,TASK) : imports audio data, and computes formant and pitch trajectories for each trial
 %   SUB             : subject id (e.g. 'test244' or 'sub-test244')
 %   SES             : session number (e.g. 1 or 'ses-1')
 %   RUN             : run number (e.g. 1 or 'run-1')
@@ -137,21 +137,22 @@ if isempty(SES)||isequal(SES,0),
     SES=str2double(regexprep(SESS,'^ses-',''));
     SUB=SUBS;
 end
+if numel(SUB)==1&&numel(SES)>1, SUB=repmat(SUB,size(SES)); end
+if numel(SUB)>1&&numel(SES)==1, SES=repmat(SES,size(SUB)); end
+assert(numel(SUB)==numel(SES),'mismatched number of elements in SUB and SES entries');
 if isempty(RUN)||isequal(RUN,0),
     SUBS={};
     SESS=[];
     RUNS={};
-    for nSUB=1:numel(SUB)
-        for nSES=1:numel(SES)
-            [nill,runs1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh',sprintf('sub-%s_ses-%d_run-*_desc-audio.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
-            [nill,runs2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh',sprintf('sub-%s_ses-%d_run-*.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
-            runs=union(runs1,runs2);
-            runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
-            %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
-            RUNS=[RUNS; runs(:)];
-            SESS=[SESS; SES(nSES)+zeros(numel(runs),1)];
-            SUBS=[SUBS; repmat(SUB(nSUB),numel(runs),1)];
-        end
+    for nsample=1:numel(SUB)
+        [nill,runs1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh',sprintf('sub-%s_ses-%d_run-*_desc-audio.mat',SUB{nsample},SES(nsample))),'-R','-cell'),'uni',0);
+        [nill,runs2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh',sprintf('sub-%s_ses-%d_run-*.mat',SUB{nsample},SES(nsample))),'-R','-cell'),'uni',0);
+        runs=union(runs1,runs2);
+        runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
+        %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
+        RUNS=[RUNS; runs(:)];
+        SESS=[SESS; SES(nsample)+zeros(numel(runs),1)];
+        SUBS=[SUBS; repmat(SUB(nsample),numel(runs),1)];
     end
     if isempty(RUN)
         if nargout, varargout={RUNS}; 
@@ -426,6 +427,9 @@ for nsample=1:numel(RUNS)
             if ~isempty(OPTIONS.SKIP_LOWAMP)
                 keepData=keepData&arrayfun(@(n)mean(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)},'omitnan')>OPTIONS.SKIP_LOWAMP,1:numel(out_trialData));
             end
+            %if conn_existfile(filename_qcData),
+            %    conn_savematfile(filename_qcData,'keepData','-append');
+            %end
         
             sum_trialData=[];
             filename_summaryData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-summary.mat',SUB,SES,RUN,TASK));
