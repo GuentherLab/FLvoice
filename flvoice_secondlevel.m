@@ -1,26 +1,26 @@
-function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME) : runs second-level analyses on audio data
-%   SUB              : subjects id (e.g. {'test244','test245'}) (default, [] = all subjects)
-%   FIRSTLEVEL_NAME  : first-level analysis/contrast name(s)
-%   SECONDLEVEL_NAME : second-level analysis name
-%   DESIGN           : [M x N] design matrix (M rows, one per subject; N columns, one per modeled effect)
+function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DESIGN, CONTRAST_BETWEEN, CONTRAST_WITHIN, varargin)
+% data = flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DESIGN, CONTRAST_BETWEEN, CONTRAST_WITHIN) : runs second-level analyses on audio data
+%   SUB               : subjects id (e.g. {'test244','test245'}) (default, [] = all subjects)
+%   FIRSTLEVEL_NAME   : first-level analysis/contrast name(s)
+%   SECONDLEVEL_NAME  : second-level analysis name
+%   DESIGN            : [M x N] design matrix (M rows, one per subject; N columns, one per modeled effect)
 %                      alternatively, function defining one row of design matrix (one row per subject)
 %                         fun(subNumber) should return a [1,N] vector of values associated with this trial
 %                          e.g. @(subjectNumber, subjectId)[subjectNumber<=10, subjectNumber>10]
 %                      the GLM 2nd-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per subject & contrast (all 1st-level contrast for 1st subject, followed by all 1st-level contrasts for 2nd subject, etc.)
 %                      if unspecified the default DESIGN value is @(subjectNumber,subjectId)1 (defining a one-sample t-test)
-%   CONTRAST_VECTOR  : condition weights defining second-level contrast across modeled effects / columns of design matrix (1 x N vector or k x N matrix)
+%   CONTRAST_BETWEEN  : between-subjects contrast; condition weights defining second-level contrast across modeled effects / columns of design matrix (1 x N vector or k x N matrix)
 %                          e.g. [1, -1]
-%                      if unspecified the default CONTRAST_VECTOR value is eye(N) with N equal to the number of columns of the design matrix
-%   CONTRAST_TIME    : condition weights defining second-level contrast across data elements (e.g. timepoints or within-subjects 1st-level contrasts) (1 x Nt vector or k x Nt matrix)
+%                      if unspecified the default CONTRAST_BETWEEN value is eye(N) with N equal to the number of columns of the design matrix
+%   CONTRAST_WITHIN   : within-subjects contrast; condition weights defining second-level contrast across data elements (e.g. timepoints or within-subjects 1st-level contrasts) (1 x Nt vector or k x Nt matrix)
 %                          e.g. [-1 1]
-%                      alternatively, function defining contrast values for (or column of CONTRAST_TIME matrix) each data element
+%                      alternatively, function defining contrast values for (or column of CONTRAST_WITHIN matrix) each data element
 %                          e.g. @(idx) (idx<=10) - (idx>10)
-%                      if unspecified the default CONTRAST_TIME value is eye(Nt) with Nt equal to the number of first-level analyses times the number of data points per analysis
+%                      if unspecified the default CONTRAST_WITHIN value is eye(Nt) with Nt equal to the number of first-level analyses times the number of data points per analysis
 %
 %
 % flvoice_secondlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs second-level model estimation using non-default options
-%   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
+%   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_WITHIN rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
 %   'SAVE'             : (default 1) 1/0 save analysis results .mat file
 %   'PRINT'            : (default 0) 1/0 save jpg files with analysis results
 %   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
@@ -67,8 +67,8 @@ persistent DEFAULTS;
 if isempty(DEFAULTS), DEFAULTS=struct('CONTRAST_SCALE',true,'PLOTASTIME',[],'SAVE',true,'DOPLOT',true,'PRINT',true); end
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'),
-    if nargin>=6, varargin=[{CONTRAST_TIME},varargin]; end
-    if nargin>=5, varargin=[{CONTRAST_VECTOR},varargin]; end
+    if nargin>=6, varargin=[{CONTRAST_WITHIN},varargin]; end
+    if nargin>=5, varargin=[{CONTRAST_BETWEEN},varargin]; end
     if nargin>=4, varargin=[{DESIGN},varargin]; end
     if nargin>=3, varargin=[{SECONDLEVEL_NAME},varargin]; end
     if nargin>=2, varargin=[{FIRSTLEVEL_NAME},varargin]; end
@@ -83,10 +83,10 @@ if nargin<2||isempty(FIRSTLEVEL_NAME), FIRSTLEVEL_NAME=[]; end
 if nargin<3||isempty(SECONDLEVEL_NAME), SECONDLEVEL_NAME=[]; end
 if nargin<4||isempty(DESIGN), DESIGN=[]; end
 if ischar(DESIGN), DESIGN=str2num(DESIGN); assert(~isempty(DESIGN),'unable to interpret DESIGN input'); end
-if nargin<5||isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=[]; end
-if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_VECTOR input'); end
-if nargin<6||isempty(CONTRAST_TIME), CONTRAST_TIME=[]; end
-if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_TIME input'); end
+if nargin<5||isempty(CONTRAST_BETWEEN), CONTRAST_BETWEEN=[]; end
+if ischar(CONTRAST_BETWEEN), CONTRAST_BETWEEN=str2num(CONTRAST_BETWEEN); assert(~isempty(CONTRAST_BETWEEN),'unable to interpret CONTRAST_BETWEEN input'); end
+if nargin<6||isempty(CONTRAST_WITHIN), CONTRAST_WITHIN=[]; end
+if ischar(CONTRAST_WITHIN), CONTRAST_WITHIN=str2num(CONTRAST_WITHIN); assert(~isempty(CONTRAST_BETWEEN),'unable to interpret CONTRAST_WITHIN input'); end
 
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
@@ -146,9 +146,9 @@ for nsub=1:numel(SUB)
             if ~isempty(X)&&size(X,2)<size(x,2), X=[X, zeros(size(X,1),size(x,2)-size(X,2))]; fprintf('warning: subject %s design matrix row has %d elements (%d expected). Extending design matrix\n',SUB{nsub},size(x,2),size(X,2)); end
             if size(x,2)<size(X,2), x=[x, zeros(size(x,1),size(X,2)-size(x,2))]; fprintf('warning: subject %s design matrix row has %d elements (%d expected). Extending this row\n',SUB{nsub},size(x,2),size(X,2)); end
             X=[X;x];
-            if ~isempty(CONTRAST_TIME)
-                if isa(CONTRAST_TIME,'function_handle'), c=double(CONTRAST_TIME(1:numel(y)));
-                else c=double(CONTRAST_TIME);
+            if ~isempty(CONTRAST_WITHIN)
+                if isa(CONTRAST_WITHIN,'function_handle'), c=double(CONTRAST_WITHIN(1:numel(y)));
+                else c=double(CONTRAST_WITHIN);
                 end
                 if numel(y)~=size(c,2), fprintf('warning: subject %s data has %d elements while contrast has %d columns. Cropping to match\n',SUB{nsub},numel(y),size(c,2)); end
                 ny=min(numel(y),size(c,2));
@@ -172,15 +172,15 @@ for nsub=1:numel(SUB)
     end
 end
 
-if isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=eye(size(X,2)); end
+if isempty(CONTRAST_BETWEEN), CONTRAST_BETWEEN=eye(size(X,2)); end
 validX=any(X~=0,1);
 validY=~isnan(Y);
-validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
+validC=~any(CONTRAST_BETWEEN(:,~validX)~=0,2);
 nvalid=sum(validY,1);
 fprintf('Data: %d (%d-%d) subjects, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
-stats=struct('X',X,'Y',Y,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME);
+stats=struct('X',X,'Y',Y,'C1',CONTRAST_BETWEEN,'C2',CONTRAST_WITHIN);
 options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
-contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
+contrasts={CONTRAST_BETWEEN(validC,validX), CONTRAST_BETWEEN(:,validX)};
 for nrepeat=1:2, % 1: combined stats; 2: separate stats for each individual contrast row
     h=[];f=[];p=[];dof=[];
     vmask=nvalid==size(Y,1);
@@ -192,7 +192,7 @@ for nrepeat=1:2, % 1: combined stats; 2: separate stats for each individual cont
     p(:,vmask)=tp;
     dof(:,vmask)=repmat(tdof(:),1,nnz(vmask));
     for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[])
-        [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),:),Y(validY(:,n1),n1),CONTRAST_VECTOR,[],options{nrepeat});
+        [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),:),Y(validY(:,n1),n1),CONTRAST_BETWEEN,[],options{nrepeat});
     end
     if isequal(statsname,'T'), p=2*min(p,1-p); end % two-sided
     pFDR=conn_fdr(p,2);
