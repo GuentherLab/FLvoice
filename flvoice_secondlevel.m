@@ -137,7 +137,8 @@ for nsub=1:numel(SUB)
     end
     if all(validsub(nsub,:))
         % finds design
-        if isa(DESIGN,'function_handle'), x=full(double(DESIGN(nsub,SUB{nsub})));
+        if isa(DESIGN,'function_handle')&&nargin(DESIGN)==1, x=full(double(DESIGN(nsub)));
+        elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(nsub,SUB{nsub})));
         else x=DESIGN(nsub,:);
         end
         ok=all(~isnan(x))&any(x~=0);
