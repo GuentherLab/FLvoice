@@ -1,11 +1,11 @@
 
-function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_firstlevel(SUB,RUN,SES,TASK, CONTRAST_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
+function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
+% data = flvoice_firstlevel(SUB,RUN,SES,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
 %   TASK             : task type 'aud' or 'som'
-%   CONTRAST_NAME    : new first-level analysis contrast name
+%   FIRSTLEVEL_NAME  : new first-level analysis name
 %   MEASURE          : input data value (valid values from input data .dataLabel)
 %                          e.g. 'F1-mic'
 %   DESIGN           : condition names defining first-level contrast (valid values from input data .condLabel field)
@@ -43,7 +43,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %
-% Output stats files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[CONTRAST_NAME]#.mat
+% Output stats files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[FIRSTLEVEL_NAME]#.mat
 %   Variables:
 %       effect                               : effect-sizes (one value per contrast & timepoint)
 %       effect_CI                            : effect-size 95% confidence intervals
@@ -87,14 +87,14 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, CONTRAST_NAME, MEASURE, 
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',false); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
     if nargin>=8, varargin=[{CONTRAST_VECTOR},varargin]; end
     if nargin>=7, varargin=[{DESIGN},varargin]; end
     if nargin>=6, varargin=[{MEASURE},varargin]; end
-    if nargin>=5, varargin=[{CONTRAST_NAME},varargin]; end
+    if nargin>=5, varargin=[{FIRSTLEVEL_NAME},varargin]; end
     if nargin>=4, varargin=[{TASK},varargin]; end
     if nargin>=3, varargin=[{RUN},varargin]; end
     if nargin>=2, varargin=[{SES},varargin]; end
@@ -111,7 +111,7 @@ if nargin<3||isempty(RUN), RUN=[]; end
 if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
-if nargin<5||isempty(CONTRAST_NAME), CONTRAST_NAME=[]; end
+if nargin<5||isempty(FIRSTLEVEL_NAME), FIRSTLEVEL_NAME=[]; end
 if nargin<6||isempty(MEASURE), MEASURE='F1'; end
 if nargin<7||isempty(DESIGN), DESIGN={}; end
 if ischar(DESIGN), DESIGN={DESIGN}; end
@@ -123,8 +123,10 @@ if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.REFERENCE), OPTIONS.REFERENCE=str2num(OPTIONS.REFERENCE); end
-if ischar(OPTIONS.SCALE), OPTIONS.SCALE=str2num(OPTIONS.SCALE); end
+if ischar(OPTIONS.REFERENCE_SCALE), OPTIONS.REFERENCE_SCALE=str2num(OPTIONS.REFERENCE_SCALE); end
+if ischar(OPTIONS.CONTRAST_SCALE), OPTIONS.CONTRAST_SCALE=str2num(OPTIONS.CONTRAST_SCALE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
+if ischar(OPTIONS.DOPLOT), OPTIONS.DOPLOT=str2num(OPTIONS.DOPLOT); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
@@ -290,7 +292,7 @@ for nsub=1:numel(USUBS)
                         valid=~isnan(y); % disregards samples with missing-values
                         y=y(valid);
                         c=c(:,valid);
-                        if OPTIONS.SCALE % re-scales contrast
+                        if OPTIONS.CONTRAST_SCALE % re-scales contrast
                             for n1=1:size(c,1)
                                 vmask=c(n1,:)>0; if nnz(vmask), c(n1,vmask)=c(n1,vmask)/max(eps,abs(sum(c(n1,vmask)))); end % pos-values add up to 1
                                 vmask=c(n1,:)<0; if nnz(vmask), c(n1,vmask)=c(n1,vmask)/max(eps,abs(sum(c(n1,vmask)))); end % neg-values add up to -1
@@ -336,7 +338,7 @@ for nsub=1:numel(USUBS)
         else stats.i_f=f;stats.i_p=p;stats.i_pFDR=pFDR;stats.i_dof=dof;stats.i_statsname=statsname;
         end
     end
-    filename_outData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',USUBS{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',USUBS{nsub},CONTRAST_NAME));
+    filename_outData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',USUBS{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',USUBS{nsub},FIRSTLEVEL_NAME));
     effect=h;
     if isequal(statsname,'T')|(isequal(statsname,'F')&max(dof(1,:))==1), 
         if isequal(statsname,'T'), SE=abs(h./f);
@@ -393,7 +395,7 @@ for nsub=1:numel(USUBS)
             grid on;
             if isequal(Tlabel,'time (ms)'), xline(0,'linewidth',3); end
             yline(0);
-            xlabel(Tlabel); ylabel(Ylabel); title(CONTRAST_NAME);
+            xlabel(Tlabel); ylabel(Ylabel); title(FIRSTLEVEL_NAME);
             %         legend(h,dispconds(1:3));
             if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
         else
@@ -414,11 +416,14 @@ for nsub=1:numel(USUBS)
                 end
             end
             grid on
-            xlabel(Tlabel); ylabel(Ylabel); title(CONTRAST_NAME);
+            xlabel(Tlabel); ylabel(Ylabel); title(FIRSTLEVEL_NAME);
             set(gca,'xtick',[]); 
             if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
         end
-        if OPTIONS.PRINT, conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); end
+        if OPTIONS.PRINT, 
+            fprintf('Printing. Please wait... ');
+            conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); 
+        end
     end
 end
         
