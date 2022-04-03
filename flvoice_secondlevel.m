@@ -221,6 +221,7 @@ if numel(p)<10
     end
 end
 if OPTIONS.SAVE,
+    conn_fileutils('mkdir',fileparts(filename_outData));
     conn_savematfile(filename_outData,'effect','effect_CI','stats');
     fprintf('Output saved in file %s\n',filename_outData);
 end
@@ -281,6 +282,7 @@ if OPTIONS.DOPLOT,
     end
     if OPTIONS.PRINT,
         fprintf('Printing. Please wait... ');
+        conn_fileutils('mkdir',fileparts(filename_outData));
         conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui');
     end
 end
