@@ -26,7 +26,7 @@ function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DE
 %   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
 %
 %
-% Input data files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[FIRSTLEVEL_NAME]#.mat
+% Input data files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[FIRSTLEVEL_NAME]#.mat 
 %   Variables:
 %       effect                               : effect-sizes (one value per contrast & timepoint)
 %
