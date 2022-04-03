@@ -386,7 +386,7 @@ for nsub=1:numel(USUBS)
                 maskp1=p(n1,:)>.05;                           maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.25);
                 if size(effect,1)==1
                     maskp1=p(n1,:)<.05&effect(n1,:)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
-                    maskp1=p(n1,:)<.05&effect(n1,1)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
+                    maskp1=p(n1,:)<.05&effect(n1,:)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
                 else
                     maskp1=p(n1,:)<.05;                       maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.5);
                 end
