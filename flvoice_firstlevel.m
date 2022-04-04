@@ -23,16 +23,18 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                          e.g. @(t) (t>0&t<.200) - (t<0)
 %
 % flvoice_firstlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs first-level model estimation using non-default options
-%   'REFERENCE'        : 1/0 (default 1) uses samples before t=0 as implicit baseline/reference
+%   'REFERENCE'        : true/false (default true) uses samples before t=0 as implicit baseline/reference
 %                         alternatively, function defining timewindow to be used as baseline/reference
 %                          e.g. @(t) (t>-.100&t<0)
+%                         alternatively, specific value to be used as baseline/reference
+%                          e.g. double(0.5)
 %   'REFERENCE_SCALE'  : type of 'REFERENCE' baseline used (default 'subtract'): 
 %                           'subtract' to subtract from timeseries average value within reference timewindow (y=x-reference)
 %                           'divide' to divide timeseries by average value within reference timewindow (y=x/reference)
 %                           'cents' to convert timeseries to 'cents' units using reference timewindow as base level (y=log(x/reference)/log(2)*1200)
-%   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
-%   'SAVE'             : (default 1) 1/0 save analysis results .mat file
-%   'PRINT'            : (default 0) 1/0 save jpg files with analysis results
+%   'CONTRAST_SCALE'   : true/false (default true) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
+%   'SAVE'             : (default true) true/false save analysis results .mat file
+%   'PRINT'            : (default false) true/false save jpg files with analysis results
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
@@ -123,6 +125,7 @@ if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.REFERENCE), OPTIONS.REFERENCE=str2num(OPTIONS.REFERENCE); end
+if ~islogical(OPTIONS.REFERENCE)&&isequal(OPTIONS.REFERENCE,1), fprintf('warning: REFERENCE set to the user-defined value=1; if the intention was to use as reference the average of the samples before t=0 please use the syntax flvoice_firstlevel(...,''REFERENCE'',true) instead\n'); end
 if ischar(OPTIONS.CONTRAST_SCALE), OPTIONS.CONTRAST_SCALE=str2num(OPTIONS.CONTRAST_SCALE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.DOPLOT), OPTIONS.DOPLOT=str2num(OPTIONS.DOPLOT); end
@@ -266,12 +269,14 @@ for nsub=1:numel(USUBS)
                         end
                     end
                     if ~isempty(OPTIONS.REFERENCE)
+                        my=[]; mask=true;
                         if isa(OPTIONS.REFERENCE,'function_handle'), mask=logical(OPTIONS.REFERENCE(t));
                         elseif OPTIONS.REFERENCE==0, mask=false;
-                        else mask=t<0;
+                        elseif islogical(OPTIONS.REFERENCE), mask=t<0;
+                        else my=OPTIONS.REFERENCE; 
                         end
-                        if any(mask&~isnan(y))
-                            my=mean(y(mask&~isnan(y))); 
+                        if ~isempty(my)||any(mask&~isnan(y))
+                            if isempty(my), my=mean(y(mask&~isnan(y))); end
                             switch(lower(OPTIONS.REFERENCE_SCALE))
                                 case 'subtract', y=y-my;
                                 case 'divide', y=y/my;
