@@ -277,8 +277,8 @@ end
         
         %curRunQCflags{curTrial,7} = QCcomment;
     else
-        set(data.handles.flag7edit, 'String', '"Comment"', 'Enabled', 'off');
-        curRunQCflags{curTrial,7} = {0};
+        set(data.handles.flag7edit, 'String', '"Comment"', 'Enable', 'off');
+        curRunQCflags{curTrial,7} = 0;
     end
     data.vars.curRunQCflags = curRunQCflags;
 
@@ -422,6 +422,16 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
+    
     curTrial = data.vars.curTrial;
     prevTrial = curTrial - 1;
     trialList = data.vars.trialList;
@@ -458,7 +468,17 @@ end
     function nextTrial(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
-
+    
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    curRunQCflags = data.vars.curRunQCflags;   
+    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    varName = 'curRunQCflags';
+    save(saveFileName,varName);
+    
     curTrial = data.vars.curTrial;
     nextTrial = curTrial + 1;
     trialList = data.vars.trialList;
@@ -721,6 +741,7 @@ end
         set(data.handles.flag6txt, 'Value',  curRunQCflags{trial,6});
         if curRunQCflags{trial,7} == 0
             set(data.handles.flag7txt, 'Value',  0);
+            set(data.handles.flag7edit, 'String', '"Comment"');
         else
             set(data.handles.flag7txt, 'Value',  1);
             set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
