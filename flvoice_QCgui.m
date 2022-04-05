@@ -142,6 +142,12 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons while loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
+    
     % Formants (FMT_ARGS)
     % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
     % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
@@ -183,6 +189,11 @@ end
                 return
         end
         
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -318,6 +329,12 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons when loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
+    
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
     ses = data.vars.curSess;
@@ -333,14 +350,25 @@ end
     newSub = subList{newSubIdx};
     updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
-    
     data.vars.curSub = newSub;
+    
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
 
     function sessDrop(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons when loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
     
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
@@ -358,12 +386,24 @@ end
     updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curSess = newSess;
+    
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
 
     function runDrop(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons when loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
     
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
@@ -381,12 +421,24 @@ end
     updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curRun = newRun;
+    
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
 
     function taskDrop(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons when loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
     
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
@@ -404,6 +456,12 @@ end
     updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, newTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curTask = newTask;
+    
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
     
@@ -411,16 +469,31 @@ end
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
     
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons when loading 
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
+    
     newTrial = get(data.handles.trialDrop, 'Value');
     updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, newTrial);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curTrial = newTrial;
+    
+    set(data.handles.hfig,'pointer','arrow');
+    drawnow;
+    % re-enable buttons when done 
+    set(data.handles.prevButton, 'Enable', 'on');
+    set(data.handles.nextButton, 'Enable', 'on');
     set(data.handles.hfig,'userdata',data);
     end
 
     function prevTrial(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    % disable buttons while loading
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
     
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
@@ -445,6 +518,9 @@ end
                 prevIdx = runIdx-1;
                 if prevIdx > numel(runList);
                     warning = msgbox('Previous run does not exist, consider changing session?')
+                    % re-enable buttons 
+                    set(data.handles.prevButton, 'Enable', 'on');
+                    set(data.handles.nextButton, 'Enable', 'on');
                 else
                     prevRun = runList{prevIdx};
                     taskList = data.vars.taskList;
@@ -454,6 +530,9 @@ end
                     data.vars.curTrial = 1;
                 end
                 case 'No'
+                    % re-enable buttons 
+                    set(data.handles.prevButton, 'Enable', 'on');
+                    set(data.handles.nextButton, 'Enable', 'on');
                     return 
         end
     else
@@ -461,13 +540,17 @@ end
         data = get(data.handles.hfig, 'userdata');
         data.vars.curTrial = prevTrial;
     end
-   
+    
     set(data.handles.hfig,'userdata',data);
     end
     
     function nextTrial(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    % disable buttons while loading
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
     
     % before changing subject save cur subj / ses / run's QC flags
     sub = data.vars.curSub;
@@ -492,6 +575,9 @@ end
                 nextIdx = runIdx+1;
                 if nextIdx > numel(runList)
                     warning = msgbox('Next run does not exist, consider changing session?')
+                    % re-enable buttons 
+                    set(data.handles.prevButton, 'Enable', 'on');
+                    set(data.handles.nextButton, 'Enable', 'on');
                 else
                     nextRun = runList{nextIdx};
                     taskList = data.vars.taskList;
@@ -501,6 +587,9 @@ end
                     data.vars.curTrial = 1;
                 end
                 case 'No'
+                    % re-enable buttons 
+                    set(data.handles.prevButton, 'Enable', 'on');
+                    set(data.handles.nextButton, 'Enable', 'on');
                     return 
         end
     else
@@ -554,6 +643,12 @@ end
     
     function updateSubj(data,varargin)
     % Helper function that updates the GUI based on current sub / trial 
+    set(data.handles.hfig,'pointer','watch');
+    drawnow;
+    % disable buttons while loading
+    set(data.handles.prevButton, 'Enable', 'off');
+    set(data.handles.nextButton, 'Enable', 'off');
+    
     if numel(varargin) < 1
         init = 1;
     else
@@ -634,12 +729,12 @@ end
             set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
         end
         
-        
         % update mic/ head plots
         runIdx = get(data.handles.runDrop, 'Value');
         micWav = curInputData(curTrial).s{1};
         micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
         data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
+        set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
@@ -751,6 +846,7 @@ end
         micWav = curInputData(trial).s{1};
         micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
         data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
+        set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
@@ -758,6 +854,7 @@ end
         curOutputData = flvoice_import(sub,sess,run,task,'output');
         curOutputData = curOutputData{1};
         
+        cla(data.handles.formantAxis);
         axes(data.handles.formantAxis);
         yyaxis('left');
         s = curInputData(trial).s{1}; %NOTE always s{1}?
@@ -766,18 +863,27 @@ end
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.formantAxis);
         set(data.handles.formantAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
-        pertOnset = curInputData(trial).pertOnset;
+        % only relevant for some backward compat data
+        if isfield(curInputData(trial), 'timingTrial')
+            pertOnset = (curInputData(trial).timingTrial(5)- curInputData(trial).timingTrial(1));
+        else
+            pertOnset = curInputData(trial).pertOnset;
+        end
         hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset 
         
+        cla(data.handles.ppAxis);
         axes(data.handles.ppAxis);
         f0 = curOutputData(trial).s{1,1};%NOTE always s{1,1}?
         fs2 = curOutputData(trial).fs;
-        t = (0.025:0.001:2.524); % how do I derive this from given data?
-        %t = (0:numel(f0)-1/fs2); % correct??
+        %t = (0.025:0.001:2.524); % how do I derive this from given data?
+        t0 = curOutputData(trial).t{1,5};
+        %t = t0+(0:numel(f0)-1/fs2); % correct??
+        t = [0+(0:numel(f0)-1)/fs2];
         pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
         
+        cla(data.handles.pitchAxis);
         axes(data.handles.pitchAxis);
         set(data.handles.pitchAxis, 'OuterPosition', [-0.12, 0.10, 1.14, 0.25]);
         spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
@@ -791,6 +897,11 @@ end
         % save curr data
         data.vars.curInputData = curInputData;
         data.vars.curOutputData = curOutputData;
+        set(data.handles.hfig,'pointer','arrow');
+        drawnow;
+        % re-enable buttons when done 
+        set(data.handles.prevButton, 'Enable', 'on');
+        set(data.handles.nextButton, 'Enable', 'on');
         set(data.handles.hfig,'userdata',data);
     end 
 
