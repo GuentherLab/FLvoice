@@ -658,6 +658,13 @@ end
         run = varargin{3};
         task = varargin{4};
         trial = varargin{5};
+        
+        % if it's the same sub, sess, task, no need to run fl_import in the future 
+        if isequal(sub,data.vars.curSub) && isequal(sess,data.vars.curSess) && isequal(run,data.vars.curRun) && isequal(task,data.vars.curTask)
+            loadData = 0;
+        else
+            loadData = 1;
+        end 
     end 
     if init % set values to first value in each droplist
         % update subjects
@@ -802,8 +809,12 @@ end
         data.vars.curTask = task;
         
         % get trial data
-        curInputData = flvoice_import(sub,sess,run,task,'input');
-        curInputData = curInputData{1};
+        if loadData % only run fl_voice_import() if data being loaded is different from current
+            curInputData = flvoice_import(sub,sess,run,task,'input');
+            curInputData = curInputData{1};
+        else
+            curInputData = data.vars.curInputData;
+        end
         % update trial
         trialList = (1:size(curInputData,2));
         trialIdx = find(trialList == trial); % most likely unecessary but useful for futureproofing
@@ -851,8 +862,12 @@ end
         data.vars.micTime = micTime;
         
         % update spectogram plots
-        curOutputData = flvoice_import(sub,sess,run,task,'output');
-        curOutputData = curOutputData{1};
+        if loadData % only run fl_voice_import() if data being loaded is different from current
+            curOutputData = flvoice_import(sub,sess,run,task,'output');
+            curOutputData = curOutputData{1};
+        else
+            curOutputData = data.vars.curOutputData;
+        end
         
         cla(data.handles.formantAxis);
         axes(data.handles.formantAxis);
