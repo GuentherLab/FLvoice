@@ -62,10 +62,15 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
-% trialData = flvoice_import(SUB,SES,RUN,TASK, 'input') : (does not import/process data) returns input trialData array for the selected subject/session/run/task
-% trialData = flvoice_import(SUB,SES,RUN,TASK, 'output') : (does not import/process data) returns output trialData array for the selected subject/session/run/task
-% filename = flvoice_import(SUB,SES,RUN,TASK, 'input_file') : (does not import/process data) returns input data filename(s) ($ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat) for the selected subject/session/run/task
+% trialData = flvoice_import(SUB,SES,RUN,TASK, 'input')      : (does not import/process data) returns input trialData array for the selected subject/session/run/task
+% trialData = flvoice_import(SUB,SES,RUN,TASK, 'output')     : (does not import/process data) returns output trialData array for the selected subject/session/run/task
+% filename = flvoice_import(SUB,SES,RUN,TASK, 'input_file')  : (does not import/process data) returns input data filename(s) ($ROOT$/sub-##/ses-##/beh/sub-##_ses-##_run-##_task-##_desc-audio.mat) for the selected subject/session/run/task
 % filename = flvoice_import(SUB,SES,RUN,TASK, 'output_file') : (does not import/process data) returns output data filename(s) ($ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat) for the selected subject/session/run/task
+% QC = flvoice_import(SUB,SES,RUN,TASK, 'get_qc')            : (does not import/process data) returns cell array of structures containing quality control information for the selected subject/session/run/task
+% flvoice_import(SUB,SES,RUN,TASK, 'set_qc', QC)             : (does not import/process data) saves structure containing quality control information 
+%                                                               QC.keepData(n) = 0/1 value indicating if n-th trial is valid
+%                                                               QC.badTrial(n) = numeric values indicating n-th trial quality (0 = valid trial)
+%                                                               QC.dictionary{i} = cell array of QC labels indicating what was wrong with trials where QC.badTrial(n)=i
 %
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
@@ -98,6 +103,7 @@ if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 
 OPTIONS=DEFAULTS;
+OPTIONS.set_qc=[];
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.N_LPC), OPTIONS.N_LPC=str2num(OPTIONS.N_LPC); end
 if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
@@ -206,7 +212,21 @@ for nsample=1:numel(RUNS)
         fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
         filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
     end
-    if rem(numel(varargin),2)==1&&ischar(varargin{end})
+    if isfield(OPTIONS,'set_qc')&&~isempty(OPTIONS.set_qc)
+        assert(numel(RUNS)==1,'unable to save QC information for multiple subjects/sesions/runs simultaneously. Select a single subject/session/run and try again');
+        filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
+        if conn_existfile(filename_qcData), tdata=conn_loadmatfile(filename_qcData,'-cache'); end
+        assert(isfield(OPTIONS.set_qc,'badTrial')||isfield(tdata,'badTrial'),'SETQC structure missing ''badTrial'' field');
+        assert(isfield(OPTIONS.set_qc,'dictionary')||isfield(tdata,'dictionary'),'SETQC structure missing ''dictionary'' field');
+        tdata.badTrial=OPTIONS.set_qc.badTrial;
+        tdata.dictionary=OPTIONS.set_qc.dictionary;
+        if isfield(OPTIONS.set_qc,'keepData'), tdata.keepData=OPTIONS.set_qc.keepData;
+        else tdata.keepData=reshape(isnan(tdata.badTrial)|tdata.badTrial==0,1,[]);
+        end
+        fprintf('saving file %s\n',filename_qcData);
+        keepData=tdata.keepData; badTrial=tdata.badTrial; dictionary=tdata.dictionary;
+        conn_savematfile(filename_qcData,'keepData','badTrial','dictionary');
+    elseif rem(numel(varargin),2)==1&&ischar(varargin{end})
         somethingout=true;
         switch(lower(varargin{end}))
             case 'input_file'
@@ -223,6 +243,20 @@ for nsample=1:numel(RUNS)
                 fileout{nsample}=conn_loadmatfile(filename_trialData,'-cache');
             case 'output_all'
                 fileout{nsample}=conn_loadmatfile(filename_fmtData,'-cache');
+            case 'get_qc'
+                filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
+                if ~conn_existfile(filename_qcData),
+                    fprintf('unable to find QC file %s; initializing...\n',filename_qcData); 
+                    tdata=conn_loadmatfile(filename_trialData,'-cache');
+                    assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_trialData);
+                    in_trialData = tdata.trialData;
+                    tdata.keepData=true(1,numel(in_trialData));
+                else tdata=conn_loadmatfile(filename_qcData,'-cache');
+                end
+                if ~isfield(tdata,'badTrial'), tdata.badTrial=double(~tdata.keepData); tdata.dictionary={'bad trial'}; end
+                if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:max(tdata.badTrial),'uni',0); end
+                if ~isfield(tdata,'keepData'), tdata.keepData=reshape(isnan(tdata.badTrial)|tdata.badTrial==0,1,[]); end
+                fileout{nsample}=tdata;
             otherwise
                 error('unknown option %s',varargin{end});
         end
@@ -412,11 +446,12 @@ for nsample=1:numel(RUNS)
             if conn_existfile(filename_qcData),
                 fprintf('loading file %s\n',filename_qcData);
                 tdata=conn_loadmatfile(filename_qcData,'-cache');
-                assert(isfield(tdata,'keepData')|isfield(tdata,'QCflags'), 'data file %s does not contain keepData or QCflags variable',filename_qcData);
+                assert(isfield(tdata,'keepData')|isfield(tdata,'badTrial'), 'data file %s does not contain keepData or badTrial variable',filename_qcData);
                 if isfield(tdata,'keepData'), keepData=tdata.keepData;
-                else keepData=isnan(tdata.QCflags)|tdata.QCflags==0;
+                else keepData=isnan(tdata.badTrial)|tdata.badTrial==0;
                 end
                 keepData=reshape(keepData,1,[]);
+                assert(numel(keepData)==numel(out_trialData),'keepData vector contains %d values (expected %d)',numel(keepData),out_trialData);
             else
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
                 keepData=true(1,numel(out_trialData));
