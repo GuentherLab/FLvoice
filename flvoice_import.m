@@ -256,7 +256,9 @@ for nsample=1:numel(RUNS)
                 if ~isfield(tdata,'badTrial'), tdata.badTrial=double(~tdata.keepData); tdata.dictionary={'bad trial'}; end
                 if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:max(tdata.badTrial),'uni',0); end
                 if ~isfield(tdata,'keepData'), tdata.keepData=reshape(isnan(tdata.badTrial)|tdata.badTrial==0,1,[]); end
-                fileout{nsample}=tdata;
+                if numel(RUNS)>1, fileout{nsample}=tdata;
+                else fileout=tdata;
+                end
             otherwise
                 error('unknown option %s',varargin{end});
         end
