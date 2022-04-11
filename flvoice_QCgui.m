@@ -73,7 +73,7 @@ switch(lower(option))
         data.handles.flag5txt=uicontrol('Style', 'checkbox','String','Utterance too short','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .43 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag5);
         data.handles.flag6txt=uicontrol('Style', 'checkbox','String','Distortion / audio issues','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .33 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag6);
         data.handles.flag7txt=uicontrol('Style', 'checkbox','String','Other:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .23 .9 .1],'BackgroundColor', [1 1 1], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag7);
-        data.handles.flag7edit=uicontrol('Style', 'edit','String','"Comment"','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.2 .135 .695 .09],'BackgroundColor', [1 1 1], 'Enable', 'off', 'Parent',data.handles.flagPanel,'Callback', @editFlag7);
+        data.handles.flag7edit=uicontrol('Style', 'edit','String','Comment','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.2 .135 .695 .09],'BackgroundColor', [1 1 1], 'Enable', 'off', 'Parent',data.handles.flagPanel,'Callback', @editFlag7);
         % Save Flag Button 
         data.handles.saveFlagButton=uicontrol('Style', 'pushbutton','String','Save flags','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .1],'Parent',data.handles.flagPanel,'Callback', @saveFlags);
         
@@ -203,10 +203,26 @@ end
     
     flagVal = get(data.handles.flag1txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,1} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,1} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(1,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Performed incorrectly'};
+        else
+            curRunQC.dictionary{1,curTrial} = {curRunQC.dictionary{1,curTrial}, 'Performed incorrectly'};
+        end
+    else   
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(1,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Performed incorrectly')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -216,10 +232,26 @@ end
     
     flagVal = get(data.handles.flag2txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,2} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,2} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(2,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Bad F0 trace'};
+        else
+            curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial}, 'Bad F0 trace'];
+        end
+    else
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(2,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Bad F0 trace')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -229,10 +261,26 @@ end
     
     flagVal = get(data.handles.flag3txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,3} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,3} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(3,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Bad F1 trace'};
+        else
+            curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial}, 'Bad F1 trace'];
+        end
+    else
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(3,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Bad F1 trace')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -242,10 +290,26 @@ end
     
     flagVal = get(data.handles.flag4txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,4} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,4} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(4,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Incorrect voice onset'};
+        else
+            curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial}, 'Incorrect voice onset'];
+        end
+    else
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(4,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Incorrect voice onset')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -255,10 +319,26 @@ end
     
     flagVal = get(data.handles.flag5txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,5} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,5} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(5,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Utterance too short'};
+        else
+            curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial}, 'Utterance too short'];
+        end
+    else
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(5,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Utterance too short')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -268,10 +348,26 @@ end
     
     flagVal = get(data.handles.flag6txt, 'Value');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,6} = flagVal;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,6} = flagVal;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(6,curTrial) = 1;
+        if isempty(curRunQC.dictionary{1,curTrial})
+            curRunQC.dictionary{1,curTrial} = {'Distortion / audio issues'};
+        else
+            curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial}, 'Distortion / audio issues'];
+        end
+    else
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(6,curTrial) = 0;
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,'Distortion / audio issues')) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -282,17 +378,25 @@ end
     flagVal = get(data.handles.flag7txt, 'Value');
     %QCcomment = get(data.handles.flag7edit, 'String');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    if flagVal == 1
+    %curRunQCflags = data.vars.curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    if flagVal
         set(data.handles.flag7edit, 'Enable', 'on');
-        
-        %curRunQCflags{curTrial,7} = QCcomment;
+        curRunQC.keepData(curTrial) = 0;
+        curRunQC.badTrial(7,curTrial) = 1;
+        %curRunQC.badTrial(curTrial) = get(data.handles.flag7edit, 'String');
     else
-        set(data.handles.flag7edit, 'String', '"Comment"', 'Enable', 'off');
-        curRunQCflags{curTrial,7} = 0;
+        QCcomment = get(data.handles.flag7edit, 'String');
+        QCdict = curRunQC.dictionary{1,curTrial};
+        QCdict(ismember(QCdict,QCcomment)) = [];
+        curRunQC.dictionary{1,curTrial} = QCdict;
+        curRunQC.keepData(curTrial) = 1;
+        curRunQC.badTrial(7,curTrial) = 0;
+        set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
+        %curRunQCflags{curTrial,7} = 0;
     end
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %data.vars.curRunQCflags = curRunQCflags;
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -302,10 +406,18 @@ end
     
     QCcomment = get(data.handles.flag7edit, 'String');
     curTrial = data.vars.curTrial; 
-    curRunQCflags = data.vars.curRunQCflags;
-    curRunQCflags{curTrial,7} = QCcomment;
-    data.vars.curRunQCflags = curRunQCflags;
-
+    %curRunQCflags = data.vars.curRunQCflags;
+    %curRunQCflags{curTrial,7} = QCcomment;
+    %data.vars.curRunQCflags = curRunQCflags;
+    curRunQC = data.vars.curRunQC;
+    %curDict =  curRunQC.dictionary{curTrial};
+    
+    if isempty(curRunQC.dictionary{1,curTrial})
+        curRunQC.dictionary{1,curTrial} = {QCcomment};
+    else
+        curRunQC.dictionary{1,curTrial} = [curRunQC.dictionary{1,curTrial},  QCcomment];
+    end
+    data.vars.curRunQC = curRunQC;
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -317,10 +429,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC;
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     set(data.handles.hfig,'userdata',data);
     end
@@ -340,10 +454,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     subList = data.vars.subList;
     newSubIdx = get(data.handles.subDrop, 'Value');
@@ -375,10 +491,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     sessList = data.vars.sessList;
     newSessIdx = get(data.handles.sessDrop, 'Value');
@@ -410,10 +528,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     runList = data.vars.runList;
     newRunIdx = get(data.handles.runDrop, 'Value');
@@ -445,10 +565,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     taskList = data.vars.taskList;
     newTaskIdx = get(data.handles.taskDrop, 'Value');
@@ -500,10 +622,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     curTrial = data.vars.curTrial;
     prevTrial = curTrial - 1;
@@ -557,10 +681,12 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
-    curRunQCflags = data.vars.curRunQCflags;   
-    saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
-    varName = 'curRunQCflags';
-    save(saveFileName,varName);
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     curTrial = data.vars.curTrial;
     nextTrial = curTrial + 1;
@@ -710,31 +836,52 @@ end
         data.vars.curTrial = curTrial;
         
         % Should load previous flags if they exist here
-        QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', curSub, curSess, curRun, curTask);
-        if exist(QCfileName)
-            % load proper flags
-            load(QCfileName, 'curRunQCflags')
-            data.vars.curRunQCflags = curRunQCflags; 
-        else
-            % create QC Flag cell array for storage
-            numFlags = 7;
-            curRunQCflags = cell(size(curInputData,2),numFlags);
-            curRunQCflags(:) = {0};
-            data.vars.curRunQCflags = curRunQCflags;
-        end
+        %QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', curSub, curSess, curRun, curTask);
+        %if exist(QCfileName)
+        %    % load proper flags
+        %    load(QCfileName, 'curRunQCflags')
+        %    data.vars.curRunQCflags = curRunQCflags; 
+        %else
+        %    % create QC Flag cell array for storage
+        %    numFlags = 7;
+        %    curRunQCflags = cell(size(curInputData,2),numFlags);
+        %    curRunQCflags(:) = {0};
+        %    data.vars.curRunQCflags = curRunQCflags;
+        %end
         
-        set(data.handles.flag1txt, 'Value',  curRunQCflags{1,1});
-        set(data.handles.flag2txt, 'Value',  curRunQCflags{1,2});
-        set(data.handles.flag3txt, 'Value',  curRunQCflags{1,3});
-        set(data.handles.flag4txt, 'Value',  curRunQCflags{1,4});
-        set(data.handles.flag5txt, 'Value',  curRunQCflags{1,5});
-        set(data.handles.flag6txt, 'Value',  curRunQCflags{1,6});
-        if curRunQCflags{1,7} == 0
-            set(data.handles.flag7txt, 'Value',  0);
-        else
-            set(data.handles.flag7txt, 'Value',  1);
-            set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+        %set(data.handles.flag1txt, 'Value',  curRunQCflags{1,1});
+        %set(data.handles.flag2txt, 'Value',  curRunQCflags{1,2});
+        %set(data.handles.flag3txt, 'Value',  curRunQCflags{1,3});
+        %set(data.handles.flag4txt, 'Value',  curRunQCflags{1,4});
+        %set(data.handles.flag5txt, 'Value',  curRunQCflags{1,5});
+        %set(data.handles.flag6txt, 'Value',  curRunQCflags{1,6});
+        %if curRunQCflags{1,7} == 0
+        %    set(data.handles.flag7txt, 'Value',  0);
+        %else
+        %    set(data.handles.flag7txt, 'Value',  1);
+        %    set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+        %end
+                  
+        curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
+        if isempty(curRunQC.badTrial)
+            numFlags = 7;
+            curRunQC.badTrial = zeros(numFlags,60);
+            curRunQC.dictionary = cell(1,60);
         end
+        set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
+        set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
+        set(data.handles.flag3txt, 'Value',  curRunQC.badTrial(3,1));
+        set(data.handles.flag4txt, 'Value',  curRunQC.badTrial(4,1));
+        set(data.handles.flag5txt, 'Value',  curRunQC.badTrial(5,1));
+        set(data.handles.flag6txt, 'Value',  curRunQC.badTrial(6,1));
+        if curRunQC.badTrial(7,1) == 0
+            set(data.handles.flag7txt, 'Value', curRunQC.badTrial(7,1));
+            set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
+        else
+            set(data.handles.flag7txt, 'Value',  curRunQC.badTrial(7,1));
+            set(data.handles.flag7edit, 'String',  curRunQC.dictionary{1,1}(end), 'Enable', 'on');
+        end
+        data.vars.curRunQC = curRunQC; 
         
         % update mic/ head plots
         runIdx = get(data.handles.runDrop, 'Value');
@@ -826,32 +973,48 @@ end
         data.vars.curTrial = trial;
         
         % Should load previous flags if they exist here
-        QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, sess, run, task);
-        if exist(QCfileName)
-            % load proper flags
-            load(QCfileName, 'curRunQCflags')
-            data.vars.curRunQCflags = curRunQCflags; 
-        else
-            % create QC Flag cell array for storage
-            numFlags = 7;
-            curRunQCflags = cell(size(curInputData,2),numFlags);
-            curRunQCflags(:) = {0};
-            data.vars.curRunQCflags = curRunQCflags;
-        end
+        %QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, sess, run, task);
+        %if exist(QCfileName)
+        %    % load proper flags
+        %    load(QCfileName, 'curRunQCflags')
+        %    data.vars.curRunQCflags = curRunQCflags; 
+        %else
+        %    % create QC Flag cell array for storage
+        %    numFlags = 7;
+        %    curRunQCflags = cell(size(curInputData,2),numFlags);
+        %    curRunQCflags(:) = {0};
+        %    data.vars.curRunQCflags = curRunQCflags;
+        %end
         
-        set(data.handles.flag1txt, 'Value',  curRunQCflags{trial,1});
-        set(data.handles.flag2txt, 'Value',  curRunQCflags{trial,2});
-        set(data.handles.flag3txt, 'Value',  curRunQCflags{trial,3});
-        set(data.handles.flag4txt, 'Value',  curRunQCflags{trial,4});
-        set(data.handles.flag5txt, 'Value',  curRunQCflags{trial,5});
-        set(data.handles.flag6txt, 'Value',  curRunQCflags{trial,6});
-        if curRunQCflags{trial,7} == 0
+        %set(data.handles.flag1txt, 'Value',  curRunQCflags{trial,1});
+        %set(data.handles.flag2txt, 'Value',  curRunQCflags{trial,2});
+        %set(data.handles.flag3txt, 'Value',  curRunQCflags{trial,3});
+        %set(data.handles.flag4txt, 'Value',  curRunQCflags{trial,4});
+        %set(data.handles.flag5txt, 'Value',  curRunQCflags{trial,5});
+        %set(data.handles.flag6txt, 'Value',  curRunQCflags{trial,6});
+        %if curRunQCflags{trial,7} == 0
+        %    set(data.handles.flag7txt, 'Value',  0);
+        %    set(data.handles.flag7edit, 'String', 'Comment');
+        %else
+        %    set(data.handles.flag7txt, 'Value',  1);
+        %    set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+        %end
+        
+        curRunQC = flvoice_import(sub,sess,run,task, 'get_qc');
+        set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,trial));
+        set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,trial));
+        set(data.handles.flag3txt, 'Value',  curRunQC.badTrial(3,trial));
+        set(data.handles.flag4txt, 'Value',  curRunQC.badTrial(4,trial));
+        set(data.handles.flag5txt, 'Value',  curRunQC.badTrial(5,trial));
+        set(data.handles.flag6txt, 'Value',  curRunQC.badTrial(6,trial));
+        if curRunQC.badTrial(7,trial) == 0
             set(data.handles.flag7txt, 'Value',  0);
-            set(data.handles.flag7edit, 'String', '"Comment"');
+            set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
         else
-            set(data.handles.flag7txt, 'Value',  1);
-            set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
+            set(data.handles.flag7txt, 'Value',  curRunQC.badTrial(7,trial));
+            set(data.handles.flag7edit, 'String',  curRunQC.dictionary{1,trial}(end), 'Enable', 'on');
         end
+        data.vars.curRunQC = curRunQC; 
         
         % update mic plot
         micWav = curInputData(trial).s{1};
