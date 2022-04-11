@@ -102,8 +102,8 @@ if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 
+DEFAULTS.set_qc=[];
 OPTIONS=DEFAULTS;
-OPTIONS.set_qc=[];
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.N_LPC), OPTIONS.N_LPC=str2num(OPTIONS.N_LPC); end
 if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
@@ -221,7 +221,7 @@ for nsample=1:numel(RUNS)
         tdata.badTrial=OPTIONS.set_qc.badTrial;
         tdata.dictionary=OPTIONS.set_qc.dictionary;
         if isfield(OPTIONS.set_qc,'keepData'), tdata.keepData=OPTIONS.set_qc.keepData;
-        else tdata.keepData=reshape(isnan(tdata.badTrial)|tdata.badTrial==0,1,[]);
+        else tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]);
         end
         fprintf('saving file %s\n',filename_qcData);
         keepData=tdata.keepData; badTrial=tdata.badTrial; dictionary=tdata.dictionary;
@@ -254,8 +254,8 @@ for nsample=1:numel(RUNS)
                 else tdata=conn_loadmatfile(filename_qcData,'-cache');
                 end
                 if ~isfield(tdata,'badTrial'), tdata.badTrial=double(~tdata.keepData); tdata.dictionary={'bad trial'}; end
-                if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:max(tdata.badTrial),'uni',0); end
-                if ~isfield(tdata,'keepData'), tdata.keepData=reshape(isnan(tdata.badTrial)|tdata.badTrial==0,1,[]); end
+                if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:size(tdata.badTrial,1),'uni',0); end
+                if ~isfield(tdata,'keepData'), tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); end
                 if numel(RUNS)>1, fileout{nsample}=tdata;
                 else fileout=tdata;
                 end
@@ -450,7 +450,7 @@ for nsample=1:numel(RUNS)
                 tdata=conn_loadmatfile(filename_qcData,'-cache');
                 assert(isfield(tdata,'keepData')|isfield(tdata,'badTrial'), 'data file %s does not contain keepData or badTrial variable',filename_qcData);
                 if isfield(tdata,'keepData'), keepData=tdata.keepData;
-                else keepData=isnan(tdata.badTrial)|tdata.badTrial==0;
+                else keepData=all(isnan(tdata.badTrial)|tdata.badTrial==0,1);
                 end
                 keepData=reshape(keepData,1,[]);
                 assert(numel(keepData)==numel(out_trialData),'keepData vector contains %d values (expected %d)',numel(keepData),out_trialData);
