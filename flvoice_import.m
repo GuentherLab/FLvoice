@@ -102,7 +102,7 @@ if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 
-DEFAULTS.set_qc=[];
+DEFAULTS.SET_QC=[];
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
 if ischar(OPTIONS.N_LPC), OPTIONS.N_LPC=str2num(OPTIONS.N_LPC); end
@@ -212,15 +212,15 @@ for nsample=1:numel(RUNS)
         fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
         filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
     end
-    if isfield(OPTIONS,'set_qc')&&~isempty(OPTIONS.set_qc)
+    if isfield(OPTIONS,'SET_QC')&&~isempty(OPTIONS.SET_QC)
         assert(numel(RUNS)==1,'unable to save QC information for multiple subjects/sesions/runs simultaneously. Select a single subject/session/run and try again');
         filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
         if conn_existfile(filename_qcData), tdata=conn_loadmatfile(filename_qcData,'-cache'); end
-        assert(isfield(OPTIONS.set_qc,'badTrial')||isfield(tdata,'badTrial'),'SETQC structure missing ''badTrial'' field');
-        assert(isfield(OPTIONS.set_qc,'dictionary')||isfield(tdata,'dictionary'),'SETQC structure missing ''dictionary'' field');
-        tdata.badTrial=OPTIONS.set_qc.badTrial;
-        tdata.dictionary=OPTIONS.set_qc.dictionary;
-        if isfield(OPTIONS.set_qc,'keepData'), tdata.keepData=OPTIONS.set_qc.keepData;
+        assert(isfield(OPTIONS.SET_QC,'badTrial')||isfield(tdata,'badTrial'),'SETQC structure missing ''badTrial'' field');
+        assert(isfield(OPTIONS.SET_QC,'dictionary')||isfield(tdata,'dictionary'),'SETQC structure missing ''dictionary'' field');
+        tdata.badTrial=OPTIONS.SET_QC.badTrial;
+        tdata.dictionary=OPTIONS.SET_QC.dictionary;
+        if isfield(OPTIONS.SET_QC,'keepData'), tdata.keepData=OPTIONS.SET_QC.keepData;
         else tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]);
         end
         fprintf('saving file %s\n',filename_qcData);
