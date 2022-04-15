@@ -822,70 +822,33 @@ end
         end
         emptyIdx = cellfun(@isempty,subList);
         subList(emptyIdx) = [];
+        data.vars.subList = subList;
         
         set(data.handles.subDrop, 'String', subList, 'Value', 1);
         disp('Loading default data from root folder:')
-        if isempty(subList)
-            disp('Could not find any subjects in root folder')
-            set(data.handles.hfig,'pointer','arrow');
-            drawnow;
-            % re-enable buttons when done 
-            set(data.handles.prevButton, 'Enable', 'on');
-            set(data.handles.nextButton, 'Enable', 'on');
-            set(data.handles.hfig,'userdata',data);
-            return
-        else
-            curSub = subList{get(data.handles.subDrop, 'Value')};
-            fprintf('Loading subject %s:', curSub); 
-        end
+        curSub = subList{get(data.handles.subDrop, 'Value')};
+        fprintf('Loading subject %s:', curSub); 
         data.vars.subList = subList;
         data.vars.curSub = curSub;
         
         % update sess
         sessList = flvoice('import', curSub);
         set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
-        if isempty(sessList)
-            fprintf('Found no sess for subject: %s',curSub);
-            set(data.handles.hfig,'pointer','arrow');
-            drawnow;
-            % re-enable buttons when done 
-            set(data.handles.prevButton, 'Enable', 'on');
-            set(data.handles.nextButton, 'Enable', 'on');
-            set(data.handles.hfig,'userdata',data);
-            return
-        else
-            curSess = sessList{get(data.handles.sessionDrop, 'Value')};
-        end
+        curSess = sessList{get(data.handles.sessionDrop, 'Value')};
         data.vars.sessList = sessList;
         data.vars.curSess = curSess;
         
         % update run
         runList = flvoice('import', curSub,curSess);
         set(data.handles.runDrop, 'String', runList, 'Value', 1);
-        if isempty(runList) 
-            disp('Found no runs for this subject')
-            set(data.handles.hfig,'pointer','arrow');
-            drawnow;
-            % re-enable buttons when done 
-            set(data.handles.prevButton, 'Enable', 'on');
-            set(data.handles.nextButton, 'Enable', 'on');
-            set(data.handles.hfig,'userdata',data);
-            return
-        else
-            curRun = runList{get(data.handles.runDrop, 'Value')};
-        end
+        curRun = runList{get(data.handles.runDrop, 'Value')};
         data.vars.runList = runList;
         data.vars.curRun = curRun;
         
         % update task
         taskList = flvoice('import', curSub,curSess, curRun);
         set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-        if isempty(taskList)
-            disp('Found no tasks for this subject')
-            return
-        else
-            curTask = taskList{get(data.handles.taskDrop, 'Value')};
-        end
+        curTask = taskList{get(data.handles.taskDrop, 'Value')};
         data.vars.taskList = taskList;
         data.vars.curTask = curTask;
         
@@ -941,8 +904,8 @@ end
         %end
                   
         curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
-        if isempty(curRunQC.badTrial)
-            numFlags = 7;
+        numFlags = 7;
+        if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
             curRunQC.badTrial = zeros(numFlags,60);
             curRunQC.dictionary = cell(1,60);
         end
@@ -1006,29 +969,33 @@ end
         
     else % set values based on given inputs
         % update subjects
-        subList = flvoice('import');
-        for i = 1:numel(subList)
-            if isempty(flvoice('import', subList{i}))
-                subList{i} = [];
-                continue
-            else
-                sessL = flvoice('import', subList{i});
-                tsess = sessL{1}; 
+        if isfield(data.vars, 'subList')
+            subList = data.vars.subList;
+        else
+            subList = flvoice('import');
+            for i = 1:numel(subList)
+                if isempty(flvoice('import', subList{i}))
+                    subList{i} = [];
+                    continue
+                else
+                    sessL = flvoice('import', subList{i});
+                    tsess = sessL{1};
+                end
+                if isempty(flvoice('import', subList{i},tsess))
+                    subList{i} = [];
+                    continue
+                else
+                    runL = flvoice('import', subList{i},tsess);
+                    trun = runL{1};
+                end
+                if isempty(flvoice('import', subList{i},tsess, trun))
+                    subList{i} = [];
+                    continue
+                end
             end
-            if isempty(flvoice('import', subList{i},tsess))
-                subList{i} = [];
-                continue
-            else
-                runL = flvoice('import', subList{i},tsess);
-                trun = runL{1};
-            end
-            if isempty(flvoice('import', subList{i},tsess, trun))
-                subList{i} = [];
-                continue
-            end
+            emptyIdx = cellfun(@isempty,subList);
+            subList(emptyIdx) = [];
         end
-        emptyIdx = cellfun(@isempty,subList);
-        subList(emptyIdx) = [];
         subIdx = find(contains(subList,sub));
         set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
         %disp('Loading default data from root folder:')
