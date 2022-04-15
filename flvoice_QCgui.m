@@ -800,30 +800,92 @@ end
     if init % set values to first value in each droplist
         % update subjects
         subList = flvoice('import');
+        for i = 1:numel(subList)
+            if isempty(flvoice('import', subList{i}))
+                subList{i} = [];
+                continue
+            else
+                sessL = flvoice('import', subList{i});
+                tsess = sessL{1}; 
+            end
+            if isempty(flvoice('import', subList{i},tsess))
+                subList{i} = [];
+                continue
+            else
+                runL = flvoice('import', subList{i},tsess);
+                trun = runL{1};
+            end
+            if isempty(flvoice('import', subList{i},tsess, trun))
+                subList{i} = [];
+                continue
+            end
+        end
+        emptyIdx = cellfun(@isempty,subList);
+        subList(emptyIdx) = [];
+        
         set(data.handles.subDrop, 'String', subList, 'Value', 1);
         disp('Loading default data from root folder:')
-        curSub = subList{get(data.handles.subDrop, 'Value')};
+        if isempty(subList)
+            disp('Could not find any subjects in root folder')
+            set(data.handles.hfig,'pointer','arrow');
+            drawnow;
+            % re-enable buttons when done 
+            set(data.handles.prevButton, 'Enable', 'on');
+            set(data.handles.nextButton, 'Enable', 'on');
+            set(data.handles.hfig,'userdata',data);
+            return
+        else
+            curSub = subList{get(data.handles.subDrop, 'Value')};
+            fprintf('Loading subject %s:', curSub); 
+        end
         data.vars.subList = subList;
         data.vars.curSub = curSub;
         
         % update sess
         sessList = flvoice('import', curSub);
         set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
-        curSess = sessList{get(data.handles.sessionDrop, 'Value')};
+        if isempty(sessList)
+            fprintf('Found no sess for subject: %s',curSub);
+            set(data.handles.hfig,'pointer','arrow');
+            drawnow;
+            % re-enable buttons when done 
+            set(data.handles.prevButton, 'Enable', 'on');
+            set(data.handles.nextButton, 'Enable', 'on');
+            set(data.handles.hfig,'userdata',data);
+            return
+        else
+            curSess = sessList{get(data.handles.sessionDrop, 'Value')};
+        end
         data.vars.sessList = sessList;
         data.vars.curSess = curSess;
         
         % update run
         runList = flvoice('import', curSub,curSess);
         set(data.handles.runDrop, 'String', runList, 'Value', 1);
-        curRun = runList{get(data.handles.runDrop, 'Value')};
+        if isempty(runList) 
+            disp('Found no runs for this subject')
+            set(data.handles.hfig,'pointer','arrow');
+            drawnow;
+            % re-enable buttons when done 
+            set(data.handles.prevButton, 'Enable', 'on');
+            set(data.handles.nextButton, 'Enable', 'on');
+            set(data.handles.hfig,'userdata',data);
+            return
+        else
+            curRun = runList{get(data.handles.runDrop, 'Value')};
+        end
         data.vars.runList = runList;
         data.vars.curRun = curRun;
         
         % update task
         taskList = flvoice('import', curSub,curSess, curRun);
         set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-        curTask = taskList{get(data.handles.taskDrop, 'Value')};
+        if isempty(taskList)
+            disp('Found no tasks for this subject')
+            return
+        else
+            curTask = taskList{get(data.handles.taskDrop, 'Value')};
+        end
         data.vars.taskList = taskList;
         data.vars.curTask = curTask;
         
@@ -833,8 +895,19 @@ end
         % update trial
         trialList = (1:size(curInputData,2));
         set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
-        curTrial = get(data.handles.trialDrop, 'Value');
-        curCond = curInputData(curTrial).condLabel;
+        if isempty(trialList)
+            disp('Found no trials')
+            set(data.handles.hfig,'pointer','arrow');
+            drawnow;
+            % re-enable buttons when done 
+            set(data.handles.prevButton, 'Enable', 'on');
+            set(data.handles.nextButton, 'Enable', 'on');
+            set(data.handles.hfig,'userdata',data);
+            return
+        else
+            curTrial = get(data.handles.trialDrop, 'Value');
+            curCond = curInputData(curTrial).condLabel;
+        end
         set(data.handles.condVal, 'String', curCond);
         data.vars.trialList = trialList;
         data.vars.curCond = curCond;
@@ -934,6 +1007,28 @@ end
     else % set values based on given inputs
         % update subjects
         subList = flvoice('import');
+        for i = 1:numel(subList)
+            if isempty(flvoice('import', subList{i}))
+                subList{i} = [];
+                continue
+            else
+                sessL = flvoice('import', subList{i});
+                tsess = sessL{1}; 
+            end
+            if isempty(flvoice('import', subList{i},tsess))
+                subList{i} = [];
+                continue
+            else
+                runL = flvoice('import', subList{i},tsess);
+                trun = runL{1};
+            end
+            if isempty(flvoice('import', subList{i},tsess, trun))
+                subList{i} = [];
+                continue
+            end
+        end
+        emptyIdx = cellfun(@isempty,subList);
+        subList(emptyIdx) = [];
         subIdx = find(contains(subList,sub));
         set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
         %disp('Loading default data from root folder:')
