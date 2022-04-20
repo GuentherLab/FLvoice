@@ -123,7 +123,7 @@ if isempty(SUB),
     end
     return
 end
-if ischar(SUB), SUB={SUB}; end
+if ischar(SUB), SUB={SUB}; end % SUB is a cell array
 if isempty(SES)||isequal(SES,0),
     SUBS={};
     SESS={};
@@ -143,6 +143,7 @@ if isempty(SES)||isequal(SES,0),
     SES=str2double(regexprep(SESS,'^ses-',''));
     SUB=SUBS;
 end
+if iscell(SES), SES=str2double(regexprep(SESS,'^ses-','')); end % SES is a vector
 if numel(SUB)==1&&numel(SES)>1, SUB=repmat(SUB,size(SES)); end
 if numel(SUB)>1&&numel(SES)==1, SES=repmat(SES,size(SUB)); end
 assert(numel(SUB)==numel(SES),'mismatched number of elements in SUB and SES entries');
@@ -154,10 +155,10 @@ if isempty(RUN)||isequal(RUN,0),
         [nill,runs1]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh',sprintf('sub-%s_ses-%d_run-*_desc-audio.mat',SUB{nsample},SES(nsample))),'-R','-cell'),'uni',0);
         [nill,runs2]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh',sprintf('sub-%s_ses-%d_run-*.mat',SUB{nsample},SES(nsample))),'-R','-cell'),'uni',0);
         runs=union(runs1,runs2);
-        runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
+        runs=unique(regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1'));
         %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
         RUNS=[RUNS; runs(:)];
-        SESS=[SESS; SES(nsample)+zeros(numel(runs),1)];
+        SESS=[SESS; repmat(SES(nsample),numel(runs),1)];
         SUBS=[SUBS; repmat(SUB(nsample),numel(runs),1)];
     end
     if isempty(RUN)
@@ -172,6 +173,7 @@ if isempty(RUN)||isequal(RUN,0),
     SES=SESS;
     SUB=SUBS;
 end
+if iscell(RUN), RUN=str2double(regexprep(RUN,'^run-','')); end % RUN is a vector
 SUBS=SUB;
 SESS=SES;
 RUNS=RUN;
