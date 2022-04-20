@@ -463,7 +463,13 @@ end
     subList = data.vars.subList;
     newSubIdx = get(data.handles.subDrop, 'Value');
     newSub = subList{newSubIdx};
-    updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, 1);
+    
+    
+    taskList = flvoice('import',sub, ses, run);
+    set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+    curTask = taskList{get(data.handles.taskDrop, 'Value')};
+    
+    updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curSub = newSub;
     
@@ -498,9 +504,16 @@ end
     flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
     
     sessList = data.vars.sessList;
-    newSessIdx = get(data.handles.sessDrop, 'Value');
+    newSessIdx = get(data.handles.sessionDrop, 'Value');
     newSess = sessList{newSessIdx};
-    updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, data.vars.curTask, 1);
+
+    taskList = flvoice('import',sub, newSess, run);
+    set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+    curTask = taskList{get(data.handles.taskDrop, 'Value')};
+    %data.vars.taskList = taskList;
+    %data.vars.curTask = curTask;
+        
+    updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curSess = newSess;
     
@@ -537,6 +550,7 @@ end
     runList = data.vars.runList;
     newRunIdx = get(data.handles.runDrop, 'Value');
     newRun = runList{newRunIdx};
+    
     updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curRun = newRun;
@@ -1120,6 +1134,9 @@ end
         % only relevant for some backward compat data
         if isfield(curInputData(trial), 'timingTrial')
             pertOnset = (curInputData(trial).timingTrial(5)- curInputData(trial).timingTrial(1));
+            if isnan(pertOnset)
+                pertOnset = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1));
+            end
         else
             pertOnset = curInputData(trial).pertOnset;
         end
