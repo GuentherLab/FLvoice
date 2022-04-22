@@ -464,8 +464,25 @@ end
     newSubIdx = get(data.handles.subDrop, 'Value');
     newSub = subList{newSubIdx};
     
+    sessList = flvoice('import', newSub);
+    % check for empty sessions
+    for i = 1:numel(sessList)
+        if ~isempty(flvoice('import', newSub, sessList{i}))
+            continue
+        else
+            sessList{i} = [];
+        end
+    end
+    emptyIdx = cellfun(@isempty,sessList);
+    sessList(emptyIdx) = [];
+    curSess = sessList{1};
+    data.vars.curSess = curSess;
     
-    taskList = flvoice('import',sub, ses, run);
+    runList = flvoice('import',newSub, curSess);
+    curRun = runList{1};
+    data.vars.curRun = curRun;
+        
+    taskList = flvoice('import',newSub, curSess, curRun);
     set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
     curTask = taskList{get(data.handles.taskDrop, 'Value')};
     
@@ -506,8 +523,12 @@ end
     sessList = data.vars.sessList;
     newSessIdx = get(data.handles.sessionDrop, 'Value');
     newSess = sessList{newSessIdx};
+    
+    runList = flvoice('import',sub, newSess);
+    curRun = runList{1};
+    data.vars.curRun = curRun;
 
-    taskList = flvoice('import',sub, newSess, run);
+    taskList = flvoice('import',sub, newSess, curRun);
     set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
     curTask = taskList{get(data.handles.taskDrop, 'Value')};
     %data.vars.taskList = taskList;
@@ -815,25 +836,31 @@ end
         % update subjects
         subList = flvoice('import');
         for i = 1:numel(subList)
-            if isempty(flvoice('import', subList{i}))
+            if isempty(flvoice('import', subList{i})) % if no sessions skip subj
                 subList{i} = [];
                 continue
             else
-                sessL = flvoice('import', subList{i});
-                tsess = sessL{1}; 
+                sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
+                allempty = 1;
+                for j = 1:numel(sessL)
+                    tsess = sessL{j};
+                    if ~isempty(flvoice('import', subList{i},tsess))
+                        allempty = 0;
+                        continue
+                    end
+                end 
+                if allempty == 1 % if all sessions are empty, exclude the subject
+                    subList{i} = [];
+                    continue
+                end
             end
-            if isempty(flvoice('import', subList{i},tsess))
-                subList{i} = [];
-                continue
-            else
-                runL = flvoice('import', subList{i},tsess);
-                trun = runL{1};
-            end
-            if isempty(flvoice('import', subList{i},tsess, trun))
-                subList{i} = [];
-                continue
-            end
-        end
+         end
+        %runL = flvoice('import', subList{i},tsess);
+        %trun = runL{1};
+        %if isempty(flvoice('import', subList{i},tsess, trun))
+        %    subList{i} = [];
+        %    continue
+        %end
         emptyIdx = cellfun(@isempty,subList);
         subList(emptyIdx) = [];    
         data.vars.subList = subList;
@@ -846,6 +873,16 @@ end
         
         % update sess
         sessList = flvoice('import', curSub);
+        % check for empty sessions
+        for i = 1:numel(sessList)
+            if ~isempty(flvoice('import', curSub, sessList{i}))
+                continue
+            else
+                sessList{i} = [];
+            end
+        end
+        emptyIdx = cellfun(@isempty,sessList);
+        sessList(emptyIdx) = [];    
         set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
         curSess = sessList{get(data.handles.sessionDrop, 'Value')};
         data.vars.sessList = sessList;
@@ -956,7 +993,14 @@ end
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.formantAxis);
         set(data.handles.formantAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
-        pertOnset = curInputData(curTrial).pertOnset;
+        if isfield(curInputData(curTrial), 'timingTrial')
+            pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(1));
+            if isnan(pertOnset)
+                pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
+            end
+        else
+            pertOnset = curInputData(curTrial).pertOnset;
+        end
         hold on; xline(pertOnset,'y:','linewidth',2); grid on;
         
         axes(data.handles.ppAxis);
@@ -1016,6 +1060,16 @@ end
         
         % update sess
         sessList = flvoice('import', sub);
+        % check for empty sessions
+        for i = 1:numel(sessList)
+            if ~isempty(flvoice('import', sub, sessList{i}))
+                continue
+            else
+                sessList{i} = [];
+            end
+        end
+        emptyIdx = cellfun(@isempty,sessList);
+        sessList(emptyIdx) = [];    
         sessIdx = find(contains(sessList,sess));
         set(data.handles.sessionDrop, 'String', sessList, 'Value', sessIdx);
         data.vars.sessList = sessList;
@@ -1027,7 +1081,7 @@ end
         set(data.handles.runDrop, 'String', runList, 'Value', runIdx);
         data.vars.runList = runList;
         data.vars.curRun = run;
-        
+               
         % update task
         taskList = flvoice('import', sub,sess,run);
         taskIdx = find(contains(taskList,task));
