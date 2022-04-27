@@ -58,6 +58,10 @@ elseif numel(varargin)>=1&&ischar(varargin{1}) % other
             [varargout{1:nargout}]=flvoice_import(varargin{2:end},'input');
         case 'IMPORT.OUTPUT'
             [varargout{1:nargout}]=flvoice_import(varargin{2:end},'output');
+        case 'submit'
+            if ~nargout, conn('submit',mfilename,varargin{2:end}); % e.g. flvoice submit import ...
+            else [varargout{1:nargout}]=conn('submit',mfilename,varargin{2:end});
+            end
         otherwise
             error('unrecognized option %s',varargin{1});
     end

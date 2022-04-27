@@ -1016,13 +1016,15 @@ end
         
         axes(data.handles.pitchAxis);
         set(data.handles.pitchAxis, 'OuterPosition', [-0.12, 0.10, 1.14, 0.25]);
-        spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
+        %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
+        flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
         fmt = [curOutputData(1).s{1,2},curOutputData(1).s{1,3}];
         hold on; plot(t,fmt'/1e3,'k.-'); hold off;
         set(data.handles.pitchAxis, 'units','norm','position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         %set(data.handles.pitchAxis, 'yscale', 'log');
-        set(data.handles.pitchAxis, 'ylim', [0 8]) % helps  but not quite the same scale I think
-        xlabel('Time (s)'); ylabel('formants (KHz)');
+        set(data.handles.pitchAxis, 'ylim', [0 8],'ytick',[1 2 4 8]) % helps  but not quite the same scale I think
+        set(data.handles.pitchAxis, 'yscale','log');
+        %xlabel('Time (s)'); ylabel('formants (KHz)');
         
         
     else % set values based on given inputs
@@ -1213,12 +1215,14 @@ end
         cla(data.handles.pitchAxis);
         axes(data.handles.pitchAxis);
         set(data.handles.pitchAxis, 'OuterPosition', [-0.12, 0.10, 1.14, 0.25]);
-        spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
+        %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
+        flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
         fmt = [curOutputData(trial).s{1,2},curOutputData(trial).s{1,3}];
         hold on; plot(t,fmt'/1e3,'k.-'); hold off;
         set(data.handles.pitchAxis, 'units','norm','position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-        set(data.handles.pitchAxis, 'ylim', [0 8]) % helps  but not quite the same scale I think
-        xlabel('Time (s)'); ylabel('formants (KHz)');        
+        set(data.handles.pitchAxis, 'ylim', [0 8],'ytick',[1 2 4 8]) % helps  but not quite the same scale I think
+        set(data.handles.pitchAxis, 'yscale','log');
+        %xlabel('Time (s)'); ylabel('formants (KHz)');        
  
     end
         % save curr data
