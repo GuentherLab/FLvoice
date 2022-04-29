@@ -1,13 +1,52 @@
 function varagout=flvoice_QCgui(option,varargin)
-% Quality control GUI for FLvoice
+% Quality control GUI that utilizes FLvoice
+% To run GUI simply use the command.
+% >> flvoice_QCgui() 
+% This will initialize the GUI at the first subject available in the current 'ROOT' folder
+%
+% If you'd like to start the GUI at a specific subj / trial, use the command structure
+% flvoice_QCgui('setup', 'sub', 'ses', 'run', 'task', trialnum)
+% ex) 
+% >> flvoice_QCgui('setup', 'sub-SAP03', 'ses-1', 'run-1', 'som', 1)
+
 
 % if no input / no /option/, initialize 
 if ~nargin||isempty(option)
     option ='init'; 
+elseif strcmp(option,'init')
+    option = 'init';
+else
+    option ='setup';
 end
 
 switch(lower(option))
     case 'init' % initializing main elements of the GUI
+        setup = 0;
+        initGUI(setup)
+    case 'setup'
+        setup = 1;
+        sub = varargin{1};
+        sess = varargin{2};
+        run = varargin{3};
+        task = varargin{4};
+        trial = varargin{5};
+        if ischar(trial); trial = str2double(trial); end
+        initGUI(setup, sub, sess, run, task, trial)        
+end
+
+
+    function initGUI(varargin) %(setup, sub, sess, run, task, trial)
+        if numel(varargin) < 1 || varargin{1} == 0
+            setup = 0;
+        else
+            setup = varargin{1};
+            sub = varargin{2};
+            sess = varargin{3};
+            run = varargin{4};
+            task = varargin{5};
+            trial = varargin{6};
+        end 
+        
         % Main figure
         data.handles.hfig=figure('Units','norm','Position',[.25 .2 .6 .6],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w');
         % reminder; position is [(bottom left corner normalized x pos) (bottom left corner normalized y pos) (width) (heigth)]
@@ -121,21 +160,17 @@ switch(lower(option))
         data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Save &<br/>Exit</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .005 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @saveExit);
         
         % Update GUI to current sub / trial
-        updateSubj(data);  
+        switch setup
+            case 0
+                updateSubj(data);
+            case 1 % start GUI at requested subj
+                updateSubj(data, sub, sess, run, task, trial)
+        end
         data = get(data.handles.hfig, 'userdata');
-        
-        %NLPCval = 2+ceil(data.vars.curOutputData(data.vars.curTrial).fs/1000);
-        %set(data.handles.NLPCtxtBox, 'String', NLPCval);
-        %updateSubj(data, 'sub-SAP04', 'ses-1', 'run-1', 'som', '10');      
         set(data.handles.hfig,'userdata',data);
+    end
         
-        
-    %case 'update'
-    %    if isempty(hfig), hfig=gcf; end
-    %    data=get(hfig,'userdata');
-    %    set(data.handles.hfig,'userdata',data);
-        
-end
+
 
     function updateSettings(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
@@ -828,11 +863,15 @@ end
         trial = varargin{5};
         
         % if it's the same sub, sess, task, no need to run fl_import in the future 
-        if isequal(sub,data.vars.curSub) && isequal(sess,data.vars.curSess) && isequal(run,data.vars.curRun) && isequal(task,data.vars.curTask)
-            loadData = 0;
+        if isfield(data,'vars')
+            if isequal(sub,data.vars.curSub) && isequal(sess,data.vars.curSess) && isequal(run,data.vars.curRun) && isequal(task,data.vars.curTask)
+                loadData = 0;
+            else
+                loadData = 1;
+            end 
         else
             loadData = 1;
-        end 
+        end
     end 
     if init % set values to first value in each droplist
         % update subjects
@@ -1029,37 +1068,36 @@ end
         
     else % set values based on given inputs
         % update subjects
-        if isfield(data.vars, 'subList')
+        if isfield(data, 'vars') && isfield(data.vars, 'subList')
             subList = data.vars.subList;
         else
             subList = flvoice('import');
             for i = 1:numel(subList)
-                if isempty(flvoice('import', subList{i}))
+                if isempty(flvoice('import', subList{i})) % if no sessions skip subj
                     subList{i} = [];
                     continue
                 else
-                    sessL = flvoice('import', subList{i});
-                    tsess = sessL{1};
-                end
-                if isempty(flvoice('import', subList{i},tsess))
-                    subList{i} = [];
-                    continue
-                else
-                    runL = flvoice('import', subList{i},tsess);
-                    trun = runL{1};
-                end
-                if isempty(flvoice('import', subList{i},tsess, trun))
-                    subList{i} = [];
-                    continue
+                    sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
+                    allempty = 1;
+                    for j = 1:numel(sessL)
+                        tsess = sessL{j};
+                        if ~isempty(flvoice('import', subList{i},tsess))
+                            allempty = 0;
+                            continue
+                        end
+                    end
+                    if allempty == 1 % if all sessions are empty, exclude the subject
+                        subList{i} = [];
+                        continue
+                    end
                 end
             end
-            emptyIdx = cellfun(@isempty,subList);
-            subList(emptyIdx) = [];
         end
+        emptyIdx = cellfun(@isempty,subList);
+        subList(emptyIdx) = [];    
+        data.vars.subList = subList;
         subIdx = find(contains(subList,sub));
         set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
-        %disp('Loading default data from root folder:')
-        data.vars.subList = subList;
         data.vars.curSub = sub;
         
         % update sess
