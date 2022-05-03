@@ -813,6 +813,11 @@ end
     function playHead(ObjH, EventData)
     hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
     data=get(hfig,'userdata');
+    
+    curTrial = data.vars.curTrial;
+    headWav = data.vars.headWav;
+    fs = data.vars.curInputData(curTrial).fs;
+    soundsc(headWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
 
     %set(data.handles.hfig,'userdata',data);
     end
@@ -1024,6 +1029,24 @@ end
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
+        if strcmp(curTask, 'aud')
+            set(data.handles.headAxis, 'visible', 'on');
+            if isfield(data.handles, 'headPlot')
+                set(data.handles.headPlot, 'visible', 'on');
+            end
+            set(data.handles.playHeadButton, 'enable', 'on');
+            headWav = curInputData(curTrial).s{2};
+            headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
+            data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
+            set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            data.vars.headWav = headWav;
+            data.vars.headTime = headTime;
+        else
+            set(data.handles.headAxis, 'visible', 'off');
+            set(data.handles.headPlot, 'visible', 'off');
+            set(data.handles.playHeadButton, 'enable', 'off');
+        end
+        
         % update spectogram plots
         curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output');
         curOutputData = curOutputData{1};
@@ -1209,6 +1232,24 @@ end
         set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
+        
+        if strcmp(task, 'aud')
+            set(data.handles.headAxis, 'visible', 'on');
+            if isfield(data.handles, 'headPlot')
+                set(data.handles.headPlot, 'visible', 'on');
+            end
+            set(data.handles.playHeadButton, 'enable', 'on');
+            headWav = curInputData(trial).s{2};
+            headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
+            data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
+            set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            data.vars.headWav = headWav;
+            data.vars.headTime = headTime;
+        else
+            set(data.handles.headAxis, 'visible', 'off');
+            set(data.handles.headPlot, 'visible', 'off');
+            set(data.handles.playHeadButton, 'enable', 'off');
+        end
         
         % update spectogram plots
         if loadData % only run fl_voice_import() if data being loaded is different from current
