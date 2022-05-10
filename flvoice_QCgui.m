@@ -230,6 +230,8 @@ end
     % re-enable buttons when done 
     set(data.handles.prevButton, 'Enable', 'on');
     set(data.handles.nextButton, 'Enable', 'on');
+    updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, data.vars.curTrial);
+    data = get(data.handles.hfig, 'userdata');
     set(data.handles.hfig,'userdata',data);
     end
 
@@ -1088,6 +1090,10 @@ end
         %set(data.handles.pitchAxis, 'yscale', 'log');
         set(data.handles.pitchAxis, 'ylim', [0 8],'ytick',[1 2 4 8]) % helps  but not quite the same scale I think
         set(data.handles.pitchAxis, 'yscale','log');
+        % can change colormap by doing the following:
+        % colormap(jet); caxis('auto') %caxis([-170 0
+        % maybe add button to do this? 
+        % should probably also make the legend visible if so
         %xlabel('Time (s)'); ylabel('formants (KHz)');
         
         
