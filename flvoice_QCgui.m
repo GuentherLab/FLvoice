@@ -1058,14 +1058,16 @@ end
         set(data.handles.formantAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         if isfield(curInputData(curTrial), 'timingTrial')
-            pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(1));
+            voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
+            pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(2));
             if isnan(pertOnset)
                 pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
             end
         else
             pertOnset = curInputData(curTrial).pertOnset;
         end
-        hold on; xline(pertOnset,'y:','linewidth',2); grid on;
+        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2); grid on;
+        hold on; xline(voiceOnset,'m--',{'Voice','onset'},'linewidth',2); grid on;
         
         axes(data.handles.ppAxis);
         f0 = curOutputData(curTrial).s{1,1};%NOTE always s{1,1}?
@@ -1270,14 +1272,17 @@ end
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         % only relevant for some backward compat data
         if isfield(curInputData(trial), 'timingTrial')
-            pertOnset = (curInputData(trial).timingTrial(5)- curInputData(trial).timingTrial(1));
+            voiceOnset = (curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2));
+            pertOnset = (curInputData(trial).timingTrial(5)- curInputData(trial).timingTrial(2));
             if isnan(pertOnset)
                 pertOnset = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1));
             end
         else
             pertOnset = curInputData(trial).pertOnset;
         end
-        hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset 
+        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2); grid on;
+        hold on; xline(voiceOnset,'m--',{'Voice','onset'},'linewidth',2); grid on;
+        %hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset 
         
         cla(data.handles.ppAxis);
         axes(data.handles.ppAxis);
