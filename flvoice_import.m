@@ -346,6 +346,10 @@ for nsample=1:numel(RUNS)
                 
                 fprintf('estimating formants trial #%d\n',trialNum);
                 if fs~=16000, for ns=1:numel(s), s{ns}=resample(s{ns},16000,fs); end; fs=16000; end
+                out_trialData(trialNum).s={};
+                out_trialData(trialNum).dataLabel={};
+                out_trialData(trialNum).dataUnits={};
+                out_trialData(trialNum).t={};
                 for ns=1:numel(s)
                     
                     [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
