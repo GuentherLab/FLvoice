@@ -149,14 +149,15 @@ end
         data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .86],'Parent',data.handles.hfig);        
         data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.76, 1.14, 0.25], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
         data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.54, 1.14, 0.25], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
-        data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
+        data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
         data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
-        data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.10, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
+        data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.10, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
         % Axes Buttons
         data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .86 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
         data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .64 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
-        data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
-        data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
+        %optional buttons
+        %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
+        %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
         data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Save &<br/>Exit</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .005 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @saveExit);
         
         % Update GUI to current sub / trial
@@ -1053,11 +1054,11 @@ end
         curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output');
         curOutputData = curOutputData{1};
         
-        axes(data.handles.formantAxis);
+        axes(data.handles.pitchAxis);
         s = curInputData(curTrial).s{1}; %NOTE always s{1}?
         fs = curInputData(curTrial).fs;
-        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.formantAxis);
-        set(data.handles.formantAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
+        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
+        set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         if isfield(curInputData(curTrial), 'timingTrial')
             voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
@@ -1080,16 +1081,16 @@ end
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
         
-        axes(data.handles.pitchAxis);
-        set(data.handles.pitchAxis, 'OuterPosition', [-0.12, 0.10, 1.14, 0.25]);
+        axes(data.handles.formantAxis);
+        set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
         flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
         fmt = [curOutputData(1).s{1,2},curOutputData(1).s{1,3}];
         hold on; plot(t,fmt'/1e3,'k.-'); hold off;
-        set(data.handles.pitchAxis, 'units','norm','position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-        %set(data.handles.pitchAxis, 'yscale', 'log');
-        set(data.handles.pitchAxis, 'ylim', [0 8],'ytick',[1 2 4 8]) % helps  but not quite the same scale I think
-        set(data.handles.pitchAxis, 'yscale','log');
+        set(data.handles.formantAxis, 'yscale','log');
+        set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
+        set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
+        set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
         % can change colormap by doing the following:
         % colormap(jet); caxis('auto') %caxis([-170 0
         % maybe add button to do this? 
@@ -1267,14 +1268,14 @@ end
             curOutputData = data.vars.curOutputData;
         end
         
-        cla(data.handles.formantAxis);
-        axes(data.handles.formantAxis);
+        cla(data.handles.pitchAxis);
+        axes(data.handles.pitchAxis);
         yyaxis('left');
         s = curInputData(trial).s{1}; %NOTE always s{1}?
         fs = curInputData(trial).fs;
         hold off; 
-        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.formantAxis);
-        set(data.handles.formantAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
+        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.pitchAxis);
+        set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         % only relevant for some backward compat data
         if isfield(curInputData(trial), 'timingTrial')
@@ -1302,18 +1303,18 @@ end
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
         
-        cla(data.handles.pitchAxis);
-        axes(data.handles.pitchAxis);
-        set(data.handles.pitchAxis, 'OuterPosition', [-0.12, 0.10, 1.14, 0.25]);
+        cla(data.handles.formantAxis);
+        axes(data.handles.formantAxis);
+        set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
         flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
         fmt = [curOutputData(trial).s{1,2},curOutputData(trial).s{1,3}];
         hold on; plot(t,fmt'/1e3,'k.-'); hold off;
-        set(data.handles.pitchAxis, 'units','norm','position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-        set(data.handles.pitchAxis, 'ylim', [0 8],'ytick',[1 2 4 8]) % helps  but not quite the same scale I think
-        set(data.handles.pitchAxis, 'yscale','log');
-        %xlabel('Time (s)'); ylabel('formants (KHz)');        
- 
+        set(data.handles.formantAxis, 'yscale','log');
+        set(data.handles.formantAxis, 'units','norm', 'fontsize',0.1,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
+        set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
+        set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
+        
     end
         % save curr data
         data.vars.curInputData = curInputData;
