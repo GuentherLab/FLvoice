@@ -1091,6 +1091,7 @@ end
         set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
         set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
+        colormap(jet)
         % can change colormap by doing the following:
         % colormap(jet); caxis('auto') %caxis([-170 0
         % maybe add button to do this? 
@@ -1314,6 +1315,7 @@ end
         set(data.handles.formantAxis, 'units','norm', 'fontsize',0.1,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
         set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
+        colormap(jet)
         
     end
         % save curr data
