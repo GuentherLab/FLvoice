@@ -1085,11 +1085,11 @@ end
             fs2 = curOutputData(curTrial).fs;
             %t = (0.025:0.001:2.524); % how do I derive this from given data?
             t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+            ppMic=plot(t,f0,'.','LineWidth',.4, 'Color', [.6 .6 .6]);
             hold on;
             f0headIdx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-headphones'));
             f0head = curOutputData(curTrial).s{1,f0headIdx};
-            ppHead=plot(t,f0head,'.','LineWidth',.6, 'Color', [0 0 0]);
+            ppHead=plot(t,f0head,'.','LineWidth',.4, 'Color', [0 0 0]);
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
@@ -1109,12 +1109,12 @@ end
             f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
             f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
             fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.4, 'Color', [.6 .6 .6]); hold off;
             hold on;
             f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
             f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
             fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
-            hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
+            hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.4, 'Color', [0 0 0]); hold off;
             uistack(fmtMic, 'top'); % making sure mic trace is on top
         end
         
