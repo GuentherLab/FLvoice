@@ -1024,7 +1024,6 @@ end
         data.vars.curRunQC = curRunQC; 
         
         % update mic/ head plots
-        runIdx = get(data.handles.runDrop, 'Value');
         micWav = curInputData(curTrial).s{1};
         micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
         data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
@@ -1032,7 +1031,7 @@ end
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
-        if strcmp(curTask, 'aud')
+        if strcmp(data.vars.curTask, 'aud')
             set(data.handles.headAxis, 'visible', 'on');
             if isfield(data.handles, 'headPlot')
                 set(data.handles.headPlot, 'visible', 'on');
@@ -1073,11 +1072,27 @@ end
         hold on; xline(voiceOnset,'m--',{'Voice','onset'},'linewidth',2); grid on;
         
         axes(data.handles.ppAxis);
-        f0 = curOutputData(curTrial).s{1,1};%NOTE always s{1,1}?
-        fs2 = curOutputData(curTrial).fs;
-        %t = (0.025:0.001:2.524); % how do I derive this from given data?
-        t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
+        if strcmp(data.vars.curTask, 'som')
+            f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0measure1'));
+            f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
+            fs2 = curOutputData(curTrial).fs;
+            %t = (0.025:0.001:2.524); % how do I derive this from given data?
+            t = [0+(0:numel(f0)-1)/fs2]; % correct??
+            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+        else
+            f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-mic'));
+            f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
+            fs2 = curOutputData(curTrial).fs;
+            %t = (0.025:0.001:2.524); % how do I derive this from given data?
+            t = [0+(0:numel(f0)-1)/fs2]; % correct??
+            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+            hold on;
+            f0headIdx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-headphones'));
+            f0head = curOutputData(curTrial).s{1,f0headIdx};
+            ppHead=plot(t,f0head,'.','LineWidth',.6, 'Color', [0 0 0]);
+            uistack(ppMic, 'top'); % making sure mic trace is on top
+        end
+        set(gca,'xlim',[0 numel(s)/fs]);
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
         
@@ -1085,8 +1100,25 @@ end
         set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
         flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
-        fmt = [curOutputData(1).s{1,2},curOutputData(1).s{1,3}];
-        hold on; plot(t,fmt'/1e3,'k.-'); hold off;
+        if strcmp(data.vars.curTask, 'som')
+            f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1measure1'));
+            f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2measure1'));
+            fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;   
+        else
+            f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
+            f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
+            fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
+            hold on;
+            f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
+            f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
+            fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
+            hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
+            uistack(fmtMic, 'top'); % making sure mic trace is on top
+        end
+        
+        %hold on; plot(headTime,headWav); hold off;
         set(data.handles.formantAxis, 'yscale','log');
         set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
@@ -1294,13 +1326,27 @@ end
         
         cla(data.handles.ppAxis);
         axes(data.handles.ppAxis);
-        f0 = curOutputData(trial).s{1,1};%NOTE always s{1,1}?
-        fs2 = curOutputData(trial).fs;
-        %t = (0.025:0.001:2.524); % how do I derive this from given data?
-        t0 = curOutputData(trial).t{1,5};
-        %t = t0+(0:numel(f0)-1/fs2); % correct??
-        t = [0+(0:numel(f0)-1)/fs2];
-        pp=plot(t,f0,'r.'); set(gca,'xlim',[0 numel(s)/fs]);
+        if strcmp(task, 'som')
+            f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0measure1'));
+            f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
+            fs2 = curOutputData(trial).fs;
+            %t = (0.025:0.001:2.524); % how do I derive this from given data?
+            t = [0+(0:numel(f0)-1)/fs2]; % correct??
+            ppMic=plot(t,f0,'.','LineWidth',1, 'Color', [.6 .6 .6]);
+        else
+            f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0-mic'));
+            f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
+            fs2 = curOutputData(trial).fs;
+            %t = (0.025:0.001:2.524); % how do I derive this from given data?
+            t = [0+(0:numel(f0)-1)/fs2]; % correct??
+            ppMic=plot(t,f0,'.','LineWidth',1, 'Color', [.6 .6 .6]);
+            hold on;
+            f0headIdx = find(contains(curOutputData(trial).dataLabel,'raw-F0-headphones'));
+            f0head = curOutputData(trial).s{1,f0headIdx};
+            ppHead=plot(t,f0head,'.','LineWidth',1, 'Color', [0 0 0]);
+            uistack(ppMic, 'top'); % making sure mic trace is on top
+        end
+        set(gca,'xlim',[0 numel(s)/fs]);
         set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
         hold off; 
         
@@ -1309,10 +1355,27 @@ end
         set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
         flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
-        fmt = [curOutputData(trial).s{1,2},curOutputData(trial).s{1,3}];
-        hold on; plot(t,fmt'/1e3,'k.-'); hold off;
+        if strcmp(task, 'som')
+            f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1measure1'));
+            f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2measure1'));
+            fmt = [curOutputData(trial).s{1,f1micIdx},curOutputData(trial).s{1,f2micIdx}];
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-', 'Color', [.6 .6 .6]); hold off;
+        else
+            f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1-mic'));
+            f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2-mic'));
+            fmt = [curOutputData(trial).s{1,f1micIdx},curOutputData(trial).s{1,f2micIdx}];
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-', 'Color', [.6 .6 .6]); hold off;
+            hold on;
+            f1headIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1-headphones'));
+            f2headIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2-headphones'));
+            fmtHead = [curOutputData(trial).s{1,f1headIdx},curOutputData(trial).s{1,f2headIdx}];
+            hold on; fmtHead = plot(t,fmtHead'/1e3,'.-', 'Color', [0 0 0]); hold off;
+            uistack(fmtMic, 'top'); % making sure mic trace is on top
+        end
+        
+        %hold on; plot(headTime,headWav); hold off;
         set(data.handles.formantAxis, 'yscale','log');
-        set(data.handles.formantAxis, 'units','norm', 'fontsize',0.1,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
+        set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
         set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
         colormap(jet)
