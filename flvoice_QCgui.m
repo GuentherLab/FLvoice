@@ -1058,7 +1058,7 @@ end
         fs = curInputData(curTrial).fs;
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
+        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 300]); yticks(50:25:300); hold off;
         if isfield(curInputData(curTrial), 'timingTrial')
             voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
             pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(2));
