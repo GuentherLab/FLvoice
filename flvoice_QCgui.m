@@ -1309,7 +1309,7 @@ end
         hold off; 
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
+        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 300]); yticks(50:25:300); hold off;
         % only relevant for some backward compat data
         if isfield(curInputData(trial), 'timingTrial')
             voiceOnset = (curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2));
