@@ -1058,7 +1058,7 @@ end
         fs = curInputData(curTrial).fs;
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 300]); yticks(50:25:300); hold off;
+        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 275]); yticks(50:25:275); hold off;
         if isfield(curInputData(curTrial), 'timingTrial')
             voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
             pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(2));
@@ -1093,7 +1093,7 @@ end
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
-        set(data.handles.ppAxis,'visible','off','ylim',[50 300]);
+        set(data.handles.ppAxis,'visible','off','ylim',[50 275]);
         hold off; 
         
         axes(data.handles.formantAxis);
@@ -1309,7 +1309,7 @@ end
         hold off; 
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 300]); yticks(50:25:300); hold off;
+        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([50, 275]); yticks(50:25:300); hold off;
         % only relevant for some backward compat data
         if isfield(curInputData(trial), 'timingTrial')
             voiceOnset = (curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2));
@@ -1347,7 +1347,7 @@ end
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
-        set(data.handles.ppAxis,'visible','off','ylim',[50 300]);
+        set(data.handles.ppAxis,'visible','off','ylim',[50 275]);
         hold off; 
         
         cla(data.handles.formantAxis);
