@@ -1093,7 +1093,7 @@ end
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
-        set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
+        set(data.handles.ppAxis,'visible','off','ylim',[50 300]);
         hold off; 
         
         axes(data.handles.formantAxis);
@@ -1347,7 +1347,7 @@ end
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
-        set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
+        set(data.handles.ppAxis,'visible','off','ylim',[50 300]);
         hold off; 
         
         cla(data.handles.formantAxis);
