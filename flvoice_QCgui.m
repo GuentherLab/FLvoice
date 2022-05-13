@@ -1078,7 +1078,7 @@ end
             fs2 = curOutputData(curTrial).fs;
             %t = (0.025:0.001:2.524); % how do I derive this from given data?
             t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+            ppMic=plot(t,f0,'.','LineWidth',.5, 'Color', [.6 .6 .6]);
         else
             f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-mic'));
             f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
@@ -1104,7 +1104,7 @@ end
             f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1measure1'));
             f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2measure1'));
             fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;   
+            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.5, 'Color', [.6 .6 .6]); hold off;   
         else
             f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
             f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
@@ -1332,18 +1332,18 @@ end
             fs2 = curOutputData(trial).fs;
             %t = (0.025:0.001:2.524); % how do I derive this from given data?
             t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',1, 'Color', [.6 .6 .6]);
+            ppMic=plot(t,f0,'.','LineWidth',.5, 'Color', [.6 .6 .6]);
         else
             f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0-mic'));
             f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
             fs2 = curOutputData(trial).fs;
             %t = (0.025:0.001:2.524); % how do I derive this from given data?
             t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',1, 'Color', [.6 .6 .6]);
+            ppMic=plot(t,f0,'.','LineWidth',.5, 'Color', [.6 .6 .6]);
             hold on;
             f0headIdx = find(contains(curOutputData(trial).dataLabel,'raw-F0-headphones'));
             f0head = curOutputData(trial).s{1,f0headIdx};
-            ppHead=plot(t,f0head,'.','LineWidth',1, 'Color', [0 0 0]);
+            ppHead=plot(t,f0head,'.','LineWidth',.5, 'Color', [0 0 0]);
             uistack(ppMic, 'top'); % making sure mic trace is on top
         end
         set(gca,'xlim',[0 numel(s)/fs]);
