@@ -25,11 +25,16 @@ switch(lower(option))
         initGUI(setup)
     case 'setup'
         setup = 1;
-        sub = varargin{1};
-        sess = varargin{2};
-        run = varargin{3};
-        task = varargin{4};
-        trial = varargin{5};
+        if nargin <2; disp('Please inputa subject'); 
+        else; sub = varargin{1}; end
+        if nargin <3; sess = [];
+        else; sess = varargin{2}; end
+        if nargin <4; run = [];
+        else; run = varargin{3}; end
+        if nargin <5; task = [];
+        else; task = varargin{4}; end
+        if nargin <6; trial = [];
+        else; trial = varargin{5}; end
         if ischar(trial); trial = str2double(trial); end
         initGUI(setup, sub, sess, run, task, trial)        
 end
@@ -166,6 +171,12 @@ end
                 updateSubj(data);
             case 1 % start GUI at requested subj
                 updateSubj(data, sub, sess, run, task, trial)
+                %if subj empty, 'disp' message requesting at least subj
+                %if sess missing, default to fist available (but this
+                %   is usually done in updateSubj (may be redundant here)
+                %if run missing, default to first available run
+                %if task is missing find task of current run
+                %if trial missing default to 1st......
         end
         data = get(data.handles.hfig, 'userdata');
         set(data.handles.hfig,'userdata',data);
@@ -1179,6 +1190,9 @@ end
         end
         emptyIdx = cellfun(@isempty,sessList);
         sessList(emptyIdx) = [];    
+        if isempty(sess)
+            sess = sessList{1};
+        end
         sessIdx = find(contains(sessList,sess));
         set(data.handles.sessionDrop, 'String', sessList, 'Value', sessIdx);
         data.vars.sessList = sessList;
@@ -1186,6 +1200,9 @@ end
         
         % update run
         runList = flvoice('import', sub,sess);
+        if isempty(run)
+            run = runList{1};
+        end
         runIdx = find(contains(runList,run));
         set(data.handles.runDrop, 'String', runList, 'Value', runIdx);
         data.vars.runList = runList;
@@ -1193,6 +1210,9 @@ end
                
         % update task
         taskList = flvoice('import', sub,sess,run);
+        if isempty(task)
+            task = taskList{1};
+        end
         taskIdx = find(contains(taskList,task));
         set(data.handles.taskDrop, 'String', taskList, 'Value', taskIdx);
         data.vars.taskList = taskList;
@@ -1207,6 +1227,9 @@ end
         end
         % update trial
         trialList = (1:size(curInputData,2));
+        if isempty(trial)
+            trial = trialList(1);
+        end
         trialIdx = find(trialList == trial); % most likely unecessary but useful for futureproofing
         set(data.handles.trialDrop, 'String', trialList, 'Value', trialIdx);
         curCond = curInputData(trial).condLabel;
@@ -1307,11 +1330,9 @@ end
         
         cla(data.handles.pitchAxis);
         axes(data.handles.pitchAxis);
-        yyaxis('left');
-        s = curInputData(trial).s{1}; %NOTE always s{1}?
+        s = curInputData(trial).s{1};
         fs = curInputData(trial).fs;
-        hold off; 
-        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'color', [0 0.4470 0.7410], 'Parent', data.handles.pitchAxis);
+        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         % only relevant for some backward compat data
