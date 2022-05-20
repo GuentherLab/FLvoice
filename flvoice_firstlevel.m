@@ -1,5 +1,5 @@
 
-function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
+function [data, varargout]=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
 % data = flvoice_firstlevel(SUB,RUN,SES,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
@@ -361,6 +361,7 @@ for nsub=1:numel(USUBS)
             end
         end
     end
+    data.effect = effect; data.effect_CI = effect_CI; data.stats = stats;
     if OPTIONS.SAVE, 
         conn_savematfile(filename_outData,'effect','effect_CI','stats'); 
         fprintf('Output saved in file %s\n',filename_outData);
