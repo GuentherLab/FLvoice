@@ -1328,7 +1328,7 @@ end
             curOutputData = data.vars.curOutputData;
         end
         
-        cla(data.handles.pitchAxis);
+        cla(data.handles.pitchAxis, 'reset');
         axes(data.handles.pitchAxis);
         s = curInputData(trial).s{1};
         fs = curInputData(trial).fs;
@@ -1376,6 +1376,7 @@ end
         hold off; 
         
         cla(data.handles.formantAxis);
+        set(data.handles.formantAxis.Colorbar, 'Visible', 'off');
         axes(data.handles.formantAxis);
         set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
