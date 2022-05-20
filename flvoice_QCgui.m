@@ -1045,7 +1045,9 @@ end
             data.vars.headTime = headTime;
         else
             set(data.handles.headAxis, 'visible', 'off');
-            set(data.handles.headPlot, 'visible', 'off');
+            if isfield(data.handles, 'headPlot')
+                set(data.handles.headPlot, 'visible', 'off');
+            end
             set(data.handles.playHeadButton, 'enable', 'off');
         end
         
@@ -1289,7 +1291,9 @@ end
             data.vars.headTime = headTime;
         else
             set(data.handles.headAxis, 'visible', 'off');
-            set(data.handles.headPlot, 'visible', 'off');
+            if isfield(data.handles, 'headPlot')
+                set(data.handles.headPlot, 'visible', 'off');
+            end
             set(data.handles.playHeadButton, 'enable', 'off');
         end
         
