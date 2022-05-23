@@ -1072,9 +1072,10 @@ end
         data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
+        % .timingTrial = [TIME_TRIAL_START; TIME_TRIAL_ACTUALLYSTART; TIME_VOICE_START; TIME_PERT_START; TIME_PERT_ACTUALLYSTART; TIME_PERT_END; TIME_PERT_ACTUALLYEND; TIME_SCAN_START; TIME_SCAN_ACTUALLYSTART; TIME_SCAN_END];
         if isfield(curInputData(curTrial), 'timingTrial')
             voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
-            pertOnset = (curInputData(curTrial).timingTrial(5)- curInputData(curTrial).timingTrial(2));
+            pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(2));
             if isnan(pertOnset)
                 pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
             end
@@ -1238,34 +1239,7 @@ end
         data.vars.curCond = curCond;
         data.vars.curTrial = trial;
         
-        % Should load previous flags if they exist here
-        %QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, sess, run, task);
-        %if exist(QCfileName)
-        %    % load proper flags
-        %    load(QCfileName, 'curRunQCflags')
-        %    data.vars.curRunQCflags = curRunQCflags; 
-        %else
-        %    % create QC Flag cell array for storage
-        %    numFlags = 7;
-        %    curRunQCflags = cell(size(curInputData,2),numFlags);
-        %    curRunQCflags(:) = {0};
-        %    data.vars.curRunQCflags = curRunQCflags;
-        %end
-        
-        %set(data.handles.flag1txt, 'Value',  curRunQCflags{trial,1});
-        %set(data.handles.flag2txt, 'Value',  curRunQCflags{trial,2});
-        %set(data.handles.flag3txt, 'Value',  curRunQCflags{trial,3});
-        %set(data.handles.flag4txt, 'Value',  curRunQCflags{trial,4});
-        %set(data.handles.flag5txt, 'Value',  curRunQCflags{trial,5});
-        %set(data.handles.flag6txt, 'Value',  curRunQCflags{trial,6});
-        %if curRunQCflags{trial,7} == 0
-        %    set(data.handles.flag7txt, 'Value',  0);
-        %    set(data.handles.flag7edit, 'String', 'Comment');
-        %else
-        %    set(data.handles.flag7txt, 'Value',  1);
-        %    set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
-        %end
-        
+        % load previous flags if they exist here       
         curRunQC = flvoice_import(sub,sess,run,task, 'get_qc');
         numFlags = 7;
         if size(curRunQC.badTrial,1) < numFlags
@@ -1336,9 +1310,10 @@ end
         set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
         hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
         % only relevant for some backward compat data
+        % .timingTrial = [TIME_TRIAL_START; TIME_TRIAL_ACTUALLYSTART; TIME_VOICE_START; TIME_PERT_START; TIME_PERT_ACTUALLYSTART; TIME_PERT_END; TIME_PERT_ACTUALLYEND; TIME_SCAN_START; TIME_SCAN_ACTUALLYSTART; TIME_SCAN_END];
         if isfield(curInputData(trial), 'timingTrial')
             voiceOnset = (curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2));
-            pertOnset = (curInputData(trial).timingTrial(5)- curInputData(trial).timingTrial(2));
+            pertOnset = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2));
             if isnan(pertOnset)
                 pertOnset = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1));
             end
