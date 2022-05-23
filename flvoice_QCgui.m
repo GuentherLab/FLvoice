@@ -95,7 +95,7 @@ end
         data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .46 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
         data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .47 .45 .065],'Parent',data.handles.settPanel);
         data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .39 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-        data.handles.rangetxtBox=uicontrol('Style','edit','String','[50 300]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .4 .45 .065],'Parent',data.handles.settPanel);
+        data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .4 .45 .065],'Parent',data.handles.settPanel);
         data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .32 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
         data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .33 .45 .065],'Parent',data.handles.settPanel);
         data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .25 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
@@ -863,6 +863,7 @@ end
     closereq(); 
     end
     
+
     function updateSubj(data,varargin)
     % Helper function that updates the GUI based on current sub / trial 
     set(data.handles.hfig,'pointer','watch');
@@ -1124,11 +1125,13 @@ end
             f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
             fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
             hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
+            %hold on; fmtMic = plot(t,fmt'/1e3,'--','LineWidth',.3, 'Color', [.6 .6 .6]); hold off;
             hold on;
             f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
             f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
             fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
             hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
+            %hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.3, 'Color', [0 0 0]); hold off;
             uistack(fmtMic, 'top'); % making sure mic trace is on top
         end
         
