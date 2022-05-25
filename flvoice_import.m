@@ -71,7 +71,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %                                                               QC.keepData(n) = 0/1 value indicating if n-th trial is valid
 %                                                               QC.badTrial(n) = numeric values indicating n-th trial quality (0 = valid trial)
 %                                                               QC.dictionary{i} = cell array of QC labels indicating what was wrong with trials where QC.badTrial(n)=i
-%                                                               QC.settings{i} = information specific to the formant/pitch estimation procedure used in each trial
+%                                                               QC.settings{n} = information specific to the formant/pitch estimation procedure used in each trial
 %
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
