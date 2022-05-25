@@ -71,6 +71,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %                                                               QC.keepData(n) = 0/1 value indicating if n-th trial is valid
 %                                                               QC.badTrial(n) = numeric values indicating n-th trial quality (0 = valid trial)
 %                                                               QC.dictionary{i} = cell array of QC labels indicating what was wrong with trials where QC.badTrial(n)=i
+%                                                               QC.settings{i} = information specific to the formant/pitch estimation procedure used in each trial
 %
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
@@ -225,9 +226,12 @@ for nsample=1:numel(RUNS)
         if isfield(OPTIONS.SET_QC,'keepData'), tdata.keepData=OPTIONS.SET_QC.keepData;
         else tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]);
         end
+        if isfield(OPTIONS.SET_QC,'settings'), tdata.settings=OPTIONS.SET_QC.settings;
+        else tdata.settings=cell(size(tdata.keepData));
+        end
         fprintf('saving file %s\n',filename_qcData);
-        keepData=tdata.keepData; badTrial=tdata.badTrial; dictionary=tdata.dictionary;
-        conn_savematfile(filename_qcData,'keepData','badTrial','dictionary');
+        keepData=tdata.keepData; badTrial=tdata.badTrial; dictionary=tdata.dictionary; settings=tdata.settings;
+        conn_savematfile(filename_qcData,'keepData','badTrial','dictionary','settings');
     elseif rem(numel(varargin),2)==1&&ischar(varargin{end})
         somethingout=true;
         switch(lower(varargin{end}))
@@ -258,6 +262,7 @@ for nsample=1:numel(RUNS)
                 if ~isfield(tdata,'badTrial'), tdata.badTrial=double(~tdata.keepData); tdata.dictionary={'bad trial'}; end
                 if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:size(tdata.badTrial,1),'uni',0); end
                 if ~isfield(tdata,'keepData'), tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); end
+                if ~isfield(tdata,'settings'), tdata.settings=cell(size(tdata.keepData)); end
                 if numel(RUNS)>1, fileout{nsample}=tdata;
                 else fileout=tdata;
                 end
