@@ -108,7 +108,7 @@ if medianfilter>1,
     fmt=shiftdim(median(flvoice_samplewindow(fmt',medianfilter,medianfilter-1,'none','same'),1))'; 
 end; 
 
-fmt=fmt(1:Nfmt,:);
+fmt=fmt(1:min(size(fmt,1),Nfmt),:);
 
 if data.plot
     figure;
