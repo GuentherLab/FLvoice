@@ -1017,8 +1017,8 @@ end
         curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
         numFlags = 7;
         if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
-            curRunQC.badTrial = zeros(numFlags,60);
-            curRunQC.dictionary = cell(1,60);
+            curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
+            curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
@@ -1246,8 +1246,8 @@ end
         curRunQC = flvoice_import(sub,sess,run,task, 'get_qc');
         numFlags = 7;
         if size(curRunQC.badTrial,1) < numFlags
-            curRunQC.badTrial = zeros(numFlags,60);
-            curRunQC.dictionary = cell(1,60);
+            curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
+            curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,trial));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,trial));
