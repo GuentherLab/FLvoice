@@ -1019,6 +1019,9 @@ end
         if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
             curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
             curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
+        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2)
+            curRunQC.badTrial = [curRunQC.badtrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badtrial,2)))];
+            curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
@@ -1248,6 +1251,9 @@ end
         if size(curRunQC.badTrial,1) < numFlags
             curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
             curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
+        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2)
+            curRunQC.badTrial = [curRunQC.badtrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badtrial,2)))];
+            curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,trial));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,trial));
