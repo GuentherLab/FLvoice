@@ -215,6 +215,7 @@ if isempty(TASK)
 end
 
 USUBS=unique(SUBS);
+out=struct([]);
 for nsub=1:numel(USUBS)
     X=[]; 
     Y=[];
@@ -365,6 +366,9 @@ for nsub=1:numel(USUBS)
         conn_savematfile(filename_outData,'effect','effect_CI','stats'); 
         fprintf('Output saved in file %s\n',filename_outData);
     end
+    if nargout>0
+        out=[out, struct('effect',effect,'effect_CI',effect_CI,'stats',stats)];
+    end
     if OPTIONS.DOPLOT,
         if size(effect,1)>10&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
             T=1:size(effect,1);
@@ -430,6 +434,7 @@ for nsub=1:numel(USUBS)
         end
     end
 end
+varargout={out};
         
 %         % plots
 %         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
