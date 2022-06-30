@@ -1100,8 +1100,8 @@ end
         else
             pertOnset = curInputData(curTrial).pertOnset;
         end
-        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2); grid on;
-        hold on; xline(voiceOnset,'m--',{'Voice','onset'},'linewidth',2); grid on;
+        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2, 'LabelHorizontalAlignment', 'Right'); grid on;
+        hold on; xline(voiceOnset,'m-.',{'Voice','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Left'); grid on;
         
         axes(data.handles.ppAxis);
         if strcmp(data.vars.curTask, 'som')
@@ -1364,8 +1364,8 @@ end
         else
             pertOnset = curInputData(trial).pertOnset;
         end
-        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2); grid on;
-        hold on; xline(voiceOnset,'m--',{'Voice','onset'},'linewidth',2); grid on;
+        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Right'); grid on;
+        hold on; xline(voiceOnset,'m-.',{'Voice','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Left'); grid on;
         %hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset 
         
         cla(data.handles.ppAxis);
