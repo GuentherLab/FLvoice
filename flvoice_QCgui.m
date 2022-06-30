@@ -214,18 +214,41 @@ end
     % 'SKIP_LOWAMP' 
     % 'skipLowAPtxtBox'
     SKIP_LOWAMP = str2num(get(data.handles.skipLowAPtxtBox, 'String'));
-    
-    curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
         
+    curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
+    
     choice = questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Cancel');
         switch choice
             case 'Current run'
+                data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
+                data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
+                data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
+                data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
+                data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
+                data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
+                data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
+                data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
+                data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
+                data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
+                data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+                data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
                 flvoice_import(curSub,curSess,curRun,curTask, ...
                     ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsizeF, 'viterbfilter',viterbfilter, 'medianfilter', medianfilterF}, ...
                      'F0_ARGS', {'windowsize',windowsizeP, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
                      'SKIP_LOWAMP', SKIP_LOWAMP]);
                 
             case 'Just Trial'
+                data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
+                data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
+                data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
+                data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
+                data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
+                data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
+                data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
+                data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
+                data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
+                data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
+                data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
                 flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
                      ['FMT_ARGS',{'lporder',lporder, 'windowsize',windowsizeF, 'viterbfilter',viterbfilter, 'medianfilter', medianfilterF}, ...
                      'F0_ARGS', {'windowsize',windowsizeP, 'methods,range',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
@@ -237,6 +260,7 @@ end
                 return
         end
         
+    flvoice_import(curSub,curSess,curRun,curTask, 'set_qc', data.vars.curRunQC)
     set(data.handles.hfig,'pointer','arrow');
     drawnow;
     % re-enable buttons when done 
@@ -894,6 +918,7 @@ end
         end
     end 
     if init % set values to first value in each droplist
+       
         % update subjects
         subList = flvoice('import');
         for i = 1:numel(subList)
@@ -915,13 +940,7 @@ end
                     continue
                 end
             end
-         end
-        %runL = flvoice('import', subList{i},tsess);
-        %trun = runL{1};
-        %if isempty(flvoice('import', subList{i},tsess, trun))
-        %    subList{i} = [];
-        %    continue
-        %end
+        end
         emptyIdx = cellfun(@isempty,subList);
         subList(emptyIdx) = [];    
         data.vars.subList = subList;
@@ -987,41 +1006,19 @@ end
         data.vars.curCond = curCond;
         data.vars.curTrial = curTrial;
         
-        % Should load previous flags if they exist here
-        %QCfileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', curSub, curSess, curRun, curTask);
-        %if exist(QCfileName)
-        %    % load proper flags
-        %    load(QCfileName, 'curRunQCflags')
-        %    data.vars.curRunQCflags = curRunQCflags; 
-        %else
-        %    % create QC Flag cell array for storage
-        %    numFlags = 7;
-        %    curRunQCflags = cell(size(curInputData,2),numFlags);
-        %    curRunQCflags(:) = {0};
-        %    data.vars.curRunQCflags = curRunQCflags;
-        %end
-        
-        %set(data.handles.flag1txt, 'Value',  curRunQCflags{1,1});
-        %set(data.handles.flag2txt, 'Value',  curRunQCflags{1,2});
-        %set(data.handles.flag3txt, 'Value',  curRunQCflags{1,3});
-        %set(data.handles.flag4txt, 'Value',  curRunQCflags{1,4});
-        %set(data.handles.flag5txt, 'Value',  curRunQCflags{1,5});
-        %set(data.handles.flag6txt, 'Value',  curRunQCflags{1,6});
-        %if curRunQCflags{1,7} == 0
-        %    set(data.handles.flag7txt, 'Value',  0);
-        %else
-        %    set(data.handles.flag7txt, 'Value',  1);
-        %    set(data.handles.flag7edit, 'String', curRunQCflags{1,7});
-        %end
-                  
+        % Should load previous flags / settings if they exist here
         curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
         numFlags = 7;
         if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
             curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
+            curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
             curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
-        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2)
-            curRunQC.badTrial = [curRunQC.badtrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badtrial,2)))];
+            curRunQC.settings = cell(1,size(data.vars.trialList,2));
+        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2)
+            curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
+            curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
             curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
+            curRunQC.settings{1,size(data.vars.trialList,2)} = [];
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
@@ -1038,6 +1035,23 @@ end
         end
         data.vars.curRunQC = curRunQC; 
         
+        if ~isempty(curRunQC.settings{curTrial})
+            if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.NLPCtxtBox, 'String', lporder);
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
+            set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
+            if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.rangetxtBox, 'String', range);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
+            if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.skipLowAPtxtBox, 'String', SKIP_LOWAMP);
+        end
+                
         % update mic/ head plots
         micWav = curInputData(curTrial).s{1};
         micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
@@ -1248,12 +1262,16 @@ end
         % load previous flags if they exist here       
         curRunQC = flvoice_import(sub,sess,run,task, 'get_qc');
         numFlags = 7;
-        if size(curRunQC.badTrial,1) < numFlags
+        if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
             curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
+            curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
             curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
-        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2)
-            curRunQC.badTrial = [curRunQC.badtrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badtrial,2)))];
+            curRunQC.settings = cell(1,size(data.vars.trialList,2));
+        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2)
+            curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
+            curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
             curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
+            curRunQC.settings{1,size(data.vars.trialList,2)} = [];
         end
         set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,trial));
         set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,trial));
@@ -1273,6 +1291,23 @@ end
             end
         end 
         data.vars.curRunQC = curRunQC; 
+        
+        if ~isempty(curRunQC.settings{trial})
+            if isempty(curRunQC.settings{trial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.NLPCtxtBox, 'String', lporder);
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeF));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{trial}.viterbfilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterF));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeP));  
+            set(data.handles.methodstxtBox, 'String', curRunQC.settings{trial}.methods);
+            if isempty(curRunQC.settings{trial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.rangetxtBox, 'String', range);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{trial}.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterP)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.outlierfilter));
+            if isempty(curRunQC.settings{trial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.skipLowAPtxtBox, 'String', SKIP_LOWAMP);
+        end
         
         % update mic plot
         micWav = curInputData(trial).s{1};
