@@ -636,6 +636,7 @@ end
     ses = data.vars.curSess;
     run = data.vars.curRun;
     task = data.vars.curTask;
+    
     %curRunQCflags = data.vars.curRunQCflags;   
     %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
     %varName = 'curRunQCflags';
@@ -647,9 +648,14 @@ end
     newRunIdx = get(data.handles.runDrop, 'Value');
     newRun = runList{newRunIdx};
     
-    updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, data.vars.curTask, 1);
+    %not all runs have the same task:
+    taskList = flvoice_import(sub,ses,newRun);
+    newTask = taskList{end}; % will there ever be 2 tasks per run?
+    
+    updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, newTask, 1);
     data = get(data.handles.hfig, 'userdata');
     data.vars.curRun = newRun;
+    data.vars.curTask = newTask;
     
     set(data.handles.hfig,'pointer','arrow');
     drawnow;
@@ -985,6 +991,10 @@ end
         % get trial data
         curInputData = flvoice_import(curSub,curSess,curRun,curTask,'input');
         curInputData = curInputData{1};
+        if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
+            msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+            return
+        end 
         % update trial
         trialList = (1:size(curInputData,2));
         set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
@@ -1054,9 +1064,12 @@ end
                 
         % update mic/ head plots
         micWav = curInputData(curTrial).s{1};
-        micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
+        %micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
+        %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+        micTime = (0+(0:numel(micWav)-1)*1/curInputData(curTrial).fs);
         data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-        set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+        set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+        set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(curTrial).fs]);
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
@@ -1067,9 +1080,12 @@ end
             end
             set(data.handles.playHeadButton, 'enable', 'on');
             headWav = curInputData(curTrial).s{2};
-            headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
+            %headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
+            %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            headTime = (0+(0:numel(headWav)-1)*1/curInputData(curTrial).fs);
             data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
-            set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+            set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(curTrial).fs]);            
             data.vars.headWav = headWav;
             data.vars.headTime = headTime;
         else
@@ -1243,6 +1259,10 @@ end
         if loadData % only run fl_voice_import() if data being loaded is different from current
             curInputData = flvoice_import(sub,sess,run,task,'input');
             curInputData = curInputData{1};
+            if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
+                msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+                return
+            end 
         else
             curInputData = data.vars.curInputData;
         end
@@ -1311,10 +1331,12 @@ end
         
         % update mic plot
         micWav = curInputData(trial).s{1};
-        micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
+        %micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
+        %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+        micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
         data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-        %set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs], 'xtick',.5:.5:numel(micWav)/curInputData(trial).fs);
-        set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+        set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+        set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs]);
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
@@ -1325,9 +1347,12 @@ end
             end
             set(data.handles.playHeadButton, 'enable', 'on');
             headWav = curInputData(trial).s{2};
-            headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
+            %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
+            %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
             data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
-            set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+            set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+            set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs]);
             data.vars.headWav = headWav;
             data.vars.headTime = headTime;
         else
