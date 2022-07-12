@@ -37,6 +37,8 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %             trialData(n).dataUnits         : data units (cell array) {'Hz','Hz','Hz','dB','Hz','Hz','Hz','dB'}
+%             trialData(n).options           : structure with options used by flvoice_formants and flvoice_pitch
+%       INFO.options                 : structure with options used by flvoice_import
 %
 % Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-summary.mat
 %   Variables:
@@ -355,6 +357,22 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).dataLabel={};
                 out_trialData(trialNum).dataUnits={};
                 out_trialData(trialNum).t={};
+                out_trialData(trialNum).options.formants.fs=fs;
+                out_trialData(trialNum).options.formants.lpcorder=Nlpc;
+                out_trialData(trialNum).options.formants.windowsize=.050;
+                out_trialData(trialNum).options.formants.stepsize=min(.001,1/OPTIONS.OUT_FS);
+                out_trialData(trialNum).options.formants.viterbifilter=1; % warning: remember to keep these values updated with any changes in flvoice_formants defaults
+                out_trialData(trialNum).options.formants.medianfilter=.025;
+                for n1=1:2:numel(OPTIONS.FMT_ARGS)-1, if isfield(out_trialData(trialNum).options.formants,OPTIONS.FMT_ARGS{n1}), out_trialData(trialNum).options.formants.(OPTIONS.FMT_ARGS{n1})=OPTIONS.FMT_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.formants\n',out_trialData(trialNum).options.formants.OPTIONS.FMT_ARGS{n1}); end; end
+                out_trialData(trialNum).options.pitch.range=f0range;
+                out_trialData(trialNum).options.pitch.windowsize=.050; % warning: remember to keep these values updated with any changes in flvoice_pitch defaults
+                out_trialData(trialNum).options.pitch.methods='CEP';
+                out_trialData(trialNum).options.pitch.hr_min=0.5;
+                out_trialData(trialNum).options.pitch.viterbifilter=1;
+                out_trialData(trialNum).options.pitch.medianfilter=1;
+                out_trialData(trialNum).options.pitch.meanfilter=0.5;
+                for n1=1:2:numel(OPTIONS.F0_ARGS)-1, if isfield(out_trialData(trialNum).options.pitch,OPTIONS.F0_ARGS{n1}), out_trialData(trialNum).options.pitch.(OPTIONS.F0_ARGS{n1})=OPTIONS.F0_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.pitch\n',out_trialData(trialNum).options.pitch.OPTIONS.F0_ARGS{n1}); end; end
+                
                 for ns=1:numel(s)
                     
                     [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
