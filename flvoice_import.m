@@ -371,6 +371,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).options.pitch.viterbifilter=1;
                 out_trialData(trialNum).options.pitch.medianfilter=1;
                 out_trialData(trialNum).options.pitch.meanfilter=0.5;
+                out_trialData(trialNum).options.pitch.outlierfilter=0;
                 for n1=1:2:numel(OPTIONS.F0_ARGS)-1, if isfield(out_trialData(trialNum).options.pitch,OPTIONS.F0_ARGS{n1}), out_trialData(trialNum).options.pitch.(OPTIONS.F0_ARGS{n1})=OPTIONS.F0_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.pitch\n',out_trialData(trialNum).options.pitch.OPTIONS.F0_ARGS{n1}); end; end
                 
                 for ns=1:numel(s)
