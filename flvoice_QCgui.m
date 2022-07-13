@@ -104,9 +104,9 @@ end
         data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .19 .45 .065],'Parent',data.handles.settPanel);
         % General
         % 'SKIP_LOWAMP' 
-        % 'skipLowAPtxtBox'
+        % 'skipLowAMPtxtBox'
         data.handles.skipLowAtxt=uicontrol('Style','text','String','Skip Lowamp:','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .10 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-        data.handles.skipLowAPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
+        data.handles.skipLowAMPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
         
         % Update Button
         data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settings','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .08],'Parent',data.handles.settPanel,'Callback', @updateSettings);
@@ -212,8 +212,8 @@ end
     outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
     % General
     % 'SKIP_LOWAMP' 
-    % 'skipLowAPtxtBox'
-    SKIP_LOWAMP = str2num(get(data.handles.skipLowAPtxtBox, 'String'));
+    % 'skipLowAMPtxtBox'
+    SKIP_LOWAMP = str2num(get(data.handles.skipLowAMPtxtBox, 'String'));
         
     curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
     
@@ -995,6 +995,10 @@ end
             msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
             return
         end 
+        curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output_all');
+        curOutputINFO = curOutputData{1}.INFO;
+        curOutputData = curOutputData{1}.trialData;
+        
         % update trial
         trialList = (1:size(curInputData,2));
         set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
@@ -1045,21 +1049,38 @@ end
         end
         data.vars.curRunQC = curRunQC; 
         
-        if ~isempty(curRunQC.settings{curTrial})
-            if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
+%         if ~isempty(curRunQC.settings{curTrial})
+%             if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
+%             set(data.handles.NLPCtxtBox, 'String', lporder);
+%             set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
+%             set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
+%             set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
+%             set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
+%             set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
+%             if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
+%             set(data.handles.rangetxtBox, 'String', range);
+%             set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
+%             set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
+%             set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
+%             if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
+%             set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+%         end
+        
+        if ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
+            if isempty(curOutputData(curTrial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(curTrial).options.formants.lpcorder); end
             set(data.handles.NLPCtxtBox, 'String', lporder);
-            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
-            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
-            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
-            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
-            set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
-            if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.windowsize));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(curTrial).options.formants.viterbifilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.medianfilter));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.windowsize));  
+            set(data.handles.methodstxtBox, 'String', curOutputData(curTrial).options.pitch.methods);
+            if isempty(curOutputData(curTrial).options.pitch.range); range = '[ ]'; else; range =  [ '[' num2str(curOutputData(curTrial).options.pitch.range) ']' ]; end
             set(data.handles.rangetxtBox, 'String', range);
-            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
-            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
-            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
-            if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
-            set(data.handles.skipLowAPtxtBox, 'String', SKIP_LOWAMP);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.medianfilter)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.outlierfilter));
+            if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
+            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
         end
                 
         % update mic/ head plots
@@ -1096,10 +1117,7 @@ end
             set(data.handles.playHeadButton, 'enable', 'off');
         end
         
-        % update spectogram plots
-        curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output');
-        curOutputData = curOutputData{1};
-        
+        % update spectogram plots        
         axes(data.handles.pitchAxis);
         s = curInputData(curTrial).s{1}; %NOTE always s{1}?
         fs = curInputData(curTrial).fs;
@@ -1266,6 +1284,15 @@ end
         else
             curInputData = data.vars.curInputData;
         end
+        if loadData % only run fl_voice_import() if data being loaded is different from current
+            curOutputData = flvoice_import(sub,sess,run,task,'output_all');
+            curOutputINFO = curOutputData{1}.INFO;
+            curOutputData = curOutputData{1}.trialData;
+        else
+            curOutputINFO = data.vars.curOutputINFO;
+            curOutputData = data.vars.curOutputData;
+        end
+        
         % update trial
         trialList = (1:size(curInputData,2));
         if isempty(trial)
@@ -1312,21 +1339,22 @@ end
         end 
         data.vars.curRunQC = curRunQC; 
         
-        if ~isempty(curRunQC.settings{trial})
-            if isempty(curRunQC.settings{trial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{trial}.lporder); end
+        
+        if ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
+            if isempty(curOutputData(trial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(trial).options.formants.lpcorder); end
             set(data.handles.NLPCtxtBox, 'String', lporder);
-            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeF));
-            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{trial}.viterbfilter));
-            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterF));
-            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeP));  
-            set(data.handles.methodstxtBox, 'String', curRunQC.settings{trial}.methods);
-            if isempty(curRunQC.settings{trial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(trial).options.formants.windowsize));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(trial).options.formants.viterbifilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curOutputData(trial).options.formants.medianfilter));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curOutputData(trial).options.pitch.windowsize));  
+            set(data.handles.methodstxtBox, 'String', curOutputData(trial).options.pitch.methods);
+            if isempty(curOutputData(trial).options.pitch.range); range = '[ ]'; else; range = [ '[' num2str(curOutputData(trial).options.pitch.range) ']' ]; end
             set(data.handles.rangetxtBox, 'String', range);
-            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{trial}.hr_min));
-            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterP)); 
-            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.outlierfilter));
-            if isempty(curRunQC.settings{trial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.lporder); end
-            set(data.handles.skipLowAPtxtBox, 'String', SKIP_LOWAMP);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(trial).options.pitch.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.medianfilter)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.outlierfilter));
+            if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
+            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
         end
         
         % update mic plot
@@ -1363,14 +1391,7 @@ end
             set(data.handles.playHeadButton, 'enable', 'off');
         end
         
-        % update spectogram plots
-        if loadData % only run fl_voice_import() if data being loaded is different from current
-            curOutputData = flvoice_import(sub,sess,run,task,'output');
-            curOutputData = curOutputData{1};
-        else
-            curOutputData = data.vars.curOutputData;
-        end
-        
+        % update spectogram plots        
         cla(data.handles.pitchAxis, 'reset');
         axes(data.handles.pitchAxis);
         s = curInputData(trial).s{1};
@@ -1454,6 +1475,7 @@ end
         % save curr data
         data.vars.curInputData = curInputData;
         data.vars.curOutputData = curOutputData;
+        data.vars.curOutputINFO = curOutputINFO;
         set(data.handles.hfig,'pointer','arrow');
         drawnow;
         % re-enable buttons when done 
