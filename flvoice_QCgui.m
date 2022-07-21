@@ -164,8 +164,11 @@ end
                 %if task is missing find task of current run
                 %if trial missing default to 1st......
         end
+        
         data = get(data.handles.hfig, 'userdata');
-        set(data.handles.hfig,'userdata',data);
+        if ~isempty(data)
+            set(data.handles.hfig,'userdata',data);
+        end 
     end
         
 
