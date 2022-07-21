@@ -55,21 +55,7 @@ end
         % Main figure
         data.handles.hfig=figure('Units','norm','Position',[.25 .2 .6 .6],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w');
         % reminder; position is [(bottom left corner normalized x pos) (bottom left corner normalized y pos) (width) (heigth)]
-        
-        %set defaults:
-        %%% root set here for testing, generally root would be defined beforehand: %%%
-        %flvoice('ROOT','C:\Users\RickyFals\Documents\0BU\0GuentherLab\LabGit\SAPdata');
-             
-        % Example for automatically adjusting field numbers for Formant section 
-        %pos = {}; 
-        %numFields = 4
-        %for i = 1:numFields
-        %    y1 = .94 - (i*.07); % for text
-        %    y2 = y1 + 0.01; % for textbox
-        %    pos(i,1) = {[.02 y1 .4 .07]}; 
-        %    pos(i,2) = {[.5 y2 .45 .065]}; 
-        %end
-        
+               
         % SETTINGS PANEL
         data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .45 .2 .52],'Parent',data.handles.hfig);
         % Formant Settings
@@ -1049,24 +1035,8 @@ end
         end
         data.vars.curRunQC = curRunQC; 
         
-%         if ~isempty(curRunQC.settings{curTrial})
-%             if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
-%             set(data.handles.NLPCtxtBox, 'String', lporder);
-%             set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
-%             set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
-%             set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
-%             set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
-%             set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
-%             if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
-%             set(data.handles.rangetxtBox, 'String', range);
-%             set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
-%             set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
-%             set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
-%             if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
-%             set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
-%         end
         
-        if ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
+        if isfield(curOutputData,'options') && ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
             if isempty(curOutputData(curTrial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(curTrial).options.formants.lpcorder); end
             set(data.handles.NLPCtxtBox, 'String', lporder);
             set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.windowsize));
@@ -1081,7 +1051,28 @@ end
             set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.outlierfilter));
             if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
             set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+        % backward compat for trial prior to 'options' field additon in flvoice
+        elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{curTrial})
+            if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.NLPCtxtBox, 'String', lporder);
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
+            set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
+            if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.rangetxtBox, 'String', range);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
+            if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
+            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+        else
+            msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
+            return
         end
+            
+
                 
         % update mic/ head plots
         micWav = curInputData(curTrial).s{1};
@@ -1340,7 +1331,7 @@ end
         data.vars.curRunQC = curRunQC; 
         
         
-        if ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
+        if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
             if isempty(curOutputData(trial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(trial).options.formants.lpcorder); end
             set(data.handles.NLPCtxtBox, 'String', lporder);
             set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(trial).options.formants.windowsize));
@@ -1355,6 +1346,25 @@ end
             set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.outlierfilter));
             if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
             set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+        % backward compat for trial prior to 'options' field additon in flvoice
+        elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{trial})
+            if isempty(curRunQC.settings{trial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.NLPCtxtBox, 'String', lporder);
+            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeF));
+            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{trial}.viterbfilter));
+            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterF));
+            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeP));  
+            set(data.handles.methodstxtBox, 'String', curRunQC.settings{trial}.methods);
+            if isempty(curRunQC.settings{trial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.rangetxtBox, 'String', range);
+            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{trial}.hr_min));
+            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterP)); 
+            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.outlierfilter));
+            if isempty(curRunQC.settings{trial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.lporder); end
+            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+        else
+            msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
+            return
         end
         
         % update mic plot
