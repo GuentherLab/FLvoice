@@ -701,6 +701,18 @@ end
     set(data.handles.prevButton, 'Enable', 'off');
     set(data.handles.nextButton, 'Enable', 'off');
     
+    % before changing subject save cur subj / ses / run's QC flags
+    sub = data.vars.curSub;
+    ses = data.vars.curSess;
+    run = data.vars.curRun;
+    task = data.vars.curTask;
+    %curRunQCflags = data.vars.curRunQCflags;   
+    %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
+    %varName = 'curRunQCflags';
+    %save(saveFileName,varName);
+    curRunQC = data.vars.curRunQC; 
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+    
     newTrial = get(data.handles.trialDrop, 'Value');
     updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, newTrial);
     data = get(data.handles.hfig, 'userdata');
