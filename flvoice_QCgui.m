@@ -1479,6 +1479,7 @@ end
             end
             %uistack(ppMic, 'top'); % making sure mic trace is on top
         end
+        hold on; text(-.01*numel(s)/fs, .5, 'Pitch','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
         set(data.handles.ppAxis, 'yscale','lin');
         set(data.handles.ppAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
         set(data.handles.ppAxis, 'ylim', [.01 1],'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.1:1),'uni',0)); 
@@ -1523,6 +1524,7 @@ end
         end
         
         %hold on; plot(headTime,headWav); hold off;
+        hold on; text(-.01*numel(s)/fs, 2, 'Formants','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
         set(data.handles.formantAxis, 'yscale','lin');
         set(data.handles.formantAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.34, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'xticklabel',[]);
         set(data.handles.formantAxis, 'ylim', [.01 4], 'ytick',0:.25:4,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.25:4),'uni',0)); 
