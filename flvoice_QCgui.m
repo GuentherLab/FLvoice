@@ -53,7 +53,7 @@ end
         end 
         
         % Main figure
-        data.handles.hfig=figure('Units','norm','Position',[.25 .2 .6 .6],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w');
+        data.handles.hfig=figure('Units','norm','Position',[.0 .05 1 .95],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w','colormap',parula);
         % reminder; position is [(bottom left corner normalized x pos) (bottom left corner normalized y pos) (width) (heigth)]
                
         % SETTINGS PANEL
@@ -144,8 +144,8 @@ end
         data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
         data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.10, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
         % Axes Buttons
-        data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .86 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
-        data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.92 .64 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+        data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .86 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
+        data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .64 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
         %optional buttons
         %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
         %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
@@ -974,238 +974,245 @@ end
         curSess = sessList{get(data.handles.sessionDrop, 'Value')};
         data.vars.sessList = sessList;
         data.vars.curSess = curSess;
-        
-        % update run
-        runList = flvoice('import', curSub,curSess);
-        set(data.handles.runDrop, 'String', runList, 'Value', 1);
-        curRun = runList{get(data.handles.runDrop, 'Value')};
-        data.vars.runList = runList;
-        data.vars.curRun = curRun;
-        
-        % update task
-        taskList = flvoice('import', curSub,curSess, curRun);
-        set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-        curTask = taskList{get(data.handles.taskDrop, 'Value')};
-        data.vars.taskList = taskList;
-        data.vars.curTask = curTask;
-        
-        % get trial data
-        curInputData = flvoice_import(curSub,curSess,curRun,curTask,'input');
-        curInputData = curInputData{1};
-        if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
-            msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
-            return
-        end 
-        curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output_all');
-        curOutputINFO = curOutputData{1}.INFO;
-        curOutputData = curOutputData{1}.trialData;
-        
-        % update trial
-        trialList = (1:size(curInputData,2));
-        set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
-        if isempty(trialList)
-            disp('Found no trials')
-            set(data.handles.hfig,'pointer','arrow');
-            drawnow;
-            % re-enable buttons when done 
-            set(data.handles.prevButton, 'Enable', 'on');
-            set(data.handles.nextButton, 'Enable', 'on');
-            set(data.handles.hfig,'userdata',data);
-            return
-        else
-            curTrial = get(data.handles.trialDrop, 'Value');
-            curCond = curInputData(curTrial).condLabel;
-        end
-        set(data.handles.condVal, 'String', curCond);
-        data.vars.trialList = trialList;
-        data.vars.curCond = curCond;
-        data.vars.curTrial = curTrial;
-        
-        % Should load previous flags / settings if they exist here
-        curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
-        numFlags = 7;
-        if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
-            curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
-            curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
-            curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
-            curRunQC.settings = cell(1,size(data.vars.trialList,2));
-        elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2)
-            curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
-            curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
-            curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
-            curRunQC.settings{1,size(data.vars.trialList,2)} = [];
-        end
-        set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
-        set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
-        set(data.handles.flag3txt, 'Value',  curRunQC.badTrial(3,1));
-        set(data.handles.flag4txt, 'Value',  curRunQC.badTrial(4,1));
-        set(data.handles.flag5txt, 'Value',  curRunQC.badTrial(5,1));
-        set(data.handles.flag6txt, 'Value',  curRunQC.badTrial(6,1));
-        if curRunQC.badTrial(7,1) == 0
-            set(data.handles.flag7txt, 'Value', curRunQC.badTrial(7,1));
-            set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
-        else
-            set(data.handles.flag7txt, 'Value',  curRunQC.badTrial(7,1));
-            set(data.handles.flag7edit, 'String',  curRunQC.dictionary{1,1}(end), 'Enable', 'on');
-        end
-        data.vars.curRunQC = curRunQC; 
-        
-        
-        if isfield(curOutputData,'options') && ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
-            if isempty(curOutputData(curTrial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(curTrial).options.formants.lpcorder); end
-            set(data.handles.NLPCtxtBox, 'String', lporder);
-            set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.windowsize));
-            set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(curTrial).options.formants.viterbifilter));
-            set(data.handles.mfilterFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.medianfilter));
-            set(data.handles.winSizePtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.windowsize));  
-            set(data.handles.methodstxtBox, 'String', curOutputData(curTrial).options.pitch.methods);
-            if isempty(curOutputData(curTrial).options.pitch.range); range = '[ ]'; else; range =  [ '[' num2str(curOutputData(curTrial).options.pitch.range) ']' ]; end
-            set(data.handles.rangetxtBox, 'String', range);
-            set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.hr_min));
-            set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.medianfilter)); 
-            set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.outlierfilter));
-            if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
-            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
-        % backward compat for trial prior to 'options' field additon in flvoice
-        elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{curTrial})
-            if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
-            set(data.handles.NLPCtxtBox, 'String', lporder);
-            set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
-            set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
-            set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
-            set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));  
-            set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
-            if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
-            set(data.handles.rangetxtBox, 'String', range);
-            set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
-            set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP)); 
-            set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
-            if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
-            set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
-        else
-            msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
-            return
-        end
-            
 
-                
-        % update mic/ head plots
-        micWav = curInputData(curTrial).s{1};
-        %micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
-        %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
-        micTime = (0+(0:numel(micWav)-1)*1/curInputData(curTrial).fs);
-        data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-        set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
-        set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(curTrial).fs]);
-        data.vars.micWav = micWav;
-        data.vars.micTime = micTime;
+        sub=curSub;
+        sess=curSess;
+        run=[];
+        task=[];
+        trial=[];
+        loadData=true;
         
-        if strcmp(data.vars.curTask, 'aud')
-            set(data.handles.headAxis, 'visible', 'on');
-            if isfield(data.handles, 'headPlot')
-                set(data.handles.headPlot, 'visible', 'on');
-            end
-            set(data.handles.playHeadButton, 'enable', 'on');
-            headWav = curInputData(curTrial).s{2};
-            %headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
-            %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
-            headTime = (0+(0:numel(headWav)-1)*1/curInputData(curTrial).fs);
-            data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
-            set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
-            set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(curTrial).fs]);            
-            data.vars.headWav = headWav;
-            data.vars.headTime = headTime;
-        else
-            set(data.handles.headAxis, 'visible', 'off');
-            if isfield(data.handles, 'headPlot')
-                set(data.handles.headPlot, 'visible', 'off');
-            end
-            set(data.handles.playHeadButton, 'enable', 'off');
-        end
+        % alfnote: avoid code duplication
+%             % update run
+%             runList = flvoice('import', curSub,curSess);
+%             set(data.handles.runDrop, 'String', runList, 'Value', 1);
+%             curRun = runList{get(data.handles.runDrop, 'Value')};
+%             data.vars.runList = runList;
+%             data.vars.curRun = curRun;
+%             
+%             % update task
+%             taskList = flvoice('import', curSub,curSess, curRun);
+%             set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+%             curTask = taskList{get(data.handles.taskDrop, 'Value')};
+%             data.vars.taskList = taskList;
+%             data.vars.curTask = curTask;
+%             
+%             % get trial data
+%             curInputData = flvoice_import(curSub,curSess,curRun,curTask,'input');
+%             curInputData = curInputData{1};
+%             if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
+%                 msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+%                 return
+%             end
+%             curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output_all');
+%             curOutputINFO = curOutputData{1}.INFO;
+%             curOutputData = curOutputData{1}.trialData;
+%             
+%             % update trial
+%             trialList = (1:size(curInputData,2));
+%             set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
+%             if isempty(trialList)
+%                 disp('Found no trials')
+%                 set(data.handles.hfig,'pointer','arrow');
+%                 drawnow;
+%                 % re-enable buttons when done
+%                 set(data.handles.prevButton, 'Enable', 'on');
+%                 set(data.handles.nextButton, 'Enable', 'on');
+%                 set(data.handles.hfig,'userdata',data);
+%                 return
+%             else
+%                 curTrial = get(data.handles.trialDrop, 'Value');
+%                 curCond = curInputData(curTrial).condLabel;
+%             end
+%             set(data.handles.condVal, 'String', curCond);
+%             data.vars.trialList = trialList;
+%             data.vars.curCond = curCond;
+%             data.vars.curTrial = curTrial;
+%             
+%             % Should load previous flags / settings if they exist here
+%             curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
+%             numFlags = 7;
+%             if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
+%                 curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
+%                 curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
+%                 curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
+%                 curRunQC.settings = cell(1,size(data.vars.trialList,2));
+%             elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2)
+%                 curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
+%                 curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
+%                 curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
+%                 curRunQC.settings{1,size(data.vars.trialList,2)} = [];
+%             end
+%             set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
+%             set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
+%             set(data.handles.flag3txt, 'Value',  curRunQC.badTrial(3,1));
+%             set(data.handles.flag4txt, 'Value',  curRunQC.badTrial(4,1));
+%             set(data.handles.flag5txt, 'Value',  curRunQC.badTrial(5,1));
+%             set(data.handles.flag6txt, 'Value',  curRunQC.badTrial(6,1));
+%             if curRunQC.badTrial(7,1) == 0
+%                 set(data.handles.flag7txt, 'Value', curRunQC.badTrial(7,1));
+%                 set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
+%             else
+%                 set(data.handles.flag7txt, 'Value',  curRunQC.badTrial(7,1));
+%                 set(data.handles.flag7edit, 'String',  curRunQC.dictionary{1,1}(end), 'Enable', 'on');
+%             end
+%             data.vars.curRunQC = curRunQC;
+%             
+%             
+%             if isfield(curOutputData,'options') && ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
+%                 if isempty(curOutputData(curTrial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(curTrial).options.formants.lpcorder); end
+%                 set(data.handles.NLPCtxtBox, 'String', lporder);
+%                 set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.windowsize));
+%                 set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(curTrial).options.formants.viterbifilter));
+%                 set(data.handles.mfilterFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.medianfilter));
+%                 set(data.handles.winSizePtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.windowsize));
+%                 set(data.handles.methodstxtBox, 'String', curOutputData(curTrial).options.pitch.methods);
+%                 if isempty(curOutputData(curTrial).options.pitch.range); range = '[ ]'; else; range =  [ '[' num2str(curOutputData(curTrial).options.pitch.range) ']' ]; end
+%                 set(data.handles.rangetxtBox, 'String', range);
+%                 set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.hr_min));
+%                 set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.medianfilter));
+%                 set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.outlierfilter));
+%                 if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
+%                 set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+%                 % backward compat for trial prior to 'options' field additon in flvoice
+%             elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{curTrial})
+%                 if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
+%                 set(data.handles.NLPCtxtBox, 'String', lporder);
+%                 set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
+%                 set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
+%                 set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
+%                 set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));
+%                 set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
+%                 if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
+%                 set(data.handles.rangetxtBox, 'String', range);
+%                 set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
+%                 set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP));
+%                 set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
+%                 if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
+%                 set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+%             else
+%                 msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
+%                 return
+%             end
+%             
+%             
+%             
+%             % update mic/ head plots
+%             micWav = curInputData(curTrial).s{1};
+%             %micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
+%             %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+%             micTime = (0+(0:numel(micWav)-1)*1/curInputData(curTrial).fs);
+%             data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
+%             set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+%             set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(curTrial).fs]);
+%             data.vars.micWav = micWav;
+%             data.vars.micTime = micTime;
+%             
+%             if 0,%strcmp(data.vars.curTask, 'aud')
+%                 set(data.handles.headAxis, 'visible', 'on');
+%                 if isfield(data.handles, 'headPlot')
+%                     set(data.handles.headPlot, 'visible', 'on');
+%                 end
+%                 set(data.handles.playHeadButton, 'enable', 'on');
+%                 headWav = curInputData(curTrial).s{2};
+%                 %headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
+%                 %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+%                 headTime = (0+(0:numel(headWav)-1)*1/curInputData(curTrial).fs);
+%                 data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
+%                 set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
+%                 set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(curTrial).fs]);
+%                 data.vars.headWav = headWav;
+%                 data.vars.headTime = headTime;
+%             else
+%                 set(data.handles.headAxis, 'visible', 'off');
+%                 if isfield(data.handles, 'headPlot')
+%                     set(data.handles.headPlot, 'visible', 'off');
+%                 end
+%                 set(data.handles.playHeadButton, 'enable', 'off');
+%             end
+%             
+%             % update spectogram plots
+%             axes(data.handles.pitchAxis);
+%             s = curInputData(curTrial).s{1}; %NOTE always s{1}?
+%             fs = curInputData(curTrial).fs;
+%             data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
+%             set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
+%             hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
+%             % .timingTrial = [TIME_TRIAL_START; TIME_TRIAL_ACTUALLYSTART; TIME_VOICE_START; TIME_PERT_START; TIME_PERT_ACTUALLYSTART; TIME_PERT_END; TIME_PERT_ACTUALLYEND; TIME_SCAN_START; TIME_SCAN_ACTUALLYSTART; TIME_SCAN_END];
+%             if isfield(curInputData(curTrial), 'timingTrial')
+%                 voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
+%                 pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(2));
+%                 if isnan(pertOnset)
+%                     pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
+%                 end
+%             else
+%                 pertOnset = curInputData(curTrial).pertOnset;
+%             end
+%             hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2, 'LabelHorizontalAlignment', 'Right'); grid on;
+%             hold on; xline(voiceOnset,'m-.',{'Voice','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Left'); grid on;
+%             
+%             axes(data.handles.ppAxis);
+%             if 0,%strcmp(data.vars.curTask, 'som') % alfnote: not allowed special conditions based on task names
+%                 f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0measure1'));
+%                 f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
+%                 fs2 = curOutputData(curTrial).fs;
+%                 %t = (0.025:0.001:2.524); % how do I derive this from given data?
+%                 t = [0+(0:numel(f0)-1)/fs2]; % correct??
+%                 ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+%             else
+%                 f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-mic'));
+%                 f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
+%                 fs2 = curOutputData(curTrial).fs;
+%                 %t = (0.025:0.001:2.524); % how do I derive this from given data?
+%                 t = [0+(0:numel(f0)-1)/fs2]; % correct??
+%                 ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
+%                 hold on;
+%                 f0headIdx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-headphones'));
+%                 f0head = curOutputData(curTrial).s{1,f0headIdx};
+%                 ppHead=plot(t,f0head,'.','LineWidth',.6, 'Color', [0 0 0]);
+%                 uistack(ppMic, 'top'); % making sure mic trace is on top
+%             end
+%             set(gca,'xlim',[0 numel(s)/fs]);
+%             set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
+%             hold off;
+%             
+%             axes(data.handles.formantAxis);
+%             set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
+%             %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
+%             flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs));
+%             if 0,%strcmp(data.vars.curTask, 'som') % alfnote: not allowed special conditions based on task names
+%                 f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1measure1'));
+%                 f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2measure1'));
+%                 fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
+%                 hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
+%             else
+%                 f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
+%                 f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
+%                 fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
+%                 hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
+%                 %hold on; fmtMic = plot(t,fmt'/1e3,'--','LineWidth',.3, 'Color', [.6 .6 .6]); hold off;
+%                 hold on;
+%                 f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
+%                 f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
+%                 fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
+%                 hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
+%                 %hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.3, 'Color', [0 0 0]); hold off;
+%                 uistack(fmtMic, 'top'); % making sure mic trace is on top
+%             end
+%             
+%             %hold on; plot(headTime,headWav); hold off;
+%             set(data.handles.formantAxis, 'yscale','lin');
+%             set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
+%             set(data.handles.formantAxis, 'ylim', [0 4],'ytick',[0 1 2 3 4]) % helps  but not quite the same scale I think
+%             set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
+%             %colormap(jet)
+%             % can change colormap by doing the following:
+%             % colormap(jet); caxis('auto') %caxis([-170 0
+%             % maybe add button to do this?
+%             % should probably also make the legend visible if so
+%             %xlabel('Time (s)'); ylabel('formants (KHz)');
         
-        % update spectogram plots        
-        axes(data.handles.pitchAxis);
-        s = curInputData(curTrial).s{1}; %NOTE always s{1}?
-        fs = curInputData(curTrial).fs;
-        data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
-        set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-        hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
-        % .timingTrial = [TIME_TRIAL_START; TIME_TRIAL_ACTUALLYSTART; TIME_VOICE_START; TIME_PERT_START; TIME_PERT_ACTUALLYSTART; TIME_PERT_END; TIME_PERT_ACTUALLYEND; TIME_SCAN_START; TIME_SCAN_ACTUALLYSTART; TIME_SCAN_END];
-        if isfield(curInputData(curTrial), 'timingTrial')
-            voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
-            pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(2));
-            if isnan(pertOnset)
-                pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
-            end
-        else
-            pertOnset = curInputData(curTrial).pertOnset;
-        end
-        hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2, 'LabelHorizontalAlignment', 'Right'); grid on;
-        hold on; xline(voiceOnset,'m-.',{'Voice','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Left'); grid on;
-        
-        axes(data.handles.ppAxis);
-        if strcmp(data.vars.curTask, 'som')
-            f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0measure1'));
-            f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
-            fs2 = curOutputData(curTrial).fs;
-            %t = (0.025:0.001:2.524); % how do I derive this from given data?
-            t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
-        else
-            f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-mic'));
-            f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
-            fs2 = curOutputData(curTrial).fs;
-            %t = (0.025:0.001:2.524); % how do I derive this from given data?
-            t = [0+(0:numel(f0)-1)/fs2]; % correct??
-            ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
-            hold on;
-            f0headIdx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-headphones'));
-            f0head = curOutputData(curTrial).s{1,f0headIdx};
-            ppHead=plot(t,f0head,'.','LineWidth',.6, 'Color', [0 0 0]);
-            uistack(ppMic, 'top'); % making sure mic trace is on top
-        end
-        set(gca,'xlim',[0 numel(s)/fs]);
-        set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
-        hold off; 
-        
-        axes(data.handles.formantAxis);
-        set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
-        %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
-        flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
-        if strcmp(data.vars.curTask, 'som')
-            f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1measure1'));
-            f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2measure1'));
-            fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;   
-        else
-            f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
-            f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
-            fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-            hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
-            %hold on; fmtMic = plot(t,fmt'/1e3,'--','LineWidth',.3, 'Color', [.6 .6 .6]); hold off;
-            hold on;
-            f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
-            f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
-            fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
-            hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
-            %hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.3, 'Color', [0 0 0]); hold off;
-            uistack(fmtMic, 'top'); % making sure mic trace is on top
-        end
-        
-        %hold on; plot(headTime,headWav); hold off;
-        set(data.handles.formantAxis, 'yscale','log');
-        set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-        set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
-        set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
-        colormap(jet)
-        % can change colormap by doing the following:
-        % colormap(jet); caxis('auto') %caxis([-170 0
-        % maybe add button to do this? 
-        % should probably also make the legend visible if so
-        %xlabel('Time (s)'); ylabel('formants (KHz)');
-        
-        
-    else % set values based on given inputs
+    end % set values based on given inputs
         % update subjects
         if isfield(data, 'vars') && isfield(data.vars, 'subList')
             subList = data.vars.subList;
@@ -1345,7 +1352,6 @@ end
         end 
         data.vars.curRunQC = curRunQC; 
         
-        
         if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
             if isempty(curOutputData(trial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(trial).options.formants.lpcorder); end
             set(data.handles.NLPCtxtBox, 'String', lporder);
@@ -1393,12 +1399,14 @@ end
         data.vars.micWav = micWav;
         data.vars.micTime = micTime;
         
-        if strcmp(task, 'aud')
+        if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',curInputData(trial).dataLabel{1},'</html>']); end
+        if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
             set(data.handles.headAxis, 'visible', 'on');
             if isfield(data.handles, 'headPlot')
                 set(data.handles.headPlot, 'visible', 'on');
             end
             set(data.handles.playHeadButton, 'enable', 'on');
+            if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',curInputData(trial).dataLabel{2},'</html>']); end
             headWav = curInputData(trial).s{2};
             %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
             %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
@@ -1441,7 +1449,7 @@ end
         
         cla(data.handles.ppAxis);
         axes(data.handles.ppAxis);
-        if strcmp(task, 'som')
+        if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
             f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0measure1'));
             f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
             fs2 = curOutputData(trial).fs;
@@ -1470,8 +1478,8 @@ end
         axes(data.handles.formantAxis);
         set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
         %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
-        flvoice_spectrogram(s,fs,round(.015*fs),round(.014*fs));
-        if strcmp(task, 'som')
+        flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs));
+        if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
             f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1measure1'));
             f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2measure1'));
             fmt = [curOutputData(trial).s{1,f1micIdx},curOutputData(trial).s{1,f2micIdx}];
@@ -1490,13 +1498,13 @@ end
         end
         
         %hold on; plot(headTime,headWav); hold off;
-        set(data.handles.formantAxis, 'yscale','log');
+        set(data.handles.formantAxis, 'yscale','lin');
         set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-        set(data.handles.formantAxis, 'ylim', [0 8],'ytick',[0 .1 .2 .4 1 2 4 8]) % helps  but not quite the same scale I think
+        set(data.handles.formantAxis, 'ylim', [0 4],'ytick',[0 1 2 3 4]) % helps  but not quite the same scale I think
         set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
-        colormap(jet)
+        %colormap(jet)
         
-    end
+    %end
         % save curr data
         data.vars.curInputData = curInputData;
         data.vars.curOutputData = curOutputData;

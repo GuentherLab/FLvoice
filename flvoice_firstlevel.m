@@ -195,6 +195,7 @@ RUNS=RUN;
 if numel(SUBS)==1&&numel(SESS)==1&&numel(RUNS)>1, SUBS=repmat(SUBS,size(RUNS)); SESS=SESS+zeros(size(RUNS)); end
 if numel(SUBS)==1&&numel(SESS)>1&&numel(RUNS)==1, SUBS=repmat(SUBS,size(SESS)); RUNS=RUNS+zeros(size(SESS)); end
 if numel(SUBS)>1&&numel(SESS)==1&&numel(RUNS)==1, SESS=SESS+zeros(size(SUBS)); RUNS=RUNS+zeros(size(SUBS)); end
+assert(numel(SUBS)==numel(SESS)&numel(SUBS)==numel(RUNS),'unequal number of subjects/runs/sessions selected');
 
 if isempty(TASK)
     TASKS={};
