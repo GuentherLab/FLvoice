@@ -363,7 +363,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).options.formants.stepsize=min(.001,1/OPTIONS.OUT_FS);
                 out_trialData(trialNum).options.formants.viterbifilter=1; % warning: remember to keep these values updated with any changes in flvoice_formants defaults
                 out_trialData(trialNum).options.formants.medianfilter=.025;
-                for n1=1:2:numel(OPTIONS.FMT_ARGS)-1, if isfield(out_trialData(trialNum).options.formants,OPTIONS.FMT_ARGS{n1}), out_trialData(trialNum).options.formants.(OPTIONS.FMT_ARGS{n1})=OPTIONS.FMT_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.formants\n',out_trialData(trialNum).options.formants.OPTIONS.FMT_ARGS{n1}); end; end
+                for n1=1:2:numel(OPTIONS.FMT_ARGS)-1, if isfield(out_trialData(trialNum).options.formants,OPTIONS.FMT_ARGS{n1}), out_trialData(trialNum).options.formants.(OPTIONS.FMT_ARGS{n1})=OPTIONS.FMT_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.formants\n',OPTIONS.FMT_ARGS{n1}); end; end
                 out_trialData(trialNum).options.pitch.range=f0range;
                 out_trialData(trialNum).options.pitch.windowsize=.050; % warning: remember to keep these values updated with any changes in flvoice_pitch defaults
                 out_trialData(trialNum).options.pitch.methods='CEP';
@@ -372,7 +372,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).options.pitch.medianfilter=1;
                 out_trialData(trialNum).options.pitch.meanfilter=0.5;
                 out_trialData(trialNum).options.pitch.outlierfilter=0;
-                for n1=1:2:numel(OPTIONS.F0_ARGS)-1, if isfield(out_trialData(trialNum).options.pitch,OPTIONS.F0_ARGS{n1}), out_trialData(trialNum).options.pitch.(OPTIONS.F0_ARGS{n1})=OPTIONS.F0_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.pitch\n',out_trialData(trialNum).options.pitch.OPTIONS.F0_ARGS{n1}); end; end
+                for n1=1:2:numel(OPTIONS.F0_ARGS)-1, if isfield(out_trialData(trialNum).options.pitch,OPTIONS.F0_ARGS{n1}), out_trialData(trialNum).options.pitch.(OPTIONS.F0_ARGS{n1})=OPTIONS.F0_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.pitch\n',OPTIONS.F0_ARGS{n1}); end; end
                 
                 for ns=1:numel(s)
                     
