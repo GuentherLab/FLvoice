@@ -165,6 +165,7 @@ end
                 %if trial missing default to 1st......
         end
         
+        if ~ishandle(data.handles.hfig), return; end
         data = get(data.handles.hfig, 'userdata');
         if ~isempty(data)
             set(data.handles.hfig,'userdata',data);
@@ -954,6 +955,11 @@ end
         end
         emptyIdx = cellfun(@isempty,subList);
         subList(emptyIdx) = [];    
+        if isempty(subList), 
+            close(data.handles.hfig);
+            warndlg({sprintf('Unable to find any sub-* directories in root folder %s',flvoice('private.root')),'Please change the root folder of your subject directories using the syntax:',' ','flvoice root YOURROOTFOLDER'});
+            return
+        end
         data.vars.subList = subList;
         set(data.handles.subDrop, 'String', subList, 'Value', 1);
         disp('Loading default data from root folder:')
