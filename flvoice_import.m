@@ -214,8 +214,9 @@ for nsample=1:numel(RUNS)
     filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-audio.mat',SUB,SES,RUN,TASK));
     filename_fmtData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
     if ~conn_existfile(filename_trialData),
-        fprintf('file %s not found, attempting alternative input filename\n',filename_trialData);
-        filename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
+        newfilename_trialData=fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB),sprintf('ses-%d',SES),'beh',sprintf('sub-%s_ses-%d_run-%d_task-%s.mat',SUB,SES,RUN,TASK));
+        fprintf('file %s not found, attempting alternative input filename %s\n',filename_trialData,newfilename_trialData);
+        filename_trialData=newfilename_trialData;
     end
     if isfield(OPTIONS,'SET_QC')&&~isempty(OPTIONS.SET_QC)
         assert(numel(RUNS)==1,'unable to save QC information for multiple subjects/sesions/runs simultaneously. Select a single subject/session/run and try again');
