@@ -140,10 +140,10 @@ data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm',
 data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.66 .1 .05 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
 %data.handles.conditionDrop=uicontrol('Style', 'popupmenu','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.74 .16 .05 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
 % Prev / Next Buttons
-data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.3,'HorizontalAlignment', 'left','Position',[.75 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
-data.handles.nextButton=uicontrol('Style', 'pushbutton','String','Next>','Units','norm','FontUnits','norm','FontSize',0.3,'HorizontalAlignment', 'left','Position',[.87 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @nextTrial);
-data.handles.prevFlagButton=uicontrol('Style', 'pushbutton','String','<Prev flag','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.75 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'prev'));
-data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next flag>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'next'));
+data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.75 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
+data.handles.nextButton=uicontrol('Style', 'pushbutton','String','Next>','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.87 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @nextTrial);
+data.handles.prevFlagButton=uicontrol('Style', 'pushbutton','String','<Prev with flag','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.75 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'prev'));
+data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with flag>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'next'));
 
 % Axes (Mic / Head / Spectograms) Panel
 data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .86],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
