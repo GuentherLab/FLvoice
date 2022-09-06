@@ -59,40 +59,40 @@ data.handles.hfig=figure('Units','norm','Position',[.05 .15 .9 .8],'Menubar','no
 % SETTINGS PANEL
 data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .45 .2 .52],'Parent',data.handles.hfig);
 % Formant Settings
-data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .935 .8 .08],'Parent',data.handles.settPanel);
+data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .915 .8 .08],'Parent',data.handles.settPanel);
 % Formants (FMT_ARGS)
 % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
 % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
-data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .87 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .88 .45 .065],'Parent',data.handles.settPanel);
-data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .8 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .81 .45 .065],'Parent',data.handles.settPanel);
-data.handles.vfiltertxt=uicontrol('Style','text','String','Viterb Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .73 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .74 .45 .065],'Parent',data.handles.settPanel);
-data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .66 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .67 .45 .065],'Parent',data.handles.settPanel);
+data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .86 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
+data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .78 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .79 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.vfiltertxt=uicontrol('Style','text','String','Viterb Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .71 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .72 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
+data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .64 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .65 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
 % Pitch Settings
-data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .595 .8 .08],'Parent',data.handles.settPanel);
+data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .555 .8 .08],'Parent',data.handles.settPanel);
 % Pitch (F0_ARGS)
 % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
 % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
-data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .53 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .54 .45 .065],'Parent',data.handles.settPanel);
-data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .46 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .47 .45 .065],'Parent',data.handles.settPanel);
-data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .39 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .4 .45 .065],'Parent',data.handles.settPanel);
-data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .32 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .33 .45 .065],'Parent',data.handles.settPanel);
-data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .25 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .26 .45 .065],'Parent',data.handles.settPanel);
-data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .18 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .19 .45 .065],'Parent',data.handles.settPanel);
+data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .49 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .50 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .42 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .43 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : PEF, NCF, CEP, LHS, SRH');
+data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .36 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
+data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .28 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .29 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (removing segments with low evidence of periodicity)');
+data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .21 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .22 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
+data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .14 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .15 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Outlier filter (0/1 values; detect&interpolate outlier values)');
 % General
 % 'SKIP_LOWAMP'
 % 'skipLowAMPtxtBox'
-data.handles.skipLowAtxt=uicontrol('Style','text','String','Skip Lowamp:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .10 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.skipLowAMPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
+%data.handles.skipLowAtxt=uicontrol('Style','text','String','Skip Lowamp:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .10 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+%data.handles.skipLowAMPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
 
 % Update Button
 data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settings','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .08],'Parent',data.handles.settPanel,'Callback', @updateSettings);
@@ -147,13 +147,14 @@ data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with 
 
 % Axes (Mic / Head / Spectograms) Panel
 data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .86],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
-data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.76, 1.14, 0.23], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
-data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.54, 1.14, 0.23], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
+data.handles.ampAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.53, 1.14, 0.06], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.77, 1.14, 0.18], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.59, 1.14, 0.18], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
 %data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
-data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
-data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.10, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
+data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.31, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
+data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.09, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
 % Axes Buttons
-data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .86 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
+data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .82 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
 data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .64 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
@@ -211,58 +212,72 @@ outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
 % General
 % 'SKIP_LOWAMP'
 % 'skipLowAMPtxtBox'
-SKIP_LOWAMP = str2num(get(data.handles.skipLowAMPtxtBox, 'String'));
+%SKIP_LOWAMP = str2num(get(data.handles.skipLowAMPtxtBox, 'String'));
 
 curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
 
 choice = questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Cancel');
 switch choice
     case 'Current run'
-        data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
-        data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
-        data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
-        data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
-        data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
-        data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
-        data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
-        data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
-        data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
-        data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
-        data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
-        data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
+%         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+%         data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
+        SKIP_LOWAMP=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWAMP), SKIP_LOWAMP =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWAMP); end; end
+        SKIP_LOWDUR=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWDUR), SKIP_LOWDUR =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWDUR); end; end
+        answ=conn_menu_inputdlg(...
+            {'Minimum amplitude (in dB units)','Minimum duration (in seconds)'},...
+            'Automatic QC labeling of low-amplitude or low-duration utterances (select cancel to skip)',...
+            1,...
+            {SKIP_LOWAMP, SKIP_LOWDUR});
+        if isempty(answ), 
+            SKIP_LOWAMP=[];
+            SKIP_LOWDUR=[];
+        else
+            SKIP_LOWAMP=str2num(answ{1});
+            SKIP_LOWDUR=str2num(answ{2});
+        end
         flvoice_import(curSub,curSess,curRun,curTask, ...
             'PRINT',false,...
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR);
 
     case 'Just Trial'
-        data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
-        data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
-        data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
-        data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
-        data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
-        data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
-        data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
-        data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
-        data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
-        data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
-        data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterF = medianfilterF;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeP = windowsizeP;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.methods = methods;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.range = range;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.hr_min = hr_min;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
+%         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
         flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
             'PRINT',false,...
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
-            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP);
+            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter} );
+%             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
-        set(data.handles.hfig,'pointer','arrow');
-        drawnow;
-        return
+%         set(data.handles.hfig,'pointer','arrow');
+%         drawnow;
+%         return
 end
 
-flvoice_import(curSub,curSess,curRun,curTask, 'set_qc', data.vars.curRunQC)
+%flvoice_import(curSub,curSess,curRun,curTask, 'set_qc', data.vars.curRunQC)
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
 % re-enable buttons when done
@@ -1371,11 +1386,11 @@ if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags % no QC in
     curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
     curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
     curRunQC.dictionary = data.handles.Flags;
-    curRunQC.settings = cell(1,size(data.vars.trialList,2));
+    %curRunQC.settings = cell(1,size(data.vars.trialList,2));
 elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2) % new trials were added
     curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
     curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
-    curRunQC.settings{1,size(data.vars.trialList,2)} = [];
+    %curRunQC.settings{1,size(data.vars.trialList,2)} = [];
 elseif iscell(curRunQC.dictionary)&&~isempty(curRunQC.dictionary)&&any(cellfun(@iscell,curRunQC.dictionary)) % converts old format (explicit label per trial) to new format (common dictionary of labels)
     newdictionary={};
     newbadTrial=zeros(0,size(curRunQC.badTrial,2));
@@ -1441,10 +1456,10 @@ if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.for
     set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(trial).options.pitch.hr_min));
     set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.medianfilter));
     set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.outlierfilter));
-    if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
-    set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+    %if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
+    %set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
     % backward compat for trial prior to 'options' field additon in flvoice
-elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{trial})
+elseif isfield(curRunQC,'settings') && numel(curRunQC.settings)>=trial && ~isempty(curRunQC.settings{trial})
     if isempty(curRunQC.settings{trial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{trial}.lporder); end
     set(data.handles.NLPCtxtBox, 'String', lporder);
     set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeF));
@@ -1457,11 +1472,31 @@ elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{trial})
     set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{trial}.hr_min));
     set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterP));
     set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.outlierfilter));
-    if isempty(curRunQC.settings{trial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.lporder); end
-    set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
+    %if isempty(curRunQC.settings{trial}.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.SKIP_LOWAMP); end
+    %set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
 else
     msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
     return
+end
+
+% update amp plot
+ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
+if ~isempty(ampidx)
+    cla(data.handles.ampAxis)
+    axes(data.handles.ampAxis);
+    for nampidx=numel(ampidx):-1:1
+        ampWav = curOutputData(trial).s{ampidx(nampidx)};
+        ampWav(ampWav<0)=nan;
+        ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
+        hold on; ampPlot=plot(ampTime,ampWav,'.', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
+    end
+    set(data.handles.ampAxis, 'FontUnits', 'normalized', 'FontSize', 0.20);
+    set(data.handles.ampAxis,'XLim', [0, numel(ampWav)/curOutputData(trial).fs],'xtick',0:.1:numel(ampWav)/curOutputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off')
+    grid(data.handles.ampAxis,'on');
+    hold on; text(-.01*numel(ampWav)/curOutputData(trial).fs, mean(get(data.handles.ampAxis,'ylim')), 'Amp','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
+    ylabel 'Amplitude (dB)';
+else
+    set(data.handles.ampAxis, 'visible', 'off');
 end
 
 % update mic plot
@@ -1470,7 +1505,7 @@ micWav = curInputData(trial).s{1};
 %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
 micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
 data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]);
-set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.05);
+set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
 set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs],'xtick',0:.1:numel(micWav)/curInputData(trial).fs,'XAxisLocation','top','box','off')
 grid(data.handles.micAxis,'on');
 data.vars.micWav = micWav;
@@ -1489,7 +1524,7 @@ if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
     %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
     headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
     data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]);
-    set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.05);
+    set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
     set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','box','off');
     grid(data.handles.headAxis,'on');
     data.vars.headWav = headWav;
@@ -1514,14 +1549,21 @@ elseif isfield(curInputData(trial), 'timingTrial')
     %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
 end
 axes(data.handles.micAxis);
-for npertonset=1:numel(pertOnset), hold on; xline(pertOnset(npertonset),'b-',pertLabel{npertonset},'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','bottom','LabelOrientation','horizontal'); hold off; end
+htemp=[];
+for npertonset=1:numel(pertOnset), 
+    hold on; 
+    htemp=xline(pertOnset(npertonset),'b-',pertLabel{npertonset},'linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal'); 
+    if npertonset>1&&pertOnset(npertonset)>pertOnset(npertonset-1), text(.5*pertOnset(npertonset)+.5*pertOnset(npertonset-1),get(data.handles.micAxis,'ylim')*[.95;.05],sprintf('[ %d ms ]',round(1e3*(pertOnset(npertonset)-pertOnset(npertonset-1)))),'FontSize', 6.5,'horizontalalignment','center'); end
+    if npertonset==numel(pertOnset), set(htemp,'LabelHorizontalAlignment','Right'); end
+    hold off; 
+end
 
 % update spectogram plots
 set([data.handles.ppAxis,data.handles.formantAxis],'visible','off');
 cla(data.handles.ppAxis);
-set(data.handles.ppAxis.Colorbar, 'Visible', 'off');
+try, delete(data.handles.ppAxis.Colorbar); end
 cla(data.handles.formantAxis);
-set(data.handles.formantAxis.Colorbar, 'Visible', 'off');
+try, delete(data.handles.formantAxis.Colorbar); end
 s = curInputData(trial).s{1};
 fs = curInputData(trial).fs;
 %         cla(data.handles.pitchAxis, 'reset');
@@ -1556,11 +1598,11 @@ else
     end
     %uistack(ppMic, 'top'); % making sure mic trace is on top
 end
-hold on; text(-.01*numel(s)/fs, .5, 'Pitch','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
+hold on; text(-.01*numel(s)/fs, .375, 'Pitch','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
 set(data.handles.ppAxis, 'yscale','lin');
-set(data.handles.ppAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.11, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs);
-set(data.handles.ppAxis, 'ylim', [.01 1],'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.1:1),'uni',0));
-set(data.handles.ppAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
+set(data.handles.ppAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.10, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs);
+set(data.handles.ppAxis, 'ylim', [.01 .75],'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.1:1),'uni',0));
+set(data.handles.ppAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.10    0.017    0.2007]);
 %set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
 hold off;
 
@@ -1603,9 +1645,9 @@ end
 %hold on; plot(headTime,headWav); hold off;
 hold on; text(-.01*numel(s)/fs, 2, 'Formants','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
 set(data.handles.formantAxis, 'yscale','lin');
-set(data.handles.formantAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.33, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs,'xticklabel',[]);
+set(data.handles.formantAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.32, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs,'xticklabel',[]);
 set(data.handles.formantAxis, 'ylim', [.01 4], 'ytick',0:.25:4,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.25:4),'uni',0));
-set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.3393    0.017    0.2007]);
+set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.32    0.017    0.2007]);
 set([data.handles.ppAxis,data.handles.formantAxis],'visible','on');
 
 % update button enable status

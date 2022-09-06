@@ -15,7 +15,7 @@ t=(0:size(S,2)-1)*(windowsize-windowoverlap)/fs;
 f=(0:size(S,1)-1)*fs/size(S,1);
 f=f(2:floor(size(S,1)/2));
 S=S(2:floor(size(S,1)/2),:);
-P=10*log10(2*S/fs/(w'*w)); % power spectrum in dB/Hz units
+P=100+10*log10(2*S/fs/(w'*w)); % power spectrum in dB/Hz units
 
 if nargout==0
     if 0
@@ -23,7 +23,7 @@ if nargout==0
         uP=reshape(uP,size(P));
         h=surface(t,f/1e3,uP);
     else
-        h=surface(t,f/1e3,P);
+        h=surface(t,f/1e3,0*P,P);
     end
     set(h,'edgecolor','none');
     set(gca,'ydir','normal','yscale','lin','ylim',[min(f) max(f)]/1e3,'xlim',[min(t) max(t)],'clim',[min(mean(P,1)), max(P(:))]);
