@@ -146,16 +146,16 @@ data.handles.prevFlagButton=uicontrol('Style', 'pushbutton','String','<Prev with
 data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with flag>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'next'));
 
 % Axes (Mic / Head / Spectograms) Panel
-data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .86],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
-data.handles.ampAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.53, 1.14, 0.06], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
-data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.77, 1.14, 0.18], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
-data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.59, 1.14, 0.18], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
-%data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
-data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.31, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
-data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'OuterPosition', [-0.12, 0.09, 1.14, 0.25], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
+data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .84],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
+data.handles.ampAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [.028, 0.54, .886, 0.06], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [.028, 0.81, .886, 0.17], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position',[.028, 0.62, .886, 0.17], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
+%data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
+data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.10, 0.886, 0.2], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
+data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.32, 0.886, 0.2], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
 % Axes Buttons
-data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .82 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
-data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .64 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .85 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
+data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .67 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
 %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
@@ -175,6 +175,7 @@ switch setup
         %if trial missing default to 1st......
 end
 
+zoom(data.handles.hfig,'on');
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -1504,11 +1505,13 @@ else
 end
 
 % update mic plot
+cla(data.handles.micAxis);
+axes(data.handles.micAxis);
 micWav = curInputData(trial).s{1};
 %micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
 %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
 micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
-data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]);
+hold on; data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]); hold off
 set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
 set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs],'xtick',0:.1:numel(micWav)/curInputData(trial).fs,'XAxisLocation','top','box','off')
 grid(data.handles.micAxis,'on');
@@ -1516,30 +1519,6 @@ data.vars.micWav = micWav;
 data.vars.micTime = micTime;
 
 if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',curInputData(trial).dataLabel{1},'</html>']); end
-if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
-    set(data.handles.headAxis, 'visible', 'on');
-    if isfield(data.handles, 'headPlot')
-        set(data.handles.headPlot, 'visible', 'on');
-    end
-    set(data.handles.playHeadButton, 'enable', 'on');
-    if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',curInputData(trial).dataLabel{2},'</html>']); end
-    headWav = curInputData(trial).s{2};
-    %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
-    %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
-    headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
-    data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]);
-    set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
-    set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','box','off');
-    grid(data.handles.headAxis,'on');
-    data.vars.headWav = headWav;
-    data.vars.headTime = headTime;
-else
-    set(data.handles.headAxis, 'visible', 'off');
-    if isfield(data.handles, 'headPlot')
-        set(data.handles.headPlot, 'visible', 'off');
-    end
-    set(data.handles.playHeadButton, 'enable', 'off');
-end
 pertOnset=[];
 if isfield(curInputData,'reference_time')
     pertOnset = curInputData(trial).reference_time;
@@ -1552,7 +1531,6 @@ elseif isfield(curInputData(trial), 'timingTrial')
     pertLabel = {'Voice onset','Pert onset'};
     %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
 end
-axes(data.handles.micAxis);
 htemp=[];
 for npertonset=1:numel(pertOnset), 
     hold on; 
@@ -1560,6 +1538,28 @@ for npertonset=1:numel(pertOnset),
     if npertonset>1&&pertOnset(npertonset)>pertOnset(npertonset-1), text(.5*pertOnset(npertonset)+.5*pertOnset(npertonset-1),get(data.handles.micAxis,'ylim')*[.95;.05],sprintf('[ %d ms ]',round(1e3*(pertOnset(npertonset)-pertOnset(npertonset-1)))),'FontSize', 6.5,'horizontalalignment','center'); end
     if npertonset==numel(pertOnset), set(htemp,'LabelHorizontalAlignment','Right'); end
     hold off; 
+end
+
+% update headphones plot
+if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
+    cla(data.handles.headAxis);
+    axes(data.handles.headAxis);
+    set(data.handles.headAxis, 'visible', 'on');
+    set(data.handles.playHeadButton, 'enable', 'on');
+    if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',curInputData(trial).dataLabel{2},'</html>']); end
+    headWav = curInputData(trial).s{2};
+    %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
+    %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+    headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
+    hold on; data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]); hold off
+    set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
+    set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','box','off');
+    grid(data.handles.headAxis,'on');
+    data.vars.headWav = headWav;
+    data.vars.headTime = headTime;
+else
+    set(data.handles.headAxis, 'visible', 'off');
+    set(data.handles.playHeadButton, 'enable', 'off');
 end
 
 % update spectogram plots
@@ -1611,7 +1611,7 @@ set(data.handles.ppAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.10  
 hold off;
 
 axes(data.handles.formantAxis);
-set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
+%set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
 %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
 flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs));
 xlabel ''

@@ -55,10 +55,10 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'F0_ARGS'          : additional arguments for FLVOICE_PITCH (default {})
 %   'OUT_WINDOW'       : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
-%   'SKIP_CONDITIONS'  : skip specific conditions; list of conditions labels (condLabel values) to be flagged as invalid (default {})
-%   'SKIP_LOWAMP'      : skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be flagged as invalid (default [])
-%   'SKIP_LOWDUR'      : skip low-duration trials; trials with less than SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be flagged as invalid (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
-%   'SINGLETRIAL'      : list of trial number(s) to re-process -expects all trials to have been processed at least once already- (default [])
+%   'SKIP_CONDITIONS'  : QC skip specific conditions; list of conditions labels (condLabel values) to be marked as invalid with a "Skipped condition" QC flag (default {})
+%   'SKIP_LOWAMP'      : QC skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be marked as invalid with a "Low amplitude" QC flag (default [])
+%   'SKIP_LOWDUR'      : QC skip low-duration trials; trials with less than SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be marked as invalid with a "Utterance too short" QC flag (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
+%   'SINGLETRIAL'      : list of trial number(s) to re-process -expects all trials to have been processed at least once already- (default [] = all trials)
 %   'OVERWRITE'        : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 save formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 save jpg files with formant&pitch trajectories
