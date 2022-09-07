@@ -177,9 +177,9 @@ end
 
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
-if ~isempty(data)
-    set(data.handles.hfig,'userdata',data);
-end
+% if ~isempty(data)
+%     set(data.handles.hfig,'userdata',data);
+% end
 end
 
 
@@ -283,7 +283,6 @@ drawnow;
 % re-enable buttons when done
 updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, data.vars.curTrial);
 data = get(data.handles.hfig, 'userdata');
-set(data.handles.hfig,'userdata',data);
 end
 
 function FlagPN(nflags,option)
@@ -638,12 +637,12 @@ curTask = taskList{get(data.handles.taskDrop, 'Value')};
 
 updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, curTask, 1);
 data = get(data.handles.hfig, 'userdata');
-data.vars.curSub = newSub;
+% data.vars.curSub = newSub;
 
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
-% re-enable buttons when done
-set(data.handles.hfig,'userdata',data);
+% % re-enable buttons when done
+% set(data.handles.hfig,'userdata',data);
 end
 
 function sessDrop(ObjH, EventData)
@@ -683,11 +682,11 @@ curTask = taskList{get(data.handles.taskDrop, 'Value')};
 
 updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, curTask, 1);
 data = get(data.handles.hfig, 'userdata');
-data.vars.curSess = newSess;
+% data.vars.curSess = newSess;
 
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
-set(data.handles.hfig,'userdata',data);
+% set(data.handles.hfig,'userdata',data);
 end
 
 function runDrop(ObjH, EventData)
@@ -722,12 +721,12 @@ newTask = taskList{end}; % will there ever be 2 tasks per run?
 
 updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, newTask, 1);
 data = get(data.handles.hfig, 'userdata');
-data.vars.curRun = newRun;
-data.vars.curTask = newTask;
+% data.vars.curRun = newRun;
+% data.vars.curTask = newTask;
 
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
-set(data.handles.hfig,'userdata',data);
+% set(data.handles.hfig,'userdata',data);
 end
 
 function taskDrop(ObjH, EventData)
@@ -756,11 +755,11 @@ newTaskIdx = get(data.handles.taskDrop, 'Value');
 newTask = taskList{newTaskIdx};
 updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, newTask, 1);
 data = get(data.handles.hfig, 'userdata');
-data.vars.curTask = newTask;
+% data.vars.curTask = newTask;
 
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
-set(data.handles.hfig,'userdata',data);
+% set(data.handles.hfig,'userdata',data);
 end
 
 function trialDrop(ObjH, EventData)
@@ -787,11 +786,11 @@ flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
 newTrial = get(data.handles.trialDrop, 'Value');
 updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, newTrial);
 data = get(data.handles.hfig, 'userdata');
-data.vars.curTrial = newTrial;
+% data.vars.curTrial = newTrial;
 
 set(data.handles.hfig,'pointer','arrow');
 drawnow;
-set(data.handles.hfig,'userdata',data);
+% set(data.handles.hfig,'userdata',data);
 end
 
 function prevTrial(ObjH, EventData)
@@ -816,30 +815,31 @@ curTrial = data.vars.curTrial;
 prevTrial = curTrial - 1;
 trialList = data.vars.trialList;
 if curTrial == trialList(1)
-    choice = questdlg('This is the first trial for this run, attempt to load previous run?', 'Change runs?', 'Yes', 'No', 'opts');
+    choice = questdlg('This is the first trial for this run, attempt to load previous run?', 'Change runs?', 'Yes', 'No', 'No');
     switch choice
         case 'Yes'
             curRun = data.vars.curRun;
             runList = data.vars.runList;
             runIdx = find(strcmp(runList,curRun));
             prevIdx = runIdx-1;
-            if prevIdx > numel(runList);
-                warning = msgbox('Previous run does not exist, consider changing session?')
+            if prevIdx < 1;
+                warning = msgbox('Previous run does not exist, consider changing session?');
             else
                 prevRun = runList{prevIdx};
                 taskList = data.vars.taskList;
                 updateSubj(data, data.vars.curSub, data.vars.curSess, prevRun, taskList{1}, 1) % maybe should load last trial of prev run
                 data = get(data.handles.hfig, 'userdata');
-                data.vars.curRun = prevRun;
+%                 data.vars.curRun = prevRun;
                 data.vars.curTrial = 1;
             end
         case 'No'
-            return
+            updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, data.vars.curTrial);
+            data = get(data.handles.hfig, 'userdata');
     end
 else
     updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, prevTrial);
     data = get(data.handles.hfig, 'userdata');
-    data.vars.curTrial = prevTrial;
+%     data.vars.curTrial = prevTrial;
 end
 
 set(data.handles.hfig,'userdata',data);
@@ -868,7 +868,7 @@ curTrial = data.vars.curTrial;
 nextTrial = curTrial + 1;
 trialList = data.vars.trialList;
 if curTrial == trialList(end)
-    choice = questdlg('This is the last trial for this run, attempt to load next run?', 'Change runs?', 'Yes', 'No', 'opts');
+    choice = questdlg('This is the last trial for this run, attempt to load next run?', 'Change runs?', 'Yes', 'No', 'No');
     switch choice
         case 'Yes'
             curRun = data.vars.curRun;
@@ -882,11 +882,12 @@ if curTrial == trialList(end)
                 taskList = data.vars.taskList;
                 updateSubj(data, data.vars.curSub, data.vars.curSess, nextRun, taskList{1}, 1)
                 data = get(data.handles.hfig, 'userdata');
-                data.vars.curRun = nextRun;
-                data.vars.curTrial = 1;
+%                 data.vars.curRun = nextRun;
+%                 data.vars.curTrial = 1;
             end
         case 'No'
-            return
+            updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, data.vars.curTrial);
+            data = get(data.handles.hfig, 'userdata');
     end
 else
     updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, nextTrial);
@@ -1482,14 +1483,17 @@ end
 % update amp plot
 ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
 if ~isempty(ampidx)
+    skip_lowamp=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWAMP), skip_lowamp =  curOutputINFO.options.SKIP_LOWAMP; end; end
     cla(data.handles.ampAxis)
     axes(data.handles.ampAxis);
     for nampidx=numel(ampidx):-1:1
         ampWav = curOutputData(trial).s{ampidx(nampidx)};
         ampWav(ampWav<0)=nan;
         ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
+        if ~isempty(skip_lowamp), hold on; area(ampTime,max(ampWav,skip_lowamp),skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off; end
         hold on; ampPlot=plot(ampTime,ampWav,'.', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
     end
+    if ~isempty(skip_lowamp), hold on; htemp=yline(skip_lowamp,'b-',sprintf('%d dB',round(skip_lowamp)),'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','top','LabelOrientation','horizontal'); hold off; end
     set(data.handles.ampAxis, 'FontUnits', 'normalized', 'FontSize', 0.20);
     set(data.handles.ampAxis,'XLim', [0, numel(ampWav)/curOutputData(trial).fs],'xtick',0:.1:numel(ampWav)/curOutputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off')
     grid(data.handles.ampAxis,'on');
