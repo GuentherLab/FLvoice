@@ -607,8 +607,10 @@ task = data.vars.curTask;
 %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
 %varName = 'curRunQCflags';
 %save(saveFileName,varName);
-curRunQC = data.vars.curRunQC;
-flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+try
+    curRunQC = data.vars.curRunQC;
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+end
 
 subList = data.vars.subList;
 newSubIdx = get(data.handles.subDrop, 'Value');
@@ -664,8 +666,10 @@ task = data.vars.curTask;
 %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
 %varName = 'curRunQCflags';
 %save(saveFileName,varName);
-curRunQC = data.vars.curRunQC;
-flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+try
+    curRunQC = data.vars.curRunQC;
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+end
 
 sessList = data.vars.sessList;
 newSessIdx = get(data.handles.sessionDrop, 'Value');
@@ -709,8 +713,10 @@ task = data.vars.curTask;
 %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
 %varName = 'curRunQCflags';
 %save(saveFileName,varName);
-curRunQC = data.vars.curRunQC;
-flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+try
+    curRunQC = data.vars.curRunQC;
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+end
 
 runList = data.vars.runList;
 newRunIdx = get(data.handles.runDrop, 'Value');
@@ -748,8 +754,10 @@ task = data.vars.curTask;
 %saveFileName = sprintf('%s_%s_%s_%s_QC_Flags.mat', sub, ses, run, task);
 %varName = 'curRunQCflags';
 %save(saveFileName,varName);
-curRunQC = data.vars.curRunQC;
-flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+try
+    curRunQC = data.vars.curRunQC;
+    flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+end
 
 taskList = data.vars.taskList;
 newTaskIdx = get(data.handles.taskDrop, 'Value');
@@ -1351,7 +1359,8 @@ if loadData % only run fl_voice_import() if data being loaded is different from 
     curInputData = flvoice_import(sub,sess,run,task,'input');
     curInputData = curInputData{1};
     if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
-        msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+        msgbox("Current subject / run has not been pre-processed using flvoice yet. Please select a different subject/run or use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+        set(data.handles.hfig,'userdata',data);
         return
     end
 else
