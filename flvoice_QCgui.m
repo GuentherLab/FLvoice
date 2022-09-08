@@ -1360,12 +1360,14 @@ if loadData % only run fl_voice_import() if data being loaded is different from 
     curInputData = curInputData{1};
     if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
         msgbox("Current subject / run has not been pre-processed using flvoice yet. Please select a different subject/run or use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
+        set([findobj(data.handles.settPanel);findobj(data.handles.flagPanel);findobj(data.handles.axes1Panel)],'visible','off')
         set(data.handles.hfig,'userdata',data);
         return
     end
 else
     curInputData = data.vars.curInputData;
 end
+set([findobj(data.handles.settPanel);findobj(data.handles.flagPanel);findobj(data.handles.axes1Panel)],'visible','on');
 if loadData % only run fl_voice_import() if data being loaded is different from current
     curOutputData = flvoice_import(sub,sess,run,task,'output_all');
     curOutputINFO = curOutputData{1}.INFO;
