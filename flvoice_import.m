@@ -15,17 +15,19 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %       trialData(n)                 : trial data structure
 %             trialData(n).s                 : audiowave timeseries
 %             trialData(n).fs                : sampling frequency (Hz)
-%             trialData(n).t                 : time of initial sample (seconds) (default 0)
-%             trialData(n).reference_time    : reference time for time-alignment (seconds)  (default 0)
-%             trialData(n).condLabel         : condition label/name associated with this trial (default 'unknown')
-%             trialData(n).dataLabel         : data labels (default '')
-%             trialData(n).dataUnits         : data units (default '')
+%             trialData(n).t                 : optional time of initial sample (seconds) (default 0)
+%             trialData(n).reference_time    : optional reference time for time-alignment (seconds)  (default 0)
+%             trialData(n).condLabel         : optional condition label/name associated with this trial (default 'unknown')
+%             trialData(n).covariates        : optional covariate value(s) associated with this trial (default []) 
+%             trialData(n).dataLabel         : optional data labels (default '')
+%             trialData(n).dataUnits         : optional data units (default '')
 %
 %   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
 %                         may alternatively be defined implicitly as trialData(n).s = {trialData(n).audapData.signalIn,trialData(n).audapData.signalOut} for Audapter data with fs=16000Hz
 %                         may alternatively be defined implicitly as trialData(n).s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz
 %          trialData(n).reference_time may alternatively be defined implicitly as reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
-%          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t and trialData(n).dataLabel may be defined as a cell array as well to indicate a different value per timeseries
+%          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t, trialData(n).dataLabel, and trialData(n).dataUnits may be defined as a cell array as well to indicate a different value per timeseries
+%          when trialData(n).pertSize is defined, its value is added to the output trialData(n).covariates list as an additional/last element 
 %
 % Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
 % Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
@@ -37,6 +39,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).condLabel         : condition label/name associated with this trial
 %             trialData(n).dataLabel         : data labels (cell array) {'F0','F1','F2','Amp','rawF0','rawF1','rawF2','rawAmp'}
 %             trialData(n).dataUnits         : data units (cell array) {'Hz','Hz','Hz','dB','Hz','Hz','Hz','dB'}
+%             trialData(n).covariates        : covariate value(s) associated with this trial (default []) 
 %             trialData(n).options           : structure with options used by flvoice_formants and flvoice_pitch
 %       INFO.options                 : structure with options used by flvoice_import
 %
@@ -359,6 +362,9 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).dataLabel={};
                 out_trialData(trialNum).dataUnits={};
                 out_trialData(trialNum).t={};
+                out_trialData(trialNum).covariates=[];
+                if isfield(in_trialData,'covariates'), out_trialData(trialNum).covariates=in_trialData(trialNum).covariates; end
+                if isfield(in_trialData,'pertSize'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, max([nan in_trialData(trialNum).pertSize])]; end
                 out_trialData(trialNum).options.formants.fs=fs;
                 out_trialData(trialNum).options.formants.lpcorder=Nlpc;
                 out_trialData(trialNum).options.formants.windowsize=.050;

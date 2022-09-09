@@ -8,19 +8,20 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %   FIRSTLEVEL_NAME  : new first-level analysis name
 %   MEASURE          : input data value (valid values from input data .dataLabel)
 %                          e.g. 'F1-mic'
-%   DESIGN           : condition names defining first-level contrast (valid values from input data .condLabel field)
+%   DESIGN           : condition names defining N first-level conditions or covariate values (valid values from input data .condLabel to indicate individual conditions, or the keywords 'COVARIATE1', 'COVARIATE2', etc. to indicate individual covariates)
 %                          e.g. {'U1','N1'}
-%                      the GLM 1st-level design matrix will be defined in this case as N 0/1 columns each identifying one individual condition
+%                         the GLM 1st-level design matrix will be defined in this case as N columns indicating individual conditions (0/1 values) or covariates (arbitrary values) 
 %                      alternatively, function defining one row of design matrix (one row per trial)
-%                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of values associated with this trial
+%                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of categorical or continuous values associated with this trial
 %                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
-%                      the GLM 1st-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per trial (across all selected sessions and runs)
-%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or k x N matrix)
+%                         the GLM 1st-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per trial (across all selected sessions and runs)
+%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or K x N matrix)
 %                          e.g. [1, -1]
-%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or k x Nt matrix)
+%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or Kt x Nt matrix)
 %                          e.g. [0 0 0 0 1 1 1 1 0 0 0 0 0]
-%                      alternatively, function defining contrast values for (or column of CONTRAST_TIME matrix) each timepoint
+%                      alternatively, function defining contrast values for each timepoint (or column of CONTRAST_TIME matrix)
 %                          e.g. @(t) (t>0&t<.200) - (t<0)
+%                      alternatively, empty array indicating a separate contrast for each data element / timepoint (eq. to CONTRAST_TIME=eye(Nt)) 
 %
 % flvoice_firstlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs first-level model estimation using non-default options
 %   'REFERENCE'        : true/false (default true) uses samples before t=0 as implicit baseline/reference
@@ -33,8 +34,14 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                           'divide' to divide timeseries by average value within reference timewindow (y=x/reference)
 %                           'cents' to convert timeseries to 'cents' units using reference timewindow as base level (y=log(x/reference)/log(2)*1200)
 %   'CONTRAST_SCALE'   : true/false (default true) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
-%   'SAVE'             : (default true) true/false save analysis results .mat file
-%   'PRINT'            : (default false) true/false save jpg files with analysis results
+%   'SAVE'             : (default true) true/false saves analysis results .mat file
+%   'PRINT'            : (default false) true/false saves jpg files with analysis results
+%   'EXPORTDIVA'       : (default false) true/false exports analysis results as SimpleDIVA perturbation+data .csv file 
+%                           SimpleDIVA perturbation+data files contain one row per trial, with a first column indicating perturbation size for each trial (e.g. timepoint), followed by one or more columns indicating the observations at each trial (e.g. formant values) 
+%                           EXPORTDIVA=1 -> a separate trial will be created for each combination of CONTRAST_TIME*CONTRAST_VECTOR rows (i.e. the SimpleDIVA file will have dimensions Kt*K x 2)
+%                           EXPORTDIVA=2 -> each row of CONTRAST_TIME will be treated as a separate TRIAL, and each row of CONTRAST_VECTOR as a separate observation (i.e. the SimpleDIVA file will have dimensions Kt x 1+K)
+%                           EXPORTDIVA=3 -> each row of CONTRAST_VECTOR will be treated as a separate trial, and each row of CONTRAST_TIME as a separate observation (i.e. the SimpleDIVA file will have dimensions K x 1+Kt)
+%                           Enter as field 'EXPORTDIVA_PERT' the experimental perturbation size for each trial (1 x K*Kt vector, 1 x Kt vector, or 1 x K vector for the three options above) 
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
@@ -47,7 +54,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %
 % Output stats files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[FIRSTLEVEL_NAME]#.mat
 %   Variables:
-%       effect                               : effect-sizes (one value per contrast & timepoint)
+%       effect                               : effect-sizes (K x Kt matrix, one value per contrast_vector/contrast_time pair)
 %       effect_CI                            : effect-size 95% confidence intervals
 %       stats                                : stats structure with fields
 %             X                                    : design matrix
@@ -85,11 +92,12 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %      evaluates the difference in F0-headphones timeseries when comparing the U0 to the N0 conditions, as well as D0 to the N0 conditions (separately at each timepoint)
 % 
 %    f=@(condLabel, sesNumber, runNumber, trialNumber)[(1:10)==sesNumber]
-%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',@f,[1 -1]);
+%    flvoice_firstlevel('sub-PTP001','ses-1','run-1','aud-reflexive','test01','F0-headphones',@f,diff(eye(10)));
+%      evaluates the differences in F0-headphones timeseries when comparing across sessions (separately at each timepoint)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -120,7 +128,7 @@ if ischar(DESIGN), DESIGN={DESIGN}; end
 if nargin<8||isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=[]; end
 if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_VECTOR input'); end
 if nargin<9||isempty(CONTRAST_TIME), CONTRAST_TIME=[]; end
-if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_TIME input'); end
+if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(CONTRAST_TIME),'unable to interpret CONTRAST_TIME input'); end
 
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
@@ -163,19 +171,19 @@ if isempty(SES)||isequal(SES,0),
     SES=str2double(regexprep(SESS,'^ses-',''));
     SUB=SUBS;
 end
+if numel(SUB)==1&&numel(SES)>1, SUB=repmat(SUB,size(SES)); end
+if numel(SUB)>1&&numel(SES)==1, SES=repmat(SES,size(SUB)); end
 if isempty(RUN)||isequal(RUN,0),
     SUBS={};
     SESS=[];
     RUNS={};
-    for nSUB=1:numel(SUB)
-        for nSES=1:numel(SES)
-            [nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),sprintf('sub-%s_ses-%d_run-*_desc-formants.mat',SUB{nSUB},SES(nSES))),'-R','-cell'),'uni',0);
-            runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
-            %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
-            RUNS=[RUNS; runs(:)];
-            SESS=[SESS; SES(nSES)+zeros(numel(runs),1)];
-            SUBS=[SUBS; repmat(SUB(nSUB),numel(runs),1)];
-        end
+    for nsample=1:numel(SUB)
+        [nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB{nsample}),sprintf('ses-%d',SES(nsample)),sprintf('sub-%s_ses-%d_run-*_desc-formants.mat',SUB{nsample},SES(nsample))),'-R','-cell'),'uni',0);
+        runs=regexprep(runs,'^.*_(run-[^\._]*)[\._].*$','$1');
+        %[nill,runs]=cellfun(@fileparts,conn_dir(fullfile(OPTIONS.FILEPATH,sprintf('sub-%s',SUB{nSUB}),sprintf('ses-%d',SES(nSES)),'beh','run-*'),'-dir','-R','-cell'),'uni',0);
+        RUNS=[RUNS; runs(:)];
+        SESS=[SESS; SES(nsample)+zeros(numel(runs),1)];
+        SUBS=[SUBS; repmat(SUB(nsample),numel(runs),1)];
     end
     if isempty(RUN)
         if nargout, varargout={RUNS}; 
@@ -195,6 +203,9 @@ RUNS=RUN;
 if numel(SUBS)==1&&numel(SESS)==1&&numel(RUNS)>1, SUBS=repmat(SUBS,size(RUNS)); SESS=SESS+zeros(size(RUNS)); end
 if numel(SUBS)==1&&numel(SESS)>1&&numel(RUNS)==1, SUBS=repmat(SUBS,size(SESS)); RUNS=RUNS+zeros(size(SESS)); end
 if numel(SUBS)>1&&numel(SESS)==1&&numel(RUNS)==1, SESS=SESS+zeros(size(SUBS)); RUNS=RUNS+zeros(size(SUBS)); end
+if numel(SUBS)==1&&numel(SESS)>1&&numel(RUNS)>1&&numel(RUNS)==numel(SESS), SUBS=repmat(SUBS,size(RUNS)); end
+if numel(SUBS)>1&&numel(SESS)==1&&numel(RUNS)>1&&numel(RUNS)==numel(SUBS), SESS=repmat(SESS,size(RUNS)); end
+if numel(SUBS)>1&&numel(SESS)>1&&numel(RUNS)==1&&numel(SUBS)==numel(SESS), RUNS=repmat(RUNS,size(SUBS)); end
 assert(numel(SUBS)==numel(SESS)&numel(SUBS)==numel(RUNS),'unequal number of subjects/runs/sessions selected');
 
 if isempty(TASK)
@@ -222,6 +233,7 @@ for nsub=1:numel(USUBS)
     Y=[];
     T=[];
     C=[];
+    COVS=[];
     Tlabel='time (ms)';
     Ylabel='';
     for nsample=reshape(find(strcmp(USUBS{nsub},SUBS)),1,[])
@@ -249,6 +261,8 @@ for nsub=1:numel(USUBS)
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
                 keepData=true(1,numel(in_trialData));
             end
+            idxcovariates=str2double(regexprep(DESIGN(cellfun('length',regexp(DESIGN,'^COVARIATE\d+$'))>0),'^COVARIATE',''));
+            ntrials=0;
             for ntrial=1:numel(in_trialData)
                 % finds design
                 if ~keepData(ntrial), ok=false;
@@ -256,6 +270,8 @@ for nsub=1:numel(USUBS)
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
                 if ok % adds this trial to analysis
+                    ntrials=ntrials+1;
+                    if ~isempty(idxcovariates), x=[x, reshape(in_trialData(ntrial).covariates(idxcovariates),1,[])]; end
                     if size(X,2)<size(x,2), X=[X, zeros(size(X,1),size(x,2)-size(X,2))]; end
                     if size(x,2)<size(X,2), x=[x, zeros(size(x,1),size(X,2)-size(x,2))]; end
                     X=[X;x];
@@ -313,8 +329,10 @@ for nsub=1:numel(USUBS)
                     if size(T,2)<size(t,2), T=[T, nan(size(T,1),size(t,2)-size(T,2))]; end
                     if size(t,2)<size(T,2), t=[t, nan(size(t,1),size(T,2)-size(t,2))]; end
                     T=[T;t];
+                    if isfield(in_trialData,'covariates'), COVS=[COVS;in_trialData(ntrial).covariates(:)']; end
                 end
             end
+            fprintf('included %d trials\n',ntrials);
         end
     end
     validX=any(X~=0,1);
@@ -322,7 +340,7 @@ for nsub=1:numel(USUBS)
     validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
     nvalid=sum(validY,1);
     fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
-    stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME);
+    stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME,'covs',COVS);
     options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
     contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
     for nrepeat=1:2, % 1: combined stats; 2: separate stats for each individual contrast row
@@ -335,7 +353,7 @@ for nsub=1:numel(USUBS)
         f(:,vmask)=tf;
         p(:,vmask)=tp;
         dof(:,vmask)=repmat(tdof(:),1,nnz(vmask));
-        for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[])
+        for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[]) % for cases with some (not zero not all) invalid samples
             [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),:),Y(validY(:,n1),n1),CONTRAST_VECTOR,[],options{nrepeat});
         end
         if isequal(statsname,'T'), p=2*min(p,1-p); end % two-sided
@@ -369,6 +387,26 @@ for nsub=1:numel(USUBS)
     end
     if nargout>0
         out=[out, struct('effect',effect,'effect_CI',effect_CI,'stats',stats)];
+    end
+    if OPTIONS.EXPORTDIVA
+        filename_outExport=conn_prepend('',filename_outData,'.csv');
+        if ~isempty(OPTIONS.EXPORTDIVA_PERT), exportdiva_pert=OPTIONS.EXPORTDIVA_PERT;
+        elseif ~isempty(COVS), exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
+        else error('Unable to find any covariates; please specify an EXPORTDIVA_PERT vector explicitly'); 
+        end
+        switch(OPTIONS.EXPORTDIVA)
+            case 1, % Kt*K x 1
+                assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,1)*size(effect,2),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,1)*size(effect,2));
+                export_effect=[exportdiva_pert.', effect(:)]; % Kt*K x 1 matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
+            case 2, % Kt x K
+                assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,2),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,2));
+                export_effect=[exportdiva_pert.', effect.']; % Kt x (1+K) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
+            case 3, % K x Kt
+                assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,1));
+                export_effect=[exportdiva_pert.', effect]; % K x (1+Kt) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
+        end
+        conn_savetextfile(filename_outExport,effect);
+        fprintf('Output exported to SimpleDIVA file %s\n',filename_outExport);
     end
     if OPTIONS.DOPLOT,
         if size(effect,1)>10&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
