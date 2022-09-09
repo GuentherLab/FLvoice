@@ -495,18 +495,25 @@ for nsample=1:numel(RUNS)
                 QC.badTrial=zeros(0,numel(out_trialData));
                 QC.dictionary={};
             end
-            if ~isempty(OPTIONS.SKIP_CONDITIONS)
+            if isempty(OPTIONS.SKIP_CONDITIONS)
+                [ok,iflag]=ismember({'Skipped condition'},QC.dictionary);
+                if ok, QC.badTrial(iflag,:)=0; end
+            else
                 skipData=arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
                 if any(skipData)
                     %QC.keepData=QC.keepData&~skipData;
                     [ok,iflag]=ismember({'Skipped condition'},QC.dictionary);
                     if ~ok, iflag=numel(QC.dictionary)+1; QC.dictionary{iflag}='Skipped condition'; end
                     QC.badTrial(iflag,:)=skipData;
-                    QC.keepData=reshape(all(isnan(QC.badTrial)|QC.badTrial==0,1),1,[]);
                 end
             end
-            if ~isempty(OPTIONS.SKIP_LOWAMP)
-                if isempty(OPTIONS.SKIP_LOWDUR), OPTIONS.SKIP_LOWDUR=0; end
+            if isempty(OPTIONS.SKIP_LOWDUR), OPTIONS.SKIP_LOWDUR=0; end
+            if isempty(OPTIONS.SKIP_LOWAMP)
+                if OPTIONS.SKIP_LOWDUR==0, [ok,iflag]=ismember('Low amplitude',QC.dictionary);
+                else [ok,iflag]=ismember('Utterance too short',QC.dictionary);
+                end
+                if ok, QC.badTrial(iflag,:)=0; end
+            else
                 skipData=~arrayfun(@(n)sum(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)}>OPTIONS.SKIP_LOWAMP)>OPTIONS.SKIP_LOWDUR*out_trialData(n).fs,1:numel(out_trialData));
                 if any(skipData)
                     %QC.keepData=QC.keepData&~skipData;
@@ -518,9 +525,9 @@ for nsample=1:numel(RUNS)
                         if ~ok, iflag=numel(QC.dictionary)+1; QC.dictionary{iflag}='Utterance too short'; end
                     end
                     QC.badTrial(iflag,:)=skipData;
-                    QC.keepData=reshape(all(isnan(QC.badTrial)|QC.badTrial==0,1),1,[]);
                 end
             end
+            QC.keepData=reshape(all(isnan(QC.badTrial)|QC.badTrial==0,1),1,[]);
             if OPTIONS.SAVE, flvoice_import(SUB,SES,RUN,TASK, 'set_qc', QC); end
             %if conn_existfile(filename_qcData),
             %    conn_savematfile(filename_qcData,'keepData','-append');

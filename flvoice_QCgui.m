@@ -100,7 +100,7 @@ data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settin
 % QC FLAG PANEL
 data.handles.flagPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .02 .2 .42],'Parent',data.handles.hfig);
 data.handles.flagText=uicontrol('Style', 'text','String','QC Flags:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.53,'HorizontalAlignment', 'center','Position',[.2 .915 .6 .08],'Parent',data.handles.flagPanel);
-data.handles.Flags={'Performed incorrectly','Bad F0 trace','Bad F1 trace','Incorrect voice onset','Utterance too short','Distortion / audio issues'};
+data.handles.Flags={'Performed incorrectly','Bad F0 trace','Bad F1 trace','Incorrect voice onset','Utterance too short','Distortion / audio issues','Needs review'};
 FlagsExtended=[data.handles.Flags, {'Others:'}];
 %         data.handles.flag1txt=uicontrol('Style', 'checkbox','String',,'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .83 .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @checkFlag1);
 %         data.handles.flag2txt=uicontrol('Style', 'checkbox','String',,'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .73 .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @checkFlag2);
@@ -110,11 +110,11 @@ FlagsExtended=[data.handles.Flags, {'Others:'}];
 %         data.handles.flag6txt=uicontrol('Style', 'checkbox','String',,'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .33 .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag6);
 %         data.handles.flag7txt=uicontrol('Style', 'checkbox','String','Other:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .23 .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel, 'Callback', @checkFlag7);
 for nflags=1:numel(FlagsExtended),
-    data.handles.flag1txt(nflags)=uicontrol('Style', 'checkbox','String',FlagsExtended{nflags},'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .83-.10*(nflags-1) .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @(varargin)FlagPN(nflags,'check'));
-    data.handles.flagPrev(nflags)=uicontrol('Style', 'pushbutton','String','<','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.86 .83-.10*(nflags-1) .06 .09],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @(varargin)FlagPN(nflags,'prev'));
-    data.handles.flagNext(nflags)=uicontrol('Style', 'pushbutton','String','>','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.92 .83-.10*(nflags-1) .06 .09],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @(varargin)FlagPN(nflags,'next'));
+    data.handles.flag1txt(nflags)=uicontrol('Style', 'checkbox','String',FlagsExtended{nflags},'Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'right','Position',[.02 .83-.08*(nflags-1) .9 .08],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @(varargin)FlagPN(nflags,'check'));
+    data.handles.flagPrev(nflags)=uicontrol('Style', 'pushbutton','String','<','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.86 .83-.08*(nflags-1) .06 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'visible','off','Callback', @(varargin)FlagPN(nflags,'prev'));
+    data.handles.flagNext(nflags)=uicontrol('Style', 'pushbutton','String','>','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.92 .83-.08*(nflags-1) .06 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'visible','off','Callback', @(varargin)FlagPN(nflags,'next'));
 end
-data.handles.flag7edit=uicontrol('Style', 'edit','String','Comment','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.2 .135 .692 .09],'BackgroundColor', [.94 .94 .94], 'Enable', 'off', 'Parent',data.handles.flagPanel,'Callback', @editFlag7);
+data.handles.flag7edit=uicontrol('Style', 'edit','String','Comment','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'center','Position',[.2 .18 .692 .09],'BackgroundColor', [.94 .94 .94], 'Enable', 'off', 'Parent',data.handles.flagPanel,'Callback', @editFlag7);
 % Save Flag Button
 data.handles.saveFlagButton=uicontrol('Style', 'pushbutton','String','Save flags','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .1],'Parent',data.handles.flagPanel,'Callback', @saveFlags, 'visible','off');
 
@@ -962,9 +962,9 @@ end
 function updateSubj(data,varargin)
 % Helper function that updates the GUI based on current sub / trial
 set(data.handles.hfig,'pointer','watch');
-drawnow;
 % disable buttons while loading
 set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+drawnow;
 
 if numel(varargin) < 1
     init = 1;
@@ -1493,6 +1493,7 @@ else
 end
 
 % update amp plot
+set([data.handles.flagPrev, data.handles.flagNext],'visible','off');
 ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
 if ~isempty(ampidx)
     skip_lowamp=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWAMP), skip_lowamp =  curOutputINFO.options.SKIP_LOWAMP; end; end
