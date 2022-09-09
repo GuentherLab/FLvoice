@@ -270,6 +270,7 @@ for nsample=1:numel(RUNS)
                 if ~isfield(tdata,'dictionary'), tdata.dictionary=arrayfun(@(n)sprintf('bad trial type-%d',n),1:size(tdata.badTrial,1),'uni',0); end
                 if ~isfield(tdata,'keepData'), tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); end
                 if ~isfield(tdata,'settings'), tdata.settings=cell(size(tdata.keepData)); end
+                tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); 
                 if numel(RUNS)>1, fileout{nsample}=tdata;
                 else fileout=tdata;
                 end
@@ -497,17 +498,18 @@ for nsample=1:numel(RUNS)
             if ~isempty(OPTIONS.SKIP_CONDITIONS)
                 skipData=arrayfun(@(n)ismember(out_trialData(n).condLabel,OPTIONS.SKIP_CONDITIONS),1:numel(out_trialData));
                 if any(skipData)
-                    QC.keepData=QC.keepData&~skipData;
+                    %QC.keepData=QC.keepData&~skipData;
                     [ok,iflag]=ismember({'Skipped condition'},QC.dictionary);
                     if ~ok, iflag=numel(QC.dictionary)+1; QC.dictionary{iflag}='Skipped condition'; end
                     QC.badTrial(iflag,:)=skipData;
+                    QC.keepData=reshape(all(isnan(QC.badTrial)|QC.badTrial==0,1),1,[]);
                 end
             end
             if ~isempty(OPTIONS.SKIP_LOWAMP)
                 if isempty(OPTIONS.SKIP_LOWDUR), OPTIONS.SKIP_LOWDUR=0; end
                 skipData=~arrayfun(@(n)sum(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)}>OPTIONS.SKIP_LOWAMP)>OPTIONS.SKIP_LOWDUR*out_trialData(n).fs,1:numel(out_trialData));
                 if any(skipData)
-                    QC.keepData=QC.keepData&~skipData;
+                    %QC.keepData=QC.keepData&~skipData;
                     if OPTIONS.SKIP_LOWDUR==0
                         [ok,iflag]=ismember({'Low amplitude'},QC.dictionary);
                         if ~ok, iflag=numel(QC.dictionary)+1; QC.dictionary{iflag}='Low amplitude'; end
@@ -516,6 +518,7 @@ for nsample=1:numel(RUNS)
                         if ~ok, iflag=numel(QC.dictionary)+1; QC.dictionary{iflag}='Utterance too short'; end
                     end
                     QC.badTrial(iflag,:)=skipData;
+                    QC.keepData=reshape(all(isnan(QC.badTrial)|QC.badTrial==0,1),1,[]);
                 end
             end
             if OPTIONS.SAVE, flvoice_import(SUB,SES,RUN,TASK, 'set_qc', QC); end

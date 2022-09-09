@@ -332,7 +332,7 @@ for nsub=1:numel(USUBS)
                     if isfield(in_trialData,'covariates'), COVS=[COVS;in_trialData(ntrial).covariates(:)']; end
                 end
             end
-            fprintf('included %d trials\n',ntrials);
+            fprintf('  included %d trials in analysis\n',ntrials);
         end
     end
     validX=any(X~=0,1);

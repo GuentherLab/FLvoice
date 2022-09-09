@@ -67,7 +67,7 @@ data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm'
 data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .86 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
 data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .78 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .79 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
-data.handles.vfiltertxt=uicontrol('Style','text','String','Viterb Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .71 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.vfiltertxt=uicontrol('Style','text','String','Viterbi Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .71 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .72 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
 data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .64 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .65 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
@@ -79,11 +79,11 @@ data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings:','Uni
 data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .49 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .50 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
 data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .42 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .43 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : PEF, NCF, CEP, LHS, SRH');
+data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .43 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : CEP (Cepstrum), PEF (Pitch Estimation Filter), NCF (Normalized Correlation Function), LHS (Log-harmonic Summation), SRH (Summation of Residual Harmonics)');
 data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .36 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
 data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .28 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .29 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (removing segments with low evidence of periodicity)');
+data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .29 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (0-1; increase this value to remove segments with low evidence of periodicity)');
 data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .21 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
 data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .22 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
 data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .14 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
@@ -154,8 +154,8 @@ data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', '
 data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.10, 0.886, 0.2], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
 data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.32, 0.886, 0.2], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
 % Axes Buttons
-data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .85 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
-data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.92 .67 .075 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .85 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
+data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .67 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
 %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
@@ -217,7 +217,7 @@ outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
 
 curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
 
-choice = questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Cancel');
+choice = conn_questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Just Trial');
 switch choice
     case 'Current run'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -1524,12 +1524,12 @@ micWav = curInputData(trial).s{1};
 micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
 hold on; data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]); hold off
 set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
-set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs],'xtick',0:.1:numel(micWav)/curInputData(trial).fs,'XAxisLocation','top','box','off')
+set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs],'xtick',0:.1:numel(micWav)/curInputData(trial).fs,'XAxisLocation','top','yaxislocation','right','box','off')
 grid(data.handles.micAxis,'on');
 data.vars.micWav = micWav;
 data.vars.micTime = micTime;
 
-if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',curInputData(trial).dataLabel{1},'</html>']); end
+if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{1},'^[-_\s]',''),'</html>']); end
 pertOnset=[];
 if isfield(curInputData,'reference_time')
     pertOnset = curInputData(trial).reference_time;
@@ -1557,14 +1557,14 @@ if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
     axes(data.handles.headAxis);
     set(data.handles.headAxis, 'visible', 'on');
     set(data.handles.playHeadButton, 'enable', 'on');
-    if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',curInputData(trial).dataLabel{2},'</html>']); end
+    if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{2},'^[-_\s]',''),'</html>']); end
     headWav = curInputData(trial).s{2};
     %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
     %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
     headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
     hold on; data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]); hold off
     set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
-    set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','box','off');
+    set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off');
     grid(data.handles.headAxis,'on');
     data.vars.headWav = headWav;
     data.vars.headTime = headTime;
@@ -1591,7 +1591,7 @@ fs = curInputData(trial).fs;
 %hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset
 
 axes(data.handles.ppAxis);
-flvoice_spectrogram(s,fs,round(.025*fs),round(.024*fs));
+flvoice_spectrogram(s,fs,round(.025*fs),round(.024*fs),1024);
 %set(data.handles.ppAxis, 'OuterPosition', [-0.12, 0.32, 1, 0.25]);
 xlabel 'Time (s)'
 ylabel 'Pitch Frequency (Hz)';
@@ -1624,7 +1624,7 @@ hold off;
 axes(data.handles.formantAxis);
 %set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
 %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
-flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs));
+flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs),1024);
 xlabel ''
 ylabel 'Formant Frequency (Hz)';
 if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names

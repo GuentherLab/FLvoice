@@ -1,16 +1,18 @@
-function [P,t,f]=flvoice_spectrogram(s, fs, windowsize, windowoverlap);
+function [P,t,f]=flvoice_spectrogram(s, fs, windowsize, windowoverlap, Nfft);
 
 % FLVOICE_SPECTROGRAM computes audio signal spectrogram using a short-time fourier transform
-% flvoice_spectrogram(s, fs, WINDOW, NOVERLAP, Type, Extent);
+% flvoice_spectrogram(s, fs, windowsize, windowoverlap, nfft)
 %     s             :  audio samples (vector)
 %     fs            :  sampling frequency (Hz)
 %     windowsize    :  # samples of window
 %     windowoverlap :  # overlapping samples
+%     nfft          :  # fft samples (default 4096)
 
+if nargin<5||isempty(Nfft), Nfft=4*1024; end
 S=flvoice_samplewindow(s(:), windowsize,windowoverlap,'none','same');
 w=flvoice_hanning(size(S,1));
 S=repmat(w,1,size(S,2)).*(S-repmat(mean(S,1),size(S,1),1));
-S=abs(fft(S,max(1024,size(S,1)))).^2;
+S=abs(fft(S,max(Nfft,size(S,1)))).^2;
 t=(0:size(S,2)-1)*(windowsize-windowoverlap)/fs;
 f=(0:size(S,1)-1)*fs/size(S,1);
 f=f(2:floor(size(S,1)/2));
