@@ -1395,16 +1395,7 @@ curRunQC = flvoice_import(sub,sess,run,task, 'get_qc');
 numFlags = numel(data.handles.Flags);
 
 % updates QC format if necessary
-if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags % no QC info
-    curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
-    curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
-    curRunQC.dictionary = data.handles.Flags;
-    %curRunQC.settings = cell(1,size(data.vars.trialList,2));
-elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2) % new trials were added
-    curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
-    curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
-    %curRunQC.settings{1,size(data.vars.trialList,2)} = [];
-elseif iscell(curRunQC.dictionary)&&~isempty(curRunQC.dictionary)&&any(cellfun(@iscell,curRunQC.dictionary)) % converts old format (explicit label per trial) to new format (common dictionary of labels)
+if iscell(curRunQC.dictionary)&&~isempty(curRunQC.dictionary)&&any(cellfun(@iscell,curRunQC.dictionary)) % converts old format (explicit label per trial) to new format (common dictionary of labels)
     newdictionary={};
     newbadTrial=zeros(0,size(curRunQC.badTrial,2));
     for idxj=reshape(find(any(curRunQC.badTrial>0,1)),1,[]),
@@ -1420,6 +1411,13 @@ elseif iscell(curRunQC.dictionary)&&~isempty(curRunQC.dictionary)&&any(cellfun(@
     end
     curRunQC.badTrial=newbadTrial;
     curRunQC.dictionary=newdictionary;
+    curRunQC.keepData=reshape(all(isnan(curRunQC.badTrial)|curRunQC.badTrial==0,1),1,[]);
+end
+if size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2) % new trials were added (NOTE: ASSUME NEW TRIALS ARE AT THE END)
+    fprintf('Warning: mismatch number of trials in QC file. Please double-check QC flag assignments\n');
+    curRunQC.badTrial = [curRunQC.badTrial zeros(size(curRunQC.badTrial,1), (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
+    curRunQC.keepData=reshape(all(isnan(curRunQC.badTrial)|curRunQC.badTrial==0,1),1,[]);
+    %curRunQC.settings{1,size(data.vars.trialList,2)} = [];
 end
 % removes unused flags
 keep=find(any(curRunQC.badTrial>0,2));
