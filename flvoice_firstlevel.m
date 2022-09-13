@@ -426,6 +426,9 @@ for nsub=1:numel(USUBS)
             effect_CI=reshape(effect_CI,[],2)';
             p=p';
             Tlabel='contrast rows';
+        elseif ~isequal(Tlabel,'time (ms)') & size(effect,2)>10&size(effect,1)==1 % plot each CONTRAST_TIME row as a separate timepoint
+            T=1:size(effect,2);
+            Tlabel='contrast_time rows';
         end
             
         t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);
