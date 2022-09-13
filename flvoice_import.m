@@ -62,9 +62,9 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'SKIP_LOWAMP'      : QC skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be marked as invalid with a "Low amplitude" QC flag (default [])
 %   'SKIP_LOWDUR'      : QC skip low-duration trials; trials with less than SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be marked as invalid with a "Utterance too short" QC flag (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
 %   'SINGLETRIAL'      : list of trial number(s) to re-process -expects all trials to have been processed at least once already- (default [] = all trials)
-%   'OVERWRITE'        : (default 1) 1/0 re-compute formants&pitch trajectories even if output data file already exists
-%   'SAVE'             : (default 1) 1/0 save formant&pitch trajectory files
-%   'PRINT'            : (default 1) 1/0 save jpg files with formant&pitch trajectories
+%   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
+%   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
+%   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %

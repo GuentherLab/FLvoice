@@ -42,6 +42,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                           EXPORTDIVA=2 -> each row of CONTRAST_TIME will be treated as a separate TRIAL, and each row of CONTRAST_VECTOR as a separate observation (i.e. the SimpleDIVA file will have dimensions Kt x 1+K)
 %                           EXPORTDIVA=3 -> each row of CONTRAST_VECTOR will be treated as a separate trial, and each row of CONTRAST_TIME as a separate observation (i.e. the SimpleDIVA file will have dimensions K x 1+Kt)
 %                           Enter as field 'EXPORTDIVA_PERT' the experimental perturbation size for each trial (1 x K*Kt vector, 1 x Kt vector, or 1 x K vector for the three options above) 
+%                           If EXPORTDIVA_PERT is undefined the experimental perturbation size will be computed by applying the same first-level model and contrast estimation procedure to the data defined by the last covariate in the input file for each trial
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/run-##/sub-##_ses-##_run-##_task-##_desc-formants.mat
 %   Variables:
@@ -261,17 +262,27 @@ for nsub=1:numel(USUBS)
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
                 keepData=true(1,numel(in_trialData));
             end
-            idxcovariates=str2double(regexprep(DESIGN(cellfun('length',regexp(DESIGN,'^COVARIATE\d+$'))>0),'^COVARIATE',''));
+            if isa(DESIGN,'function_handle'), idxcovariates=[]; idxconstant=[]; 
+            else
+                idxcovariates=find(cellfun('length',regexp(DESIGN,'^COVARIATE\d+$'))>0);
+                ncovariates=str2double(regexprep(DESIGN(icovariates),'^COVARIATE',''));
+                idxconstant=idxcovariates(ncovariates==0), % note: constant term ('COVARIATE0') = all conditions
+                idxcovariates(ncovariates==0)=[];
+                ncovariates(ncovariates==0)=[];
+                end
+            end
             ntrials=0;
             for ntrial=1:numel(in_trialData)
                 % finds design
                 if ~keepData(ntrial), ok=false;
                 elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))); ok=all(~isnan(x))&any(x~=0);
+                elseif ~isempty(idxconstant), ok=true; x=zeros(1,numel(DESIGN)); 
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
                 if ok % adds this trial to analysis
                     ntrials=ntrials+1;
-                    if ~isempty(idxcovariates), x=[x, reshape(in_trialData(ntrial).covariates(idxcovariates),1,[])]; end
+                    if ~isempty(idxconstant), x(idxconstant)=1; end
+                    if ~isempty(idxcovariates), x(idxcovariates)=reshape(in_trialData(ntrial).covariates(ncovariates),1,[]); end
                     if size(X,2)<size(x,2), X=[X, zeros(size(X,1),size(x,2)-size(X,2))]; end
                     if size(x,2)<size(X,2), x=[x, zeros(size(x,1),size(X,2)-size(x,2))]; end
                     X=[X;x];
