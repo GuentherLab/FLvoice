@@ -36,6 +36,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %   'CONTRAST_SCALE'   : true/false (default true) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
 %   'SAVE'             : (default true) true/false saves analysis results .mat file
 %   'PRINT'            : (default false) true/false saves jpg files with analysis results
+%   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
 %   'EXPORTDIVA'       : (default false) true/false exports analysis results as SimpleDIVA perturbation+data .csv file 
 %                           SimpleDIVA perturbation+data files contain one row per trial, with a first column indicating perturbation size for each trial (e.g. timepoint), followed by one or more columns indicating the observations at each trial (e.g. formant values) 
 %                           EXPORTDIVA=1 -> a separate trial will be created for each combination of CONTRAST_TIME*CONTRAST_VECTOR rows (i.e. the SimpleDIVA file will have dimensions Kt*K x 2)
@@ -98,7 +99,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -421,14 +422,16 @@ for nsub=1:numel(USUBS)
     end
     if OPTIONS.DOPLOT,
         if size(effect,1)>10&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
-            T=1:size(effect,1);
+            if ~isempty(OPTIONS.PLOTASTIME), t=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+            else T=1:size(effect,1); Tlabel='contrast rows';
+            end
             effect=effect';
             effect_CI=reshape(effect_CI,[],2)';
             p=p';
-            Tlabel='contrast rows';
         elseif ~isequal(Tlabel,'time (ms)') & size(effect,2)>10&size(effect,1)==1 % plot each CONTRAST_TIME row as a separate timepoint
-            T=1:size(effect,2);
-            Tlabel='contrast_time rows';
+            if ~isempty(OPTIONS.PLOTASTIME), t=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+            else T=1:size(effect,2); Tlabel='contrast_time rows';
+            end            
         end
             
         t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);
@@ -438,7 +441,7 @@ for nsub=1:numel(USUBS)
         end
         figure('units','norm','position',[.2 .3 .6 .3],'color','w');
         h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
-        if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')
+        if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')||isequal(Tlabel,'contrast_time rows')
             for n1=1:size(effect,1)
                 h=[h plot(t,effect(n1,:),'.-','linewidth',2,'color',color(n1,:))];
                 hold all;
