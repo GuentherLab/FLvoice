@@ -421,17 +421,19 @@ for nsub=1:numel(USUBS)
         fprintf('Output exported to SimpleDIVA file %s\n',filename_outExport);
     end
     if OPTIONS.DOPLOT,
-        if size(effect,1)>10&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
-            if ~isempty(OPTIONS.PLOTASTIME), t=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+        if (~isempty(OPTIONS.PLOTASTIME)||size(effect,1)>10)&&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
+            if ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
             else T=1:size(effect,1); Tlabel='contrast rows';
             end
             effect=effect';
             effect_CI=reshape(effect_CI,[],2)';
             p=p';
-        elseif ~isequal(Tlabel,'time (ms)') & size(effect,2)>10&size(effect,1)==1 % plot each CONTRAST_TIME row as a separate timepoint
-            if ~isempty(OPTIONS.PLOTASTIME), t=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+        elseif ~isequal(Tlabel,'time (ms)') && (~isempty(OPTIONS.PLOTASTIME)||size(effect,2)>10)&&size(effect,1)==1 % plot each CONTRAST_TIME row as a separate timepoint
+            if ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
             else T=1:size(effect,2); Tlabel='contrast_time rows';
             end            
+        elseif isequal(Tlabel,'time (ms)') && ~isempty(OPTIONS.PLOTASTIME)
+            T=OPTIONS.PLOTASTIME;
         end
             
         t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);
