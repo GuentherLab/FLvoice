@@ -266,8 +266,8 @@ for nsub=1:numel(USUBS)
             if isa(DESIGN,'function_handle'), idxcovariates=[]; idxconstant=[]; 
             else
                 idxcovariates=find(cellfun('length',regexp(DESIGN,'^COVARIATE\d+$'))>0);
-                ncovariates=str2double(regexprep(DESIGN(icovariates),'^COVARIATE',''));
-                idxconstant=idxcovariates(ncovariates==0), % note: constant term ('COVARIATE0') = all conditions
+                ncovariates=str2double(regexprep(DESIGN(idxcovariates),'^COVARIATE',''));
+                idxconstant=idxcovariates(ncovariates==0); % note: constant term ('COVARIATE0') = all conditions
                 idxcovariates(ncovariates==0)=[];
                 ncovariates(ncovariates==0)=[];
                 end
@@ -491,8 +491,9 @@ for nsub=1:numel(USUBS)
             conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); 
         end
     end
+varargout={out};    
 end
-varargout={out};
+
         
 %         % plots
 %         figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
