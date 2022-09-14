@@ -270,7 +270,6 @@ for nsub=1:numel(USUBS)
                 idxconstant=idxcovariates(ncovariates==0); % note: constant term ('COVARIATE0') = all conditions
                 idxcovariates(ncovariates==0)=[];
                 ncovariates(ncovariates==0)=[];
-                end
             end
             ntrials=0;
             for ntrial=1:numel(in_trialData)
@@ -491,8 +490,8 @@ for nsub=1:numel(USUBS)
             conn_print(conn_prepend('',filename_outData,'.jpg'),'-nogui'); 
         end
     end
-varargout={out};    
 end
+varargout={out};
 
         
 %         % plots
