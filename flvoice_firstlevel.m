@@ -332,7 +332,7 @@ for nsub=1:numel(USUBS)
                             end
                         end
                         y=y*c';
-                        t=1:size(y,2);
+                        t=t*c';
                     end
                     if size(Y,2)<size(y,2), Y=[Y, nan(size(Y,1),size(y,2)-size(Y,2))]; end
                     if size(y,2)<size(Y,2), y=[y, nan(size(y,1),size(Y,2)-size(y,2))]; end
@@ -401,8 +401,12 @@ for nsub=1:numel(USUBS)
     end
     if OPTIONS.EXPORTDIVA
         filename_outExport=conn_prepend('',filename_outData,'.csv');
-        if ~isempty(OPTIONS.EXPORTDIVA_PERT), exportdiva_pert=OPTIONS.EXPORTDIVA_PERT;
-        elseif ~isempty(COVS), exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
+        if isequal(OPTIONS.EXPORTDIVA_PERT,'none'), exportdiva_pert=mean(double(T>=0),1,'omitnan');
+        elseif ~isempty(OPTIONS.EXPORTDIVA_PERT), exportdiva_pert=OPTIONS.EXPORTDIVA_PERT;
+        elseif ~isempty(COVS), 
+            exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); 
+            if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
+            exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
         else error('Unable to find any covariates; please specify an EXPORTDIVA_PERT vector explicitly'); 
         end
         switch(OPTIONS.EXPORTDIVA)
@@ -416,7 +420,7 @@ for nsub=1:numel(USUBS)
                 assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,1));
                 export_effect=[exportdiva_pert.', effect]; % K x (1+Kt) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
         end
-        conn_savetextfile(filename_outExport,effect);
+        conn_savetextfile(filename_outExport,export_effect);
         fprintf('Output exported to SimpleDIVA file %s\n',filename_outExport);
     end
     if OPTIONS.DOPLOT,
@@ -433,6 +437,8 @@ for nsub=1:numel(USUBS)
             end            
         elseif isequal(Tlabel,'time (ms)') && ~isempty(OPTIONS.PLOTASTIME)
             T=OPTIONS.PLOTASTIME;
+        elseif isequal(Tlabel,'time (ms)'),
+            T=1e3*T; % time from data (in ms units)
         end
             
         t=T; t(isnan(T))=0; t=sum(t,1)./sum(~isnan(T),1);

@@ -40,6 +40,9 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
             if DEFAULTS.REMOTE&&~conn_server('isconnected')
                 fprintf('Starting new remote connection to server\n');
                 conn remotely on;
+            elseif ~DEFAULTS.REMOTE&&conn_server('isconnected')
+                fprintf('Terminating remote connection to server\n');
+                conn remotely off;
             end
         end
     elseif nargout>0, varargout={DEFAULTS.(upper(varargin{1}))};
