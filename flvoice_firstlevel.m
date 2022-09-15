@@ -37,6 +37,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %   'SAVE'             : (default true) true/false saves analysis results .mat file
 %   'PRINT'            : (default false) true/false saves jpg files with analysis results
 %   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
+%   'PLOTLABELS'       : (default {}) names of each contrast for plotting results (rows of CONTRAST_VECTOR) 
 %   'EXPORTDIVA'       : (default false) true/false exports analysis results as SimpleDIVA perturbation+data .csv file 
 %                           SimpleDIVA perturbation+data files contain one row per trial, with a first column indicating perturbation size for each trial (e.g. timepoint), followed by one or more columns indicating the observations at each trial (e.g. formant values) 
 %                           EXPORTDIVA=1 -> a separate trial will be created for each combination of CONTRAST_TIME*CONTRAST_VECTOR rows (i.e. the SimpleDIVA file will have dimensions Kt*K x 2)
@@ -99,7 +100,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -469,6 +470,12 @@ for nsub=1:numel(USUBS)
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
             if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
+            if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
+                if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
+                elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
+                else legend(h,arrayfun(@(n)sprintf('contrast #%d',n),1:numel(h),'uni',0)); 
+                end
+            end
         else
             if numel(t)>1, dx=(t(2)-t(1))/(size(effect,1)+2); else dx=1/(size(effect,1)+2); end
             for n1=1:size(effect,2),
@@ -490,6 +497,12 @@ for nsub=1:numel(USUBS)
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             set(gca,'xtick',[]); 
             if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
+            if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
+                if ~isempty(OPTIONS.PLOTLABELS), legend(hpatch(:,end), OPTIONS.PLOTLABELS); 
+                elseif numel(h)==size(CONTRAST_VECTOR,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
+                else legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast #%d',n),1:numel(h),'uni',0)); 
+                end
+            end
         end
         if OPTIONS.PRINT, 
             fprintf('Printing. Please wait... ');
