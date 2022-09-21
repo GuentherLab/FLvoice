@@ -272,15 +272,32 @@ for nsample=1:numel(RUNS)
                 if ~isfield(tdata,'keepData'), tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); end
                 if ~isfield(tdata,'settings'), tdata.settings=cell(size(tdata.keepData)); end
                 tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]); 
+                if iscell(tdata.dictionary)&&~isempty(tdata.dictionary)&&any(cellfun(@iscell,tdata.dictionary)) % converts old format (explicit label per trial) to new format (common dictionary of labels)
+                    newdictionary={};
+                    newbadTrial=zeros(0,size(tdata.badTrial,2));
+                    for idxj=reshape(find(any(tdata.badTrial>0,1)),1,[]),
+                        label=tdata.dictionary{idxj};
+                        if iscell(label), label=sprintf('%s ',label{:}); end
+                        label=deblank(label);
+                        [ok,imatch]=ismember(label,newdictionary);
+                        if ~ok
+                            newdictionary{end+1}=label;
+                            imatch=numel(newdictionary);
+                        end
+                        newbadTrial(imatch,idxj)=1;
+                    end
+                    tdata.badTrial=newbadTrial;
+                    tdata.dictionary=newdictionary;
+                    tdata.keepData=reshape(all(isnan(tdata.badTrial)|tdata.badTrial==0,1),1,[]);
+                end
                 if numel(RUNS)>1, fileout{nsample}=tdata;
                 else fileout=tdata;
                 end
             case 'summary_qc'
                 QC = flvoice_import(SUB, SES, RUN, TASK, 'get_qc');
+                fprintf('Subject %s session %d run %d task %s:\n',SUB, SES, RUN, TASK);
                 for nflag=1:size(QC.badTrial,1)
-                    fprintf('%d trials flagged as %s\n', ...
-                        sum(QC.badTrial(nflag,:)>0), ...
-                        QC.dictionary{nflag} );
+                    fprintf('  %d trials flagged as %s\n',sum(QC.badTrial(nflag,:)>0),QC.dictionary{nflag});
                 end
 
             otherwise
