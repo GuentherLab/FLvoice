@@ -78,6 +78,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %                                                               QC.badTrial(k,n) = 0/1 values indicating status of n-th trial k-th flag (only for invalid trials) 
 %                                                               QC.dictionary{k} = cell array of QC labels indicating what was wrong with trials where QC.badTrial(k,:)=1
 %                                                               (obsolete) QC.settings{n} = information specific to the formant/pitch estimation procedure used in each trial
+% flvoice_import(SUB,SES,RUN,TASK, 'summary_qc')             : (does not import/process data) prints a short summary listing the number of trials that have received some flag for the selected subject/session/run/task 
 %
 % Alternative syntax:
 %   flvoice_import                         : returns list of available subjects
@@ -274,6 +275,14 @@ for nsample=1:numel(RUNS)
                 if numel(RUNS)>1, fileout{nsample}=tdata;
                 else fileout=tdata;
                 end
+            case 'summary_qc'
+                QC = flvoice_import(SUB, SES, RUN, TASK, 'get_qc');
+                for nflag=1:size(QC.badTrial,1)
+                    fprintf('%d trials flagged as %s\n', ...
+                        sum(QC.badTrial(nflag,:)>0), ...
+                        QC.dictionary{nflag} );
+                end
+
             otherwise
                 error('unknown option %s',varargin{end});
         end
