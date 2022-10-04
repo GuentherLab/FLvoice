@@ -122,22 +122,22 @@ data.handles.saveFlagButton=uicontrol('Style', 'pushbutton','String','Save flags
 data.handles.subPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .89 .742 .08],'Parent',data.handles.hfig);
 % Sub
 data.handles.subText=uicontrol('Style', 'text','String','Subject:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.01 .45 .08 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.subDrop=uicontrol('Style', 'popupmenu','String','Sub01','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.0 .0 .155 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @subDrop);
+data.handles.subDrop=uicontrol('Style', 'popupmenu','String','Sub01','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.0 .0 .155 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @subDrop);
 % Sess
 data.handles.sessionText=uicontrol('Style', 'text','String','Sess:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.175 .45 .06 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.sessionDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.165 .0 .115 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @sessDrop);
+data.handles.sessionDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.165 .0 .115 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @sessDrop);
 % Run
 data.handles.runText=uicontrol('Style', 'text','String','Run:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.3 .45 .045 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.runDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.29 .0 .115 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @runDrop);
+data.handles.runDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.29 .0 .115 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @runDrop);
 % Task
 data.handles.taskText=uicontrol('Style', 'text','String','Task:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.425 .45 .06 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.taskDrop=uicontrol('Style', 'popupmenu','String','aud','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.415 .0 .11 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @taskDrop);
+data.handles.taskDrop=uicontrol('Style', 'popupmenu','String','aud','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.415 .0 .11 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @taskDrop);
 % Trial
 data.handles.trialText=uicontrol('Style', 'text','String','Trial:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.545 .45 .05 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.535 .0 .1 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel, 'Callback', @trialDrop);
+data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.535 .0 .1 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @trialDrop);
 % Cond
 data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.655 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.66 .1 .05 .5],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
+data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.66 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
 %data.handles.conditionDrop=uicontrol('Style', 'popupmenu','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.74 .16 .05 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
 % Prev / Next Buttons
 data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.75 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
@@ -156,6 +156,10 @@ data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized'
 % Axes Buttons
 data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .85 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
 data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .67 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+data.handles.ppMic=[];
+data.handles.fmtMic=[];
+data.handles.ppAxis_checkbox = uicontrol('style','checkbox','Units', 'normalized', 'Position', [0.008, 0.10, 0.02, 0.02], 'backgroundcolor',[1 1 1], 'value',1, 'Visible', 'on', 'Tag', 'pp_checkbox','Parent',data.handles.axes1Panel,'callback','data=get(gcbf,''userdata''); if get(gcbo,''value'')>0, set(data.handles.ppMic, ''visible'',''on''); else set(data.handles.ppMic, ''visible'',''off''); end');
+data.handles.formantAxis_checkbox = uicontrol('style','checkbox','Units', 'normalized', 'Position', [0.008, 0.32, 0.02, 0.02], 'backgroundcolor',[1 1 1], 'value', 1, 'Visible', 'on', 'Tag', 'pp_checkbox','Parent',data.handles.axes1Panel,'callback','data=get(gcbf,''userdata''); if get(gcbo,''value'')>0, set(data.handles.fmtMic, ''visible'',''on''); else set(data.handles.fmtMic, ''visible'',''off''); end');
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
 %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
@@ -1495,13 +1499,20 @@ set([data.handles.flagPrev, data.handles.flagNext],'visible','off');
 ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
 if ~isempty(ampidx)
     skip_lowamp=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWAMP), skip_lowamp =  curOutputINFO.options.SKIP_LOWAMP; end; end
+    skip_lowdur=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWDUR), skip_lowdur =  curOutputINFO.options.SKIP_LOWDUR; end; end
+    if isempty(skip_lowdur), skip_lowdur=0; end
     cla(data.handles.ampAxis)
     axes(data.handles.ampAxis);
     for nampidx=numel(ampidx):-1:1
         ampWav = curOutputData(trial).s{ampidx(nampidx)};
         ampWav(ampWav<0)=nan;
         ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
-        if ~isempty(skip_lowamp), hold on; area(ampTime,max(ampWav,skip_lowamp),skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off; end
+        if ~isempty(skip_lowamp), 
+            ampPlot=max(ampWav,skip_lowamp); 
+            [nill,in]=findsuprathresholdsegment(ampWav,skip_lowamp,skip_lowdur*curOutputData(trial).fs);
+            ampPlot(~in)=skip_lowamp;
+            hold on; area(ampTime,ampPlot,skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off; 
+        end
         hold on; ampPlot=plot(ampTime,ampWav,'.', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
     end
     if ~isempty(skip_lowamp), hold on; htemp=yline(skip_lowamp,'b-',sprintf('%d dB',round(skip_lowamp)),'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','top','LabelOrientation','horizontal'); hold off; end
@@ -1570,6 +1581,8 @@ if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
 else
     set(data.handles.headAxis, 'visible', 'off');
     set(data.handles.playHeadButton, 'enable', 'off');
+    data.vars.headWav = [];
+    data.vars.headTime = [];
 end
 
 % update spectogram plots
@@ -1594,13 +1607,14 @@ flvoice_spectrogram(s,fs,round(.025*fs),round(.024*fs),1024);
 %set(data.handles.ppAxis, 'OuterPosition', [-0.12, 0.32, 1, 0.25]);
 xlabel 'Time (s)'
 ylabel 'Pitch Frequency (Hz)';
+ppMic=[];
 if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
     f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0measure1'));
     f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
     fs2 = curOutputData(trial).fs;
     %t = (0.025:0.001:2.524); % how do I derive this from given data?
     t = [0+(0:numel(f0)-1)/fs2]; % correct??
-    hold on; ppMic=plot(t,1e-3*f0,'.','LineWidth',1, 'Color', [.6 .6 .6]); hold off
+    hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.','LineWidth',1, 'Color', [.6 .6 .6])]; hold off
 else
     fs2 = curOutputData(trial).fs;
     f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0'));
@@ -1608,10 +1622,12 @@ else
         f0 = curOutputData(trial).s{1,f0idx(nf0idx)};
         %t = (0.025:0.001:2.524); % how do I derive this from given data?
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; ppMic=plot(t,1e-3*f0,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf0idx-1)/max(eps,numel(f0idx)-1))); hold off
+        hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf0idx-1)/max(eps,numel(f0idx)-1)))]; hold off
     end
     %uistack(ppMic, 'top'); % making sure mic trace is on top
 end
+data.handles.ppMic=ppMic;
+if get(data.handles.ppAxis_checkbox,'value')==0, set(ppMic,'visible','off'); end;
 hold on; text(-.01*numel(s)/fs, .375, 'Pitch','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
 set(data.handles.ppAxis, 'yscale','lin');
 set(data.handles.ppAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.10, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs);
@@ -1626,23 +1642,24 @@ axes(data.handles.formantAxis);
 flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs),1024);
 xlabel ''
 ylabel 'Formant Frequency (Hz)';
+fmtMic=[];
 if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
     f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1measure1'));
     f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2measure1'));
     fmt = [curOutputData(trial).s{1,f1micIdx},curOutputData(trial).s{1,f2micIdx}];
-    hold on; fmtMic = plot(t,fmt'/1e3,'.-', 'Color', [.6 .6 .6]); hold off;
+    hold on; fmtMic = [fmtMic,plot(t,fmt'/1e3,'.-', 'Color', [.6 .6 .6])]; hold off;
 else
     f1idx = find(contains(curOutputData(trial).dataLabel,'raw-F2'));
     for nf1idx=numel(f1idx):-1:1
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; fmtMic=plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1))); hold off
+        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
     end
     f1idx = find(contains(curOutputData(trial).dataLabel,'raw-F1'));
     for nf1idx=numel(f1idx):-1:1
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; fmtMic=plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1))); hold off
+        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
     end
     %             f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1-mic'));
     %             f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2-mic'));
@@ -1656,6 +1673,8 @@ else
     %             uistack(fmtMic, 'top'); % making sure mic trace is on top
 end
 
+data.handles.fmtMic=fmtMic;
+if get(data.handles.formantAxis_checkbox,'value')==0, set(fmtMic,'visible','off'); end;
 %hold on; plot(headTime,headWav); hold off;
 hold on; text(-.01*numel(s)/fs, 2, 'Formants','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
 set(data.handles.formantAxis, 'yscale','lin');
@@ -1678,10 +1697,17 @@ set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButt
 data.vars.curInputData = curInputData;
 data.vars.curOutputData = curOutputData;
 data.vars.curOutputINFO = curOutputINFO;
+set(data.handles.hfig,'userdata',data);
 set(data.handles.hfig,'pointer','arrow');
-drawnow;
 % re-enable buttons when done
 set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton], 'Enable', 'on');
-set(data.handles.hfig,'userdata',data);
+drawnow;
+end
+
+function [ok,in]=findsuprathresholdsegment(x,thr,N)
+in=x>thr;
+idx=reshape(find(diff([false, reshape(in,1,[]), false])),2,[]);
+ok=any(idx(2,:)-idx(1,:)>=N);
+for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
 end
 

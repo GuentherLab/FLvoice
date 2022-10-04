@@ -19,7 +19,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).reference_time    : optional reference time for time-alignment (seconds)  (default 0)
 %             trialData(n).condLabel         : optional condition label/name associated with this trial (default 'unknown')
 %             trialData(n).covariates        : optional covariate value(s) associated with this trial (default []) 
-%             trialData(n).dataLabel         : optional data labels (default '')
+%             trialData(n).dataLabel         : optional data label (default '')
 %             trialData(n).dataUnits         : optional data units (default '')
 %
 %   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
@@ -60,7 +60,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
 %   'SKIP_CONDITIONS'  : QC skip specific conditions; list of conditions labels (condLabel values) to be marked as invalid with a "Skipped condition" QC flag (default {})
 %   'SKIP_LOWAMP'      : QC skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be marked as invalid with a "Low amplitude" QC flag (default [])
-%   'SKIP_LOWDUR'      : QC skip low-duration trials; trials with less than SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be marked as invalid with a "Utterance too short" QC flag (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
+%   'SKIP_LOWDUR'      : QC skip low-duration trials; trials with no single continuos segment of at least SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be marked as invalid with a "Utterance too short" QC flag (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
 %   'SINGLETRIAL'      : list of trial number(s) to re-process -expects all trials to have been processed at least once already- (default [] = all trials)
 %   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
@@ -297,7 +297,10 @@ for nsample=1:numel(RUNS)
                 QC = flvoice_import(SUB, SES, RUN, TASK, 'get_qc');
                 fprintf('Subject %s session %d run %d task %s:\n',SUB, SES, RUN, TASK);
                 for nflag=1:size(QC.badTrial,1)
-                    fprintf('  %d trials flagged as %s\n',sum(QC.badTrial(nflag,:)>0),QC.dictionary{nflag});
+                    k=find(QC.badTrial(nflag,:)>0);
+                    if ~isempty(k), fprintf('  %d trials flagged as %s: trial # %s)\n',numel(k),QC.dictionary{nflag},mat2str(k));
+                    else fprintf('  no trials flagged as %s\n',QC.dictionary{nflag});
+                    end
                 end
 
             otherwise
@@ -540,7 +543,7 @@ for nsample=1:numel(RUNS)
                 end
                 if ok, QC.badTrial(iflag,:)=0; end
             else
-                skipData=~arrayfun(@(n)sum(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)}>OPTIONS.SKIP_LOWAMP)>OPTIONS.SKIP_LOWDUR*out_trialData(n).fs,1:numel(out_trialData));
+                skipData=~arrayfun(@(n)findsuprathresholdsegment(out_trialData(n).s{find(cellfun('length',regexp(out_trialData(n).dataLabel,'^Amp'))>0,1)},OPTIONS.SKIP_LOWAMP,OPTIONS.SKIP_LOWDUR*out_trialData(n).fs),1:numel(out_trialData));
                 if any(skipData)
                     %QC.keepData=QC.keepData&~skipData;
                     if OPTIONS.SKIP_LOWDUR==0
@@ -610,7 +613,13 @@ for nsample=1:numel(RUNS)
     end
 end
 if somethingout, varargout={fileout}; end
+end
 
+function ok=findsuprathresholdsegment(x,thr,N)
+in=reshape(x>thr,1,[]);
+idx=reshape(find(diff([false, in, false])),2,[]);
+ok=any(idx(2,:)-idx(1,:)>=N);
+end
 
 
                 
