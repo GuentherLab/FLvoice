@@ -36,7 +36,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %   'CONTRAST_SCALE'   : true/false (default true) scales CONTRAST_TIME rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
 %   'SAVE'             : (default true) true/false saves analysis results .mat file
 %   'PRINT'            : (default false) true/false saves jpg files with analysis results
-%   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
+%   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries (or string 'time' to use timepoint information from input files if available) 
 %   'PLOTLABELS'       : (default {}) names of each contrast for plotting results (rows of CONTRAST_VECTOR) 
 %   'EXPORTDIVA'       : (default false) true/false exports analysis results as SimpleDIVA perturbation+data .csv file 
 %                           SimpleDIVA perturbation+data files contain one row per trial, with a first column indicating perturbation size for each trial (e.g. timepoint), followed by one or more columns indicating the observations at each trial (e.g. formant values) 
@@ -322,10 +322,12 @@ for nsub=1:numel(USUBS)
                         ny=min(numel(y),size(c,2));
                         y=y(1:ny);
                         c=c(:,1:ny);
-                        Tlabel='contrasts';
                         valid=~isnan(y); % disregards samples with missing-values
                         y=y(valid);
                         c=c(:,valid);
+                        t=t(valid);
+                        c0=sum(c~=0,2);
+                        if ~all(ismember(c0,[0,1])), Tlabel='contrasts'; end
                         if OPTIONS.CONTRAST_SCALE % re-scales contrast
                             for n1=1:size(c,1)
                                 vmask=c(n1,:)>0; if nnz(vmask), c(n1,vmask)=c(n1,vmask)/max(eps,abs(sum(c(n1,vmask)))); end % pos-values add up to 1
@@ -334,6 +336,8 @@ for nsub=1:numel(USUBS)
                         end
                         y=y*c';
                         t=t*c';
+                        y(:,c0==0)=nan;
+                        t(:,c0==0)=nan;
                     end
                     if size(Y,2)<size(y,2), Y=[Y, nan(size(Y,1),size(y,2)-size(Y,2))]; end
                     if size(y,2)<size(Y,2), y=[y, nan(size(y,1),size(Y,2)-size(y,2))]; end
@@ -377,12 +381,14 @@ for nsub=1:numel(USUBS)
     filename_outData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',USUBS{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',USUBS{nsub},FIRSTLEVEL_NAME));
     effect=h;
     if isequal(statsname,'T')|(isequal(statsname,'F')&max(dof(1,:))==1), 
-        if isequal(statsname,'T'), SE=abs(h./f);
-        else SE=abs(h./sqrt(f));
+        if isequal(statsname,'T'), SE=abs(h./max(eps,abs(f)));
+        else SE=abs(h./max(eps,sqrt(f)));
         end
+        SE(isnan(SE))=0; dof(isnan(dof))=1;
         effect_CI=cat(1, h-repmat(spm_invTcdf(.975,dof(end,:)),size(SE,1),1).*SE, h+repmat(spm_invTcdf(.975,dof(end,:)),size(SE,1),1).*SE);
     else effect_CI=[];
     end
+    effect_xaxis=T; effect_xaxis(isnan(T))=0; effect_xaxis=sum(effect_xaxis,1)./sum(~isnan(T),1);
     if numel(p)<10
         for n1=1:size(p,2)
             if isequal(statsname,'T'), sstr=sprintf('%s(%d)',statsname,dof(end,n1));
@@ -394,11 +400,11 @@ for nsub=1:numel(USUBS)
         end
     end
     if OPTIONS.SAVE, 
-        conn_savematfile(filename_outData,'effect','effect_CI','stats'); 
+        conn_savematfile(filename_outData,'effect','effect_CI','effect_xaxis','stats'); 
         fprintf('Output saved in file %s\n',filename_outData);
     end
     if nargout>0
-        out=[out, struct('effect',effect,'effect_CI',effect_CI,'stats',stats)];
+        out=[out, struct('effect',effect,'effect_CI',effect_CI,'effect_xaxis',effect_xaxis,'stats',stats)];
     end
     if OPTIONS.EXPORTDIVA
         filename_outExport=conn_prepend('',filename_outData,'.csv');
@@ -426,18 +432,22 @@ for nsub=1:numel(USUBS)
     end
     if OPTIONS.DOPLOT,
         if (~isempty(OPTIONS.PLOTASTIME)||size(effect,1)>10)&&size(effect,2)==1 % plot each CONTRAST_VECTOR row as a separate timepoint
-            if ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+            if isequal(OPTIONS.PLOTASTIME,'time'), T=1e3*effect_xaxis; Tlabel='time (ms)';
+            elseif ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
             else T=1:size(effect,1); Tlabel='contrast rows';
             end
             effect=effect';
             effect_CI=reshape(effect_CI,[],2)';
             p=p';
         elseif ~isequal(Tlabel,'time (ms)') && (~isempty(OPTIONS.PLOTASTIME)||size(effect,2)>10)&&size(effect,1)==1 % plot each CONTRAST_TIME row as a separate timepoint
-            if ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
+            if isequal(OPTIONS.PLOTASTIME,'time'), T=1e3*effect_xaxis; Tlabel='time (ms)';
+            elseif ~isempty(OPTIONS.PLOTASTIME), T=OPTIONS.PLOTASTIME; Tlabel='time (ms)';
             else T=1:size(effect,2); Tlabel='contrast_time rows';
             end            
         elseif isequal(Tlabel,'time (ms)') && ~isempty(OPTIONS.PLOTASTIME)
-            T=OPTIONS.PLOTASTIME;
+            if isequal(OPTIONS.PLOTASTIME,'time'), T=1e3*effect_xaxis; 
+            else T=OPTIONS.PLOTASTIME;
+            end
         elseif isequal(Tlabel,'time (ms)'),
             T=1e3*T; % time from data (in ms units)
         end
@@ -451,17 +461,19 @@ for nsub=1:numel(USUBS)
         h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
         if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')||isequal(Tlabel,'contrast_time rows')
             for n1=1:size(effect,1)
-                h=[h plot(t,effect(n1,:),'.-','linewidth',2,'color',color(n1,:))];
+                masknan=~(isnan(t)|any(isnan(effect),1));
+                h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',2,'color',color(n1,:))];
                 hold all;
                 tempx=[t,fliplr(t)];
                 tempy=[effect_CI(n1,:),fliplr(effect_CI(n1+size(effect_CI,1)/2,:))];
                 tempy2=[effect(n1,:),fliplr(effect(n1,:))];
-                maskp1=p(n1,:)>.05;                           maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.25);
+                masknan=~(isnan(tempx)|any(isnan(tempy),1)|any(isnan(tempy2),1));
+                maskp1=p(n1,:)>.05;                           maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx(masknan)',tempy1(masknan)','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.25);
                 if size(effect,1)==1
-                    maskp1=p(n1,:)<.05&effect(n1,:)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
-                    maskp1=p(n1,:)<.05&effect(n1,:)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
+                    maskp1=p(n1,:)<.05&effect(n1,:)<0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx(masknan)',tempy1(masknan)','k','edgecolor','none','facecolor',color(2,:),'facealpha',.5);
+                    maskp1=p(n1,:)<.05&effect(n1,:)>0;        maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx(masknan)',tempy1(masknan)','k','edgecolor','none','facecolor',color(3,:),'facealpha',.5);
                 else
-                    maskp1=p(n1,:)<.05;                       maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx',tempy1','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.5);
+                    maskp1=p(n1,:)<.05;                       maskp1=[maskp1 fliplr(maskp1)]; tempy1=tempy; tempy1(~maskp1)=tempy2(~maskp1); patch(tempx(masknan)',tempy1(masknan)','k','edgecolor','none','facecolor',color(n1,:),'facealpha',.5);
                 end
             end
             grid on;

@@ -27,7 +27,9 @@ if ~isempty(which(sprintf('flvoice_%s',lower(varargin{1})))), % calls to flvoice
     end
 elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{1})) % sets FLVOICE default parameters
     if numel(varargin)>1
-        DEFAULTS.(upper(varargin{1}))=varargin{2};
+        if strcmpi(upper(varargin{1}),'ROOT'), DEFAULTS.(upper(varargin{1}))=conn_fullfile(varargin{2});
+        else DEFAULTS.(upper(varargin{1}))=varargin{2};
+        end
         fprintf('default %s value changed to %s\n',upper(varargin{1}),mat2str(varargin{2}));
         if strcmpi(upper(varargin{1}),'REMOTE')
             if ischar(DEFAULTS.REMOTE)
