@@ -142,7 +142,8 @@ for nsub=1:numel(SUB)
     end
     if all(validsub(nsub,:))
         % finds design
-        if isa(DESIGN,'function_handle')&&nargin(DESIGN)==1, x=full(double(DESIGN(nsub)));
+        if isempty(DESIGN), x=1;
+        elseif isa(DESIGN,'function_handle')&&nargin(DESIGN)==1, x=full(double(DESIGN(nsub)));
         elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(nsub,SUB{nsub})));
         else x=DESIGN(nsub,:);
         end
