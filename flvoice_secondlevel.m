@@ -64,7 +64,7 @@ function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DE
 
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('CONTRAST_SCALE',true,'PLOTASTIME',[],'SAVE',true,'DOPLOT',true,'PRINT',true); end
+if isempty(DEFAULTS), DEFAULTS=struct('CONTRAST_SCALE',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'SAVE',true,'DOPLOT',true,'PRINT',true); end
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'),
     if nargin>=6, varargin=[{CONTRAST_WITHIN},varargin]; end
