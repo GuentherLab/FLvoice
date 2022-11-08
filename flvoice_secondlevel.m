@@ -271,7 +271,7 @@ if OPTIONS.DOPLOT,
         if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
         if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
             if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
-            elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
+            elseif numel(h)==size(CONTRAST_BETWEEN,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_BETWEEN(n,:))),1:numel(h),'uni',0)); 
             else legend(h,arrayfun(@(n)sprintf('contrast #%d',n),1:numel(h),'uni',0)); 
             end
         end
@@ -302,7 +302,7 @@ if OPTIONS.DOPLOT,
         if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
         if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
             if ~isempty(OPTIONS.PLOTLABELS), legend(hpatch(:,end), OPTIONS.PLOTLABELS); 
-            elseif numel(h)==size(CONTRAST_VECTOR,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
+            elseif numel(h)==size(CONTRAST_BETWEEN,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_BETWEEN(n,:))),1:numel(h),'uni',0)); 
             else legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast #%d',n),1:numel(h),'uni',0)); 
             end
         end
