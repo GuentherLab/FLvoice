@@ -516,8 +516,8 @@ for nsample=1:numel(RUNS)
             if conn_existfile(filename_qcData),
                 fprintf('loading file %s\n',filename_qcData);
                 QC = flvoice_import(SUB,SES,RUN,TASK, 'get_qc');
-                assert(numel(QC.keepData)==numel(out_trialData),'keepData vector contains %d values (expected %d)',numel(QC.keepData),out_trialData);
-                assert(size(QC.badTrial,2)==numel(out_trialData),'badTrial matrix contains %d columns (expected %d)',size(QC.badTrial,2),out_trialData);
+                assert(numel(QC.keepData)==numel(out_trialData),'keepData vector contains %d values (expected %d)',numel(QC.keepData),numel(out_trialData));
+                assert(size(QC.badTrial,2)==numel(out_trialData),'badTrial matrix contains %d columns (expected %d)',size(QC.badTrial,2),numel(out_trialData));
             else
                 fprintf('file %s not found, assuming all trials are valid\n',filename_qcData);
                 QC.keepData=true(1,numel(out_trialData));
