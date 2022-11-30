@@ -23,7 +23,7 @@ function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DE
 %   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_WITHIN rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)
 %   'SAVE'             : (default 1) 1/0 save analysis results .mat file
 %   'PRINT'            : (default 0) 1/0 save jpg files with analysis results
-%   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries
+%   'PLOTASTIME'       : (default []) timepoint values for plotting results as a timeseries (or string 'time' to use timepoint information from input files if available)  
 %
 %
 % Input data files: $ROOT$/derivatives/acoustic/sub-##/sub-##_desc-firstlevel_#[FIRSTLEVEL_NAME]#.mat 
@@ -121,8 +121,10 @@ FIRSTLEVEL_NAME=regexprep(FIRSTLEVEL_NAME,'^firstlevel_','');
 validsub=false(numel(SUB),numel(FIRSTLEVEL_NAME));
 Y=[];
 X=[];
+T=[];
 for nsub=1:numel(SUB)
     y=[];
+    t=[];
     for nfl=1:numel(FIRSTLEVEL_NAME)
         filename_inData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',SUB{nsub},FIRSTLEVEL_NAME{nfl}));
         if ~conn_existfile(filename_inData), fprintf('file %s not found, skipping this subject\n',filename_inData); break;
@@ -132,12 +134,16 @@ for nsub=1:numel(SUB)
             tdata=conn_loadmatfile(filename_inData,'-cache');
             assert(isfield(tdata,'effect'), 'data file %s does not contain effect variable',filename_inData);
             y=cat(2,y, reshape(tdata.effect,1,[])); % note: vectorized data matrix (e.g. conditions x timepoints)
+            if isfield(tdata,'effect_xaxis'), t=cat(2,t, repelem(tdata.effect_xaxis,numel(tdata.effect)/numel(tdata.effect_xaxis)));
+            else t=cat(2,t, 1:numel(tdata.effect));
+            end
             validsub(nsub,nfl)=true;
         end
     end
     if all(validsub(nsub,:))
         % finds design
-        if isa(DESIGN,'function_handle')&&nargin(DESIGN)==1, x=full(double(DESIGN(nsub)));
+        if isempty(DESIGN), x=1;
+        elseif isa(DESIGN,'function_handle')&&nargin(DESIGN)==1, x=full(double(DESIGN(nsub)));
         elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(nsub,SUB{nsub})));
         else x=DESIGN(nsub,:);
         end
@@ -153,9 +159,11 @@ for nsub=1:numel(SUB)
                 if numel(y)~=size(c,2), fprintf('warning: subject %s data has %d elements while contrast has %d columns. Cropping to match\n',SUB{nsub},numel(y),size(c,2)); end
                 ny=min(numel(y),size(c,2));
                 y=y(1:ny);
+                t=t(1:ny);
                 c=c(:,1:ny);
                 valid=~isnan(y); % disregards samples with missing-values
                 y=y(valid);
+                t=t(valid);
                 c=c(:,valid);
                 if OPTIONS.CONTRAST_SCALE % re-scales contrast
                     for n1=1:size(c,1)
@@ -164,10 +172,14 @@ for nsub=1:numel(SUB)
                     end
                 end
                 y=y*c';
+                t=t*c';
             end
             if ~isempty(Y)&&size(Y,2)<size(y,2), Y=[Y, nan(size(Y,1),size(y,2)-size(Y,2))]; fprintf('warning: subject %s data has %d elements (%d expected). Extending data matrix with NaN values\n',SUB{nsub},size(y,2),size(Y,2)); end
             if size(y,2)<size(Y,2), y=[y, nan(size(y,1),size(Y,2)-size(y,2))]; fprintf('warning: subject %s data has %d elements (%d expected). Extending data row with NaN values\n',SUB{nsub},size(y,2),size(Y,2)); end
             Y=[Y;y];
+            if ~isempty(T)&&size(T,2)<size(t,2), T=[T, nan(size(T,1),size(t,2)-size(T,2))]; end
+            if size(t,2)<size(T,2), t=[t, nan(size(t,1),size(T,2)-size(t,2))]; end
+            T=[T;t];
         end
     end
 end
@@ -210,6 +222,7 @@ if isequal(statsname,'T')|(isequal(statsname,'F')&max(dof(1,:))==1),
     effect_CI=cat(1, h-repmat(spm_invTcdf(.975,dof(end,:)),size(SE,1),1).*SE, h+repmat(spm_invTcdf(.975,dof(end,:)),size(SE,1),1).*SE);
 else effect_CI=[];
 end
+effect_xaxis=T; effect_xaxis(isnan(T))=0; effect_xaxis=sum(effect_xaxis,1)./sum(~isnan(T),1);
 if numel(p)<10
     for n1=1:size(p,2)
         if isequal(statsname,'T'), sstr=sprintf('%s(%d)',statsname,dof(end,n1));
@@ -222,7 +235,7 @@ if numel(p)<10
 end
 if OPTIONS.SAVE,
     conn_fileutils('mkdir',fileparts(filename_outData));
-    conn_savematfile(filename_outData,'effect','effect_CI','stats');
+    conn_savematfile(filename_outData,'effect','effect_CI','effect_xaxis','stats');
     fprintf('Output saved in file %s\n',filename_outData);
 end
 if OPTIONS.DOPLOT,
@@ -234,7 +247,9 @@ if OPTIONS.DOPLOT,
     h=[]; axes('units','norm','position',[.2 .2 .6 .6]);
     %if isempty(OPTIONS.PLOTASTIME)&&size(effect,1)==1&&size(effect,2)>100, OPTIONS.PLOTASTIME=1:size(effect,2); end
     if ~isempty(OPTIONS.PLOTASTIME)
-        t=OPTIONS.PLOTASTIME;
+        if isequal(OPTIONS.PLOTASTIME,'time'), t=1e3*effect_xaxis;
+        else t=OPTIONS.PLOTASTIME;
+        end
         for n1=1:size(effect,1)
             h=[h plot(t,effect(n1,:),'.-','linewidth',2,'color',color(n1,:))];
             hold all;

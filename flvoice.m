@@ -27,7 +27,9 @@ if ~isempty(which(sprintf('flvoice_%s',lower(varargin{1})))), % calls to flvoice
     end
 elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{1})) % sets FLVOICE default parameters
     if numel(varargin)>1
-        DEFAULTS.(upper(varargin{1}))=varargin{2};
+        if strcmpi(upper(varargin{1}),'ROOT'), DEFAULTS.(upper(varargin{1}))=conn_fullfile(varargin{2});
+        else DEFAULTS.(upper(varargin{1}))=varargin{2};
+        end
         fprintf('default %s value changed to %s\n',upper(varargin{1}),mat2str(varargin{2}));
         if strcmpi(upper(varargin{1}),'REMOTE')
             if ischar(DEFAULTS.REMOTE)
@@ -40,6 +42,9 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
             if DEFAULTS.REMOTE&&~conn_server('isconnected')
                 fprintf('Starting new remote connection to server\n');
                 conn remotely on;
+            elseif ~DEFAULTS.REMOTE&&conn_server('isconnected')
+                fprintf('Terminating remote connection to server\n');
+                conn remotely off;
             end
         end
     elseif nargout>0, varargout={DEFAULTS.(upper(varargin{1}))};
@@ -58,6 +63,10 @@ elseif numel(varargin)>=1&&ischar(varargin{1}) % other
             [varargout{1:nargout}]=flvoice_import(varargin{2:end},'input');
         case 'IMPORT.OUTPUT'
             [varargout{1:nargout}]=flvoice_import(varargin{2:end},'output');
+        case 'submit'
+            if ~nargout, conn('submit',mfilename,varargin{2:end}); % e.g. flvoice submit import ...
+            else [varargout{1:nargout}]=conn('submit',mfilename,varargin{2:end});
+            end
         otherwise
             error('unrecognized option %s',varargin{1});
     end
