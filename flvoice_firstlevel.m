@@ -356,7 +356,7 @@ for nsub=1:numel(USUBS)
     validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
     nvalid=sum(validY,1);
     fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
-    assert(size(Y,1),'no trials found');
+    assert(size(Y,1)>0,'no trials found');
     stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME,'covs',COVS);
     options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
     contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
