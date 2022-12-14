@@ -1544,16 +1544,18 @@ data.vars.micTime = micTime;
 
 if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{1},'^[-_\s]',''),'</html>']); end
 pertOnset=[];
-if isfield(curInputData,'reference_time')
-    pertOnset = curInputData(trial).reference_time;
+if isfield(curInputData,'reference_time')&&isfield(curInputData,'t')
+    pertOnset = curInputData(trial).reference_time - curInputData(trial).t; 
+elseif isfield(curInputData,'reference_time')
+    pertOnset = curInputData(trial).reference_time; 
     pertLabel = {'Reference time'};
-elseif isfield(curInputData,'pertOnset')
-    pertOnset = curInputData(trial).pertOnset;
-    pertLabel = {'Pert onset'};
 elseif isfield(curInputData(trial), 'timingTrial')
     pertOnset = [(curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2)), (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2))];
     pertLabel = {'Voice onset','Pert onset'};
     %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
+elseif isfield(curInputData,'pertOnset')
+    pertOnset = curInputData(trial).pertOnset;
+    pertLabel = {'Pert onset'};
 end
 htemp=[];
 for npertonset=1:numel(pertOnset), 
