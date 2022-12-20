@@ -90,6 +90,7 @@ if data.viterbifilter,
         P=max(0,svar);
         P=tanh(max(0,P/(mean(P)/8)-1));
         Nvariations=2*data.viterbifiltersize+1;
+        fmt2=fmt;
         for nfmt=1:data.Nfmt
             D=zeros([Nvariations,Nvariations,Nt-1]); for n1=1:Nt-1, D(1:Nvariations,1:Nvariations,n1)=-abs(fmt(nfmt:data.Nfmt:end,n1+zeros(1,Nvariations))-fmt(nfmt:data.Nfmt:end,n1+1+zeros(1,Nvariations))').^2; end
             C=-fmt(nfmt:data.Nfmt:end,:);
