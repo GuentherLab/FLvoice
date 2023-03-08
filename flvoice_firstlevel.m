@@ -1,6 +1,6 @@
 
 function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_firstlevel(SUB,RUN,SES,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
+% data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
@@ -483,7 +483,7 @@ for nsub=1:numel(USUBS)
             yline(0);
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
-            if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
+            if numel(effect)>1, set(gca,'ylim',[min(effect(:))-eps,max(effect(:))+eps]*[1.5 -.5; -.5 1.5]); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
@@ -510,7 +510,7 @@ for nsub=1:numel(USUBS)
             grid on
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             set(gca,'xtick',[]); 
-            if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
+            if numel(t)>1, set(gca,'xlim',[min(t(:))-eps,max(t(:))+eps]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(hpatch(:,end), OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
