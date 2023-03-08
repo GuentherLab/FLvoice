@@ -463,7 +463,7 @@ for nsub=1:numel(USUBS)
         if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')||isequal(Tlabel,'contrast_time rows')
             for n1=1:size(effect,1)
                 assert(numel(t)==size(effect,2),'mismatch between plot time axis (%d timepoints) and effect-size data (%d timepoints)',numel(t),size(effect,2));
-                masknan=~(isnan(t)|any(isnan(effect),1));
+                masknan=true|~(isnan(t)|any(isnan(effect),1));
                 h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',2,'color',color(n1,:))];
                 hold all;
                 tempx=[t,fliplr(t)];
