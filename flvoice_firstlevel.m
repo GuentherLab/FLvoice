@@ -483,7 +483,7 @@ for nsub=1:numel(USUBS)
             yline(0);
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
-            if numel(effect)>1, set(gca,'ylim',[min(effect(:))-eps,max(effect(:))+eps]*[1.5 -.5; -.5 1.5]); end
+            if numel(effect(~isnan(effect)))>1, set(gca,'ylim',sort([min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5])); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
