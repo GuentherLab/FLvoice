@@ -291,6 +291,7 @@ for nsub=1:numel(USUBS)
                     idx=find(strcmp(MEASURE,in_trialData(ntrial).dataLabel));
                     assert(numel(idx)==1,'unable to find %s in trial %d (%s)',MEASURE,ntrial,sprintf('%s ',in_trialData(ntrial).dataLabel{:}));
                     y=in_trialData(ntrial).s{idx};
+                    if size(y,2)==1, y=y.'; end
                     t=in_trialData(ntrial).t{idx}+(0:numel(y)-1)/in_trialData(ntrial).fs;
                     if isempty(Ylabel)
                         Ylabel=MEASURE;
