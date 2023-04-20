@@ -349,6 +349,7 @@ for nsub=1:numel(USUBS)
                 end
             end
             fprintf('  included %d trials in analysis\n',ntrials);
+            assert(ntrials>0,'no trials found');
         end
     end
     validX=any(X~=0,1);
@@ -370,12 +371,12 @@ for nsub=1:numel(USUBS)
         p(:,vmask)=tp;
         dof(:,vmask)=repmat(tdof(:),1,nnz(vmask));
         for n1=reshape(find(nvalid>0&nvalid<size(Y,1)),1,[]) % for cases with some (not zero not all) invalid samples
-            [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),:),Y(validY(:,n1),n1),CONTRAST_VECTOR,[],options{nrepeat});
+            [h(:,n1),f(:,n1),p(:,n1),dof(:,n1)]=conn_glm(X(validY(:,n1),validX),Y(validY(:,n1),n1),contrasts{nrepeat},[],options{nrepeat});
         end
         if isequal(statsname,'T'), p=2*min(p,1-p); end % two-sided
         pFDR=conn_fdr(p,2);
-        if nrepeat==1, stats.h=h;stats.f=f;stats.p=p;stats.pFDR=pFDR;stats.dof=dof;stats.statsname=statsname; 
-        else stats.i_f=f;stats.i_p=p;stats.i_pFDR=pFDR;stats.i_dof=dof;stats.i_statsname=statsname;
+        if nrepeat==1, stats.f=f;stats.p=p;stats.pFDR=pFDR;stats.dof=dof;stats.statsname=statsname; 
+        else stats.h=h;stats.i_f=f;stats.i_p=p;stats.i_pFDR=pFDR;stats.i_dof=dof;stats.i_statsname=statsname;
         end
     end
     filename_outData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',USUBS{nsub}),sprintf('sub-%s_desc-firstlevel_%s.mat',USUBS{nsub},FIRSTLEVEL_NAME));
