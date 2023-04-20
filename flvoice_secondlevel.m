@@ -12,12 +12,15 @@ function varargout=flvoice_secondlevel(SUB,FIRSTLEVEL_NAME, SECONDLEVEL_NAME, DE
 %   CONTRAST_BETWEEN  : between-subjects contrast; condition weights defining second-level contrast across modeled effects / columns of design matrix (1 x N vector or k x N matrix)
 %                          e.g. [1, -1]
 %                      if unspecified the default CONTRAST_BETWEEN value is eye(N) with N equal to the number of columns of the design matrix
-%   CONTRAST_WITHIN   : within-subjects contrast; condition weights defining second-level contrast across data elements (e.g. timepoints or within-subjects 1st-level contrasts) (1 x Nt vector or k x Nt matrix)
+%   CONTRAST_WITHIN   : within-subjects contrast; condition weights defining second-level contrast across data elements (e.g. multiple timepoints, multiple within-subjects 1st-level contrasts, and/or multiple 1st-level analyses) (1 x Nt vector or k x Nt matrix)
 %                          e.g. [-1 1]
-%                      alternatively, function defining contrast values for (or column of CONTRAST_WITHIN matrix) each data element
+%                      alternatively, function defining contrast values (or column of CONTRAST_WITHIN matrix) for each data element
 %                          e.g. @(idx) (idx<=10) - (idx>10)
-%                      if unspecified the default CONTRAST_WITHIN value is eye(Nt) with Nt equal to the number of first-level analyses times the number of data points per analysis
-%
+%                      if unspecified the default CONTRAST_WITHIN value is eye(Nt) with Nt equal to the number of observations (e.g. # first-level analyses times # of data points per analysis times # contrast vectors per analysis) 
+%                      note1:   when the first-level analysis included the definition of multiple timepoints Kt as well as multiple 1st-level contrasts K, the combined [K x Kt] effects are vectorized columnwise, e.g.:
+%                               CONTRAST_WITHIN = kron(contrast_across_timepoints, contrast_across_1stlevelcontrasts)
+%                      note2:   when entering multiple first-level analyses in FIRSTLEVEL_NAME, the effects are first vectorized columnwise within each individual 1st-level analysis and then concatenated across analyses, e.g.:
+%                               CONTRAST_WITHIN = kron(contrast_across_1stlevelanalyses, kron(contrast_across_timepoints, contrast_across_1stlevelcontrasts ))
 %
 % flvoice_secondlevel(... [, OPTION_NAME, OPTION_VALUE, ...]) : runs second-level model estimation using non-default options
 %   'CONTRAST_SCALE'   : 1/0 (default 1) scales CONTRAST_WITHIN rows to maintain original data units (sum of positive values = 1, and if applicable sum of negative values = -1)

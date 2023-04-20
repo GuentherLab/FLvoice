@@ -238,6 +238,7 @@ switch choice
 %         data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
         SKIP_LOWAMP=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWAMP), SKIP_LOWAMP =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWAMP); end; end
         SKIP_LOWDUR=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWDUR), SKIP_LOWDUR =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWDUR); end; end
+        OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
         answ=conn_menu_inputdlg(...
             {'Minimum amplitude (in dB units)','Minimum duration (in seconds)'},...
             'Automatic QC labeling of low-amplitude or low-duration utterances (select cancel to skip)',...
@@ -255,7 +256,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW);
 
     case 'Just Trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -269,11 +270,13 @@ switch choice
 %         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+        OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
         flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
             'PRINT',false,...
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
-            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter} );
+            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
+            'OUT_WINDOW', OUT_WINDOW);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -1541,16 +1544,18 @@ data.vars.micTime = micTime;
 
 if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{1},'^[-_\s]',''),'</html>']); end
 pertOnset=[];
-if isfield(curInputData,'reference_time')
-    pertOnset = curInputData(trial).reference_time;
+if isfield(curInputData,'reference_time')&&isfield(curInputData,'t')
+    pertOnset = curInputData(trial).reference_time - curInputData(trial).t; 
+elseif isfield(curInputData,'reference_time')
+    pertOnset = curInputData(trial).reference_time; 
     pertLabel = {'Reference time'};
-elseif isfield(curInputData,'pertOnset')
-    pertOnset = curInputData(trial).pertOnset;
-    pertLabel = {'Pert onset'};
 elseif isfield(curInputData(trial), 'timingTrial')
     pertOnset = [(curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2)), (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2))];
     pertLabel = {'Voice onset','Pert onset'};
     %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
+elseif isfield(curInputData,'pertOnset')
+    pertOnset = curInputData(trial).pertOnset;
+    pertLabel = {'Pert onset'};
 end
 htemp=[];
 for npertonset=1:numel(pertOnset), 

@@ -1,6 +1,6 @@
 
 function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_firstlevel(SUB,RUN,SES,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
+% data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
@@ -291,6 +291,7 @@ for nsub=1:numel(USUBS)
                     idx=find(strcmp(MEASURE,in_trialData(ntrial).dataLabel));
                     assert(numel(idx)==1,'unable to find %s in trial %d (%s)',MEASURE,ntrial,sprintf('%s ',in_trialData(ntrial).dataLabel{:}));
                     y=in_trialData(ntrial).s{idx};
+                    if size(y,2)==1, y=y.'; end
                     t=in_trialData(ntrial).t{idx}+(0:numel(y)-1)/in_trialData(ntrial).fs;
                     if isempty(Ylabel)
                         Ylabel=MEASURE;
@@ -349,7 +350,6 @@ for nsub=1:numel(USUBS)
                 end
             end
             fprintf('  included %d trials in analysis\n',ntrials);
-            assert(ntrials>0,'no trials found');
         end
     end
     validX=any(X~=0,1);
@@ -357,6 +357,7 @@ for nsub=1:numel(USUBS)
     validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
     nvalid=sum(validY,1);
     fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
+    assert(size(Y,1)>0,'no trials found');
     stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME,'covs',COVS);
     options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
     contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
@@ -462,7 +463,8 @@ for nsub=1:numel(USUBS)
         h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
         if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')||isequal(Tlabel,'contrast_time rows')
             for n1=1:size(effect,1)
-                masknan=~(isnan(t)|any(isnan(effect),1));
+                assert(numel(t)==size(effect,2),'mismatch between plot time axis (%d timepoints) and effect-size data (%d timepoints)',numel(t),size(effect,2));
+                masknan=true|~(isnan(t)|any(isnan(effect),1));
                 h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',2,'color',color(n1,:))];
                 hold all;
                 tempx=[t,fliplr(t)];
@@ -482,7 +484,7 @@ for nsub=1:numel(USUBS)
             yline(0);
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
-            if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
+            if numel(effect(~isnan(effect)))>1, set(gca,'ylim',sort([min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5])); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
@@ -509,7 +511,7 @@ for nsub=1:numel(USUBS)
             grid on
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             set(gca,'xtick',[]); 
-            if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
+            if numel(t)>1, set(gca,'xlim',[min(t(:))-eps,max(t(:))+eps]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(hpatch(:,end), OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
