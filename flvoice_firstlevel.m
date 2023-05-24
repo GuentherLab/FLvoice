@@ -346,7 +346,12 @@ for nsub=1:numel(USUBS)
                     if size(T,2)<size(t,2), T=[T, nan(size(T,1),size(t,2)-size(T,2))]; end
                     if size(t,2)<size(T,2), t=[t, nan(size(t,1),size(T,2)-size(t,2))]; end
                     T=[T;t];
-                    if isfield(in_trialData,'covariates'), COVS=[COVS;in_trialData(ntrial).covariates(:)']; end
+                    if isfield(in_trialData,'covariates'), 
+                        tCOVS=in_trialData(ntrial).covariates(:)';
+                        if ~isempty(COVS)&&size(COVS,2)<size(tCOVS,2), fprintf('warning: covariates field in %s has more values (%d) than previous trials (%d)\n',filename_fmtData, size(tCOVS,2),size(COVS,2)); COVS=[COVS, zeros(size(COVS,1),size(tCOVS,2)-size(COVS,2))]; end
+                        if size(tCOVS,2)<size(COVS,2), fprintf('warning: covariates field in %s has fewer values (%d) than previous trials (%d)\n',filename_fmtData, size(tCOVS,2),size(COVS,2)); tCOVS=[tCOVS, zeros(1,size(COVS,2)-size(tCOVS,2))]; end
+                        COVS=[COVS;tCOVS]; 
+                    end
                 end
             end
             fprintf('  included %d trials in analysis\n',ntrials);
