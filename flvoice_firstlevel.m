@@ -1,6 +1,6 @@
 
 function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
+% data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN [, CONTRAST_VECTOR] [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
@@ -15,9 +15,9 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of categorical or continuous values associated with this trial
 %                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
 %                         the GLM 1st-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per trial (across all selected sessions and runs)
-%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or K x N matrix)
+%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or K x N matrix; defaults to eye(N) if empty)
 %                          e.g. [1, -1]
-%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or Kt x Nt matrix)
+%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or Kt x Nt matrix; defaults to eye(Nt) if empty)
 %                          e.g. [0 0 0 0 1 1 1 1 0 0 0 0 0]
 %                      alternatively, function defining contrast values for each timepoint (or column of CONTRAST_TIME matrix)
 %                          e.g. @(t) (t>0&t<.200) - (t<0)
@@ -43,6 +43,8 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                           EXPORTDIVA=1 -> a separate trial will be created for each combination of CONTRAST_TIME*CONTRAST_VECTOR rows (i.e. the SimpleDIVA file will have dimensions Kt*K x 2)
 %                           EXPORTDIVA=2 -> each row of CONTRAST_TIME will be treated as a separate TRIAL, and each row of CONTRAST_VECTOR as a separate observation (i.e. the SimpleDIVA file will have dimensions Kt x 1+K)
 %                           EXPORTDIVA=3 -> each row of CONTRAST_VECTOR will be treated as a separate trial, and each row of CONTRAST_TIME as a separate observation (i.e. the SimpleDIVA file will have dimensions K x 1+Kt)
+%                           EXPORTDIVA=4 -> like EXPORTDIVA=2 but observation are output as different segments in file (i.e. the SimpleDIVA file will have K blocks separated by # symbols, each block with dimensions Kt x 2)
+%                           EXPORTDIVA=5 -> like EXPORTDIVA=3 but observation are output as different segments in file (i.e. the SimpleDIVA file will have Kt blocks separated by # symbols, each block with dimensions K x 2)
 %                           Enter as field 'EXPORTDIVA_PERT' the experimental perturbation size for each trial (1 x K*Kt vector, 1 x Kt vector, or 1 x K vector for the three options above) 
 %                           If EXPORTDIVA_PERT is undefined the experimental perturbation size will be computed by applying the same first-level model and contrast estimation procedure to the data defined by the last covariate in the input file for each trial
 %
@@ -230,6 +232,7 @@ if isempty(TASK)
 end
 
 USUBS=unique(SUBS);
+emptyCONTRAST_VECTOR=isempty(CONTRAST_VECTOR);
 out=struct([]);
 for nsub=1:numel(USUBS)
     X=[]; 
@@ -359,6 +362,7 @@ for nsub=1:numel(USUBS)
     end
     validX=any(X~=0,1);
     validY=~isnan(Y);
+    if emptyCONTRAST_VECTOR, CONTRAST_VECTOR=eye(size(X,2)); end
     validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
     nvalid=sum(validY,1);
     fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
@@ -420,7 +424,13 @@ for nsub=1:numel(USUBS)
         elseif ~isempty(COVS), 
             exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); 
             if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
-            exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
+            %exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
+            exportdiva_pert=reshape(repmat(exportdiva_pert,1,size(T,2)).*conn_glm(X(:,validX),double(T>=0),CONTRAST_VECTOR(:,validX)) ,1,[]);
+            switch(OPTIONS.EXPORTDIVA)
+                case 1, exportdiva_pert=exportdiva_pert(:).';
+                case 2, exportdiva_pert=mean(exportdiva_pert,1,'omitnan');
+                case 3, exportdiva_pert=mean(exportdiva_pert,2,'omitnan').';
+            end
         else error('Unable to find any covariates; please specify an EXPORTDIVA_PERT vector explicitly'); 
         end
         switch(OPTIONS.EXPORTDIVA)
@@ -433,6 +443,12 @@ for nsub=1:numel(USUBS)
             case 3, % K x Kt
                 assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,1));
                 export_effect=[exportdiva_pert.', effect]; % K x (1+Kt) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
+            case 4, % Kt x 1 x K
+                assert(size(exportdiva_pert,1)==size(effect,2)&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,2),size(effect,1));
+                export_effect=permute(cat(3,exportdiva_pert.', effect.'),[1,3,2]); % K blocks each with Kt x 2 matrix
+            case 5, % K x 1 x Kt
+                assert(size(exportdiva_pert,1)==size(effect,1)&size(exportdiva_pert,2)==size(effect,2),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,1),size(effect,2));
+                export_effect=permute(cat(3,exportdiva_pert, effect),[1,3,2]); % Kt blocks each with K x 2 matrix
         end
         conn_savetextfile(filename_outExport,export_effect);
         fprintf('Output exported to SimpleDIVA file %s\n',filename_outExport);
