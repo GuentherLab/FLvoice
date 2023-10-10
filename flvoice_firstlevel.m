@@ -425,11 +425,13 @@ for nsub=1:numel(USUBS)
             exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); 
             if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
             %exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
-            exportdiva_pert=reshape(repmat(exportdiva_pert,1,size(T,2)).*conn_glm(X(:,validX),double(T>=0),CONTRAST_VECTOR(:,validX)) ,1,[]);
+            exportdiva_pert=repmat(exportdiva_pert,1,size(T,2)).*conn_glm(X(:,validX),double(T>=0),CONTRAST_VECTOR(:,validX));
             switch(OPTIONS.EXPORTDIVA)
                 case 1, exportdiva_pert=exportdiva_pert(:).';
                 case 2, exportdiva_pert=mean(exportdiva_pert,1,'omitnan');
                 case 3, exportdiva_pert=mean(exportdiva_pert,2,'omitnan').';
+                case 4, exportdiva_pert=exportdiva_pert';
+                case 5, 
             end
         else error('Unable to find any covariates; please specify an EXPORTDIVA_PERT vector explicitly'); 
         end
@@ -445,7 +447,7 @@ for nsub=1:numel(USUBS)
                 export_effect=[exportdiva_pert.', effect]; % K x (1+Kt) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
             case 4, % Kt x 1 x K
                 assert(size(exportdiva_pert,1)==size(effect,2)&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,2),size(effect,1));
-                export_effect=permute(cat(3,exportdiva_pert.', effect.'),[1,3,2]); % K blocks each with Kt x 2 matrix
+                export_effect=permute(cat(3,exportdiva_pert, effect.'),[1,3,2]); % K blocks each with Kt x 2 matrix
             case 5, % K x 1 x Kt
                 assert(size(exportdiva_pert,1)==size(effect,1)&size(exportdiva_pert,2)==size(effect,2),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,1),size(effect,2));
                 export_effect=permute(cat(3,exportdiva_pert, effect),[1,3,2]); % Kt blocks each with K x 2 matrix
