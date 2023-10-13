@@ -443,7 +443,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
-                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - t0{ns}; % note: pertOnset relative to beginning of audio sample
+                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
                     elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
                     else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
                     end
