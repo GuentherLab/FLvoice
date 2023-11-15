@@ -279,7 +279,7 @@ for nsub=1:numel(USUBS)
             for ntrial=1:numel(in_trialData)
                 % finds design
                 if ~keepData(ntrial), ok=false;
-                elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))); ok=all(~isnan(x))&any(x~=0);
+                elseif isa(DESIGN,'function_handle'), x=reshape(full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))),1,[]); ok=all(~isnan(x))&any(x~=0);
                 elseif ~isempty(idxconstant), ok=true; x=zeros(1,numel(DESIGN)); 
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
