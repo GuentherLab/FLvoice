@@ -279,14 +279,16 @@ for nsample=1:numel(RUNS)
                     newbadTrial=zeros(0,size(tdata.badTrial,2));
                     for idxj=reshape(find(any(tdata.badTrial>0,1)),1,[]),
                         label=tdata.dictionary{idxj};
-                        if iscell(label), label=sprintf('%s ',label{:}); end
-                        label=deblank(label);
-                        [ok,imatch]=ismember(label,newdictionary);
-                        if ~ok
-                            newdictionary{end+1}=label;
-                            imatch=numel(newdictionary);
+                        if ~iscell(label), label={label}; end
+                        for nlabel=1:numel(label)
+                            tlabel=deblank(char(label{nlabel}));
+                            [ok,imatch]=ismember(tlabel,newdictionary);
+                            if ~ok
+                                newdictionary{end+1}=tlabel;
+                                imatch=numel(newdictionary);
+                            end
+                            newbadTrial(imatch,idxj)=1;
                         end
-                        newbadTrial(imatch,idxj)=1;
                     end
                     tdata.badTrial=newbadTrial;
                     tdata.dictionary=newdictionary;
