@@ -1294,11 +1294,11 @@ if isfield(data, 'vars') && isfield(data.vars, 'subList')
 else
     subList = flvoice('import');
     for i = 1:numel(subList)
-        if isempty(flvoice('import', subList{i})) % if no sessions skip subj
+        sessL = flvoice('import', subList{i});
+        if isempty(sessL) % if no sessions skip subj
             subList{i} = [];
             continue
         else
-            sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
             allempty = 1;
             for j = 1:numel(sessL)
                 tsess = sessL{j};
