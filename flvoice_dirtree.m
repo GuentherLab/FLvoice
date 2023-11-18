@@ -2,7 +2,7 @@ function varargout=flvoice_dirtree(filepath,varargin)
 % [sub,ses,run,task] = flvoice_dirtree(filepath)
 
 if nargin<1||isempty(filepath), filepath=flvoice('PRIVATE.ROOT'); end
-%if flvoice('remote'), [varargout{1:nargout}]=conn_server('run',mfilename,conn_server('util_localfile',filepath),varargin{:}); return; end
+if flvoice('remote'), [varargout{1:nargout}]=conn_server('run',mfilename,conn_server('util_localfile',filepath),varargin{:}); return; end
 varargout=cell(1,nargout);
 
 [nill,SUB]=cellfun(@fileparts,conn_dir(fullfile(filepath,'sub-*'),'-dir','-R','-cell'),'uni',0);
