@@ -238,6 +238,7 @@ switch choice
 %         data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
         SKIP_LOWAMP=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWAMP), SKIP_LOWAMP =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWAMP); end; end
         SKIP_LOWDUR=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWDUR), SKIP_LOWDUR =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWDUR); end; end
+        OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
         answ=conn_menu_inputdlg(...
             {'Minimum amplitude (in dB units)','Minimum duration (in seconds)'},...
             'Automatic QC labeling of low-amplitude or low-duration utterances (select cancel to skip)',...
@@ -255,7 +256,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW);
 
     case 'Just Trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -269,11 +270,13 @@ switch choice
 %         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+        OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
         flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
             'PRINT',false,...
             'N_LPC',lporder, 'F0_RANGE',range, ...
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
-            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter} );
+            'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
+            'OUT_WINDOW', OUT_WINDOW);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -620,29 +623,29 @@ subList = data.vars.subList;
 newSubIdx = get(data.handles.subDrop, 'Value');
 newSub = subList{newSubIdx};
 
-sessList = flvoice('import', newSub);
-% check for empty sessions
-for i = 1:numel(sessList)
-    if ~isempty(flvoice('import', newSub, sessList{i}))
-        continue
-    else
-        sessList{i} = [];
-    end
-end
-emptyIdx = cellfun(@isempty,sessList);
-sessList(emptyIdx) = [];
-curSess = sessList{1};
-data.vars.curSess = curSess;
+% sessList = flvoice('import', newSub);
+% % check for empty sessions
+% for i = 1:numel(sessList)
+%     if ~isempty(flvoice('import', newSub, sessList{i}))
+%         continue
+%     else
+%         sessList{i} = [];
+%     end
+% end
+% emptyIdx = cellfun(@isempty,sessList);
+% sessList(emptyIdx) = [];
+% curSess = sessList{1};
+% data.vars.curSess = curSess;
+% 
+% runList = flvoice('import',newSub, curSess);
+% curRun = runList{1};
+% data.vars.curRun = curRun;
+% 
+% taskList = flvoice('import',newSub, curSess, curRun);
+% set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+% curTask = taskList{get(data.handles.taskDrop, 'Value')};
 
-runList = flvoice('import',newSub, curSess);
-curRun = runList{1};
-data.vars.curRun = curRun;
-
-taskList = flvoice('import',newSub, curSess, curRun);
-set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-curTask = taskList{get(data.handles.taskDrop, 'Value')};
-
-updateSubj(data, newSub, data.vars.curSess, data.vars.curRun, curTask, 1);
+updateSubj(data, newSub, [], [], [], 1);
 data = get(data.handles.hfig, 'userdata');
 % data.vars.curSub = newSub;
 
@@ -678,18 +681,18 @@ end
 sessList = data.vars.sessList;
 newSessIdx = get(data.handles.sessionDrop, 'Value');
 newSess = sessList{newSessIdx};
+% 
+% runList = flvoice('import',sub, newSess);
+% curRun = runList{1};
+% data.vars.curRun = curRun;
+% 
+% taskList = flvoice('import',sub, newSess, curRun);
+% set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
+% curTask = taskList{get(data.handles.taskDrop, 'Value')};
+% %data.vars.taskList = taskList;
+% %data.vars.curTask = curTask;
 
-runList = flvoice('import',sub, newSess);
-curRun = runList{1};
-data.vars.curRun = curRun;
-
-taskList = flvoice('import',sub, newSess, curRun);
-set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-curTask = taskList{get(data.handles.taskDrop, 'Value')};
-%data.vars.taskList = taskList;
-%data.vars.curTask = curTask;
-
-updateSubj(data, data.vars.curSub, newSess, data.vars.curRun, curTask, 1);
+updateSubj(data, data.vars.curSub, newSess, [], [], 1);
 data = get(data.handles.hfig, 'userdata');
 % data.vars.curSess = newSess;
 
@@ -726,11 +729,11 @@ runList = data.vars.runList;
 newRunIdx = get(data.handles.runDrop, 'Value');
 newRun = runList{newRunIdx};
 
-%not all runs have the same task:
-taskList = flvoice_import(sub,ses,newRun);
-newTask = taskList{end}; % will there ever be 2 tasks per run?
+% %not all runs have the same task:
+% taskList = flvoice_import(sub,ses,newRun);
+% newTask = taskList{end}; % will there ever be 2 tasks per run?
 
-updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, newTask, 1);
+updateSubj(data, data.vars.curSub, data.vars.curSess, newRun, [], 1);
 data = get(data.handles.hfig, 'userdata');
 % data.vars.curRun = newRun;
 % data.vars.curTask = newTask;
@@ -970,395 +973,233 @@ set(data.handles.hfig,'pointer','watch');
 set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 drawnow;
 
-if numel(varargin) < 1
-    init = 1;
-else
-    init = 0;
-    sub = varargin{1};
-    sess = varargin{2};
-    run = varargin{3};
-    task = varargin{4};
-    trial = varargin{5};
-
-    % if it's the same sub, sess, task, no need to run fl_import in the future
-    if 0,%isfield(data,'vars')
-        if isequal(sub,data.vars.curSub) && isequal(sess,data.vars.curSess) && isequal(run,data.vars.curRun) && isequal(task,data.vars.curTask)
-            loadData = 0;
-        else
-            loadData = 1;
-        end
-    else
-        loadData = 1;
-    end
-end
-if init % set values to first value in each droplist
-
-    % update subjects
-    subList = flvoice('import');
-    for i = 1:numel(subList)
-        if isempty(flvoice('import', subList{i})) % if no sessions skip subj
-            subList{i} = [];
-            continue
-        else
-            sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
-            allempty = 1;
-            for j = 1:numel(sessL)
-                tsess = sessL{j};
-                if ~isempty(flvoice('import', subList{i},tsess))
-                    allempty = 0;
-                    continue
-                end
-            end
-            if allempty == 1 % if all sessions are empty, exclude the subject
-                subList{i} = [];
-                continue
-            end
-        end
-    end
-    emptyIdx = cellfun(@isempty,subList);
-    subList(emptyIdx) = [];
-    if isempty(subList),
+if ~isfield(data,'vars')||~isfield(data.vars,'allsubList')
+    [data.vars.allsubList,data.vars.allsesList,data.vars.allrunList,data.vars.alltaskList]=flvoice_dirtree;
+    if isempty(data.vars.allsubList),
         close(data.handles.hfig);
         warndlg({sprintf('Unable to find any sub-* directories in root folder %s',flvoice('private.root')),'Please change the root folder of your subject directories using the syntax:',' ','flvoice root YOURROOTFOLDER'});
         return
     end
-    data.vars.subList = subList;
-    set(data.handles.subDrop, 'String', subList, 'Value', 1);
-    disp('Loading default data from root folder:')
-    curSub = subList{get(data.handles.subDrop, 'Value')};
-    fprintf('Loading subject %s:', curSub);
-    data.vars.subList = subList;
-    data.vars.curSub = curSub;
-
-    % update sess
-    sessList = flvoice('import', curSub);
-    % check for empty sessions
-    for i = 1:numel(sessList)
-        if ~isempty(flvoice('import', curSub, sessList{i}))
-            continue
-        else
-            sessList{i} = [];
-        end
-    end
-    emptyIdx = cellfun(@isempty,sessList);
-    sessList(emptyIdx) = [];
-    set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
-    curSess = sessList{get(data.handles.sessionDrop, 'Value')};
-    data.vars.sessList = sessList;
-    data.vars.curSess = curSess;
-
-    sub=curSub;
-    sess=curSess;
-    run=[];
+end
+if numel(varargin) < 1
+    % init = 1;
+    sub = [];
+    sess = [];
+    run = [];
     task=[];
     trial=[];
-    loadData=true;
-
-    % alfnote: avoid code duplication
-    %             % update run
-    %             runList = flvoice('import', curSub,curSess);
-    %             set(data.handles.runDrop, 'String', runList, 'Value', 1);
-    %             curRun = runList{get(data.handles.runDrop, 'Value')};
-    %             data.vars.runList = runList;
-    %             data.vars.curRun = curRun;
-    %
-    %             % update task
-    %             taskList = flvoice('import', curSub,curSess, curRun);
-    %             set(data.handles.taskDrop, 'String', taskList, 'Value', 1);
-    %             curTask = taskList{get(data.handles.taskDrop, 'Value')};
-    %             data.vars.taskList = taskList;
-    %             data.vars.curTask = curTask;
-    %
-    %             % get trial data
-    %             curInputData = flvoice_import(curSub,curSess,curRun,curTask,'input');
-    %             curInputData = curInputData{1};
-    %             if ~isfield(curInputData, 's') || ~isfield(curInputData, 'fs') %|| ~isfield(curInputData, 't')
-    %                 msgbox("Current subject / run has not been pre-processed using flvoice yet. Please use flvoice to pre-process data before using the GUI.", 'Warning', 'warn')
-    %                 return
-    %             end
-    %             curOutputData = flvoice_import(curSub,curSess,curRun,curTask,'output_all');
-    %             curOutputINFO = curOutputData{1}.INFO;
-    %             curOutputData = curOutputData{1}.trialData;
-    %
-    %             % update trial
-    %             trialList = (1:size(curInputData,2));
-    %             set(data.handles.trialDrop, 'String', trialList, 'Value', 1);
-    %             if isempty(trialList)
-    %                 disp('Found no trials')
-    %                 set(data.handles.hfig,'pointer','arrow');
-    %                 drawnow;
-    %                 % re-enable buttons when done
-    %                 set(data.handles.prevButton, 'Enable', 'on');
-    %                 set(data.handles.nextButton, 'Enable', 'on');
-    %                 set(data.handles.hfig,'userdata',data);
-    %                 return
-    %             else
-    %                 curTrial = get(data.handles.trialDrop, 'Value');
-    %                 curCond = curInputData(curTrial).condLabel;
-    %             end
-    %             set(data.handles.condVal, 'String', curCond);
-    %             data.vars.trialList = trialList;
-    %             data.vars.curCond = curCond;
-    %             data.vars.curTrial = curTrial;
-    %
-    %             % Should load previous flags / settings if they exist here
-    %             curRunQC = flvoice_import(curSub,curSess,curRun,curTask, 'get_qc');
-    %             numFlags = 7;
-    %             if isempty(curRunQC.badTrial) || size(curRunQC.badTrial,1) < numFlags
-    %                 curRunQC.badTrial = zeros(numFlags,size(data.vars.trialList,2));
-    %                 curRunQC.keepData = boolean(ones(1,size(data.vars.trialList,2)));
-    %                 curRunQC.dictionary = cell(1,size(data.vars.trialList,2));
-    %                 curRunQC.settings = cell(1,size(data.vars.trialList,2));
-    %             elseif size(curRunQC.badTrial,2) < size(data.vars.trialList,2) || size(curRunQC.keepData,2) < size(data.vars.trialList,2)
-    %                 curRunQC.badTrial = [curRunQC.badTrial zeros(numFlags, (size(data.vars.trialList,2)- size(curRunQC.badTrial,2)))];
-    %                 curRunQC.keepData = ~any(curRunQC.badTrial ~=0);
-    %                 curRunQC.dictionary{1,size(data.vars.trialList,2)} = [];
-    %                 curRunQC.settings{1,size(data.vars.trialList,2)} = [];
-    %             end
-    %             set(data.handles.flag1txt, 'Value',  curRunQC.badTrial(1,1));
-    %             set(data.handles.flag2txt, 'Value',  curRunQC.badTrial(2,1));
-    %             set(data.handles.flag3txt, 'Value',  curRunQC.badTrial(3,1));
-    %             set(data.handles.flag4txt, 'Value',  curRunQC.badTrial(4,1));
-    %             set(data.handles.flag5txt, 'Value',  curRunQC.badTrial(5,1));
-    %             set(data.handles.flag6txt, 'Value',  curRunQC.badTrial(6,1));
-    %             if curRunQC.badTrial(7,1) == 0
-    %                 set(data.handles.flag7txt, 'Value', curRunQC.badTrial(7,1));
-    %                 set(data.handles.flag7edit, 'String', 'Comment', 'Enable', 'off');
-    %             else
-    %                 set(data.handles.flag7txt, 'Value',  curRunQC.badTrial(7,1));
-    %                 set(data.handles.flag7edit, 'String',  curRunQC.dictionary{1,1}(end), 'Enable', 'on');
-    %             end
-    %             data.vars.curRunQC = curRunQC;
-    %
-    %
-    %             if isfield(curOutputData,'options') && ~isempty(curOutputData(curTrial).options.formants) && ~isempty(curOutputData(curTrial).options.pitch)
-    %                 if isempty(curOutputData(curTrial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(curTrial).options.formants.lpcorder); end
-    %                 set(data.handles.NLPCtxtBox, 'String', lporder);
-    %                 set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.windowsize));
-    %                 set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(curTrial).options.formants.viterbifilter));
-    %                 set(data.handles.mfilterFtxtBox, 'String', num2str(curOutputData(curTrial).options.formants.medianfilter));
-    %                 set(data.handles.winSizePtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.windowsize));
-    %                 set(data.handles.methodstxtBox, 'String', curOutputData(curTrial).options.pitch.methods);
-    %                 if isempty(curOutputData(curTrial).options.pitch.range); range = '[ ]'; else; range =  [ '[' num2str(curOutputData(curTrial).options.pitch.range) ']' ]; end
-    %                 set(data.handles.rangetxtBox, 'String', range);
-    %                 set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.hr_min));
-    %                 set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.medianfilter));
-    %                 set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(curTrial).options.pitch.outlierfilter));
-    %                 if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
-    %                 set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
-    %                 % backward compat for trial prior to 'options' field additon in flvoice
-    %             elseif isfield(curRunQC,'settings') && ~isempty(curRunQC.settings{curTrial})
-    %                 if isempty(curRunQC.settings{curTrial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{curTrial}.lporder); end
-    %                 set(data.handles.NLPCtxtBox, 'String', lporder);
-    %                 set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeF));
-    %                 set(data.handles.vfiltertxtBox, 'String', num2str(curRunQC.settings{curTrial}.viterbfilter));
-    %                 set(data.handles.mfilterFtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterF));
-    %                 set(data.handles.winSizePtxtBox, 'String', num2str(curRunQC.settings{curTrial}.windowsizeP));
-    %                 set(data.handles.methodstxtBox, 'String', curRunQC.settings{curTrial}.methods);
-    %                 if isempty(curRunQC.settings{curTrial}.range); range = '[ ]'; else; range =  num2str(curRunQC.settings{curTrial}.lporder); end
-    %                 set(data.handles.rangetxtBox, 'String', range);
-    %                 set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{curTrial}.hr_min));
-    %                 set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.medianfilterP));
-    %                 set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{curTrial}.outlierfilter));
-    %                 if isempty(curRunQC.settings{curTrial}.range); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{curTrial}.lporder); end
-    %                 set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
-    %             else
-    %                 msgbox("Please use flvoice to update and pre-process this data data before using the GUI.", 'Warning', 'warn')
-    %                 return
-    %             end
-    %
-    %
-    %
-    %             % update mic/ head plots
-    %             micWav = curInputData(curTrial).s{1};
-    %             %micTime = (0+(0:numel(micWav)-1*1/curInputData(curTrial).fs));
-    %             %set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
-    %             micTime = (0+(0:numel(micWav)-1)*1/curInputData(curTrial).fs);
-    %             data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis);
-    %             set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
-    %             set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(curTrial).fs]);
-    %             data.vars.micWav = micWav;
-    %             data.vars.micTime = micTime;
-    %
-    %             if 0,%strcmp(data.vars.curTask, 'aud')
-    %                 set(data.handles.headAxis, 'visible', 'on');
-    %                 if isfield(data.handles, 'headPlot')
-    %                     set(data.handles.headPlot, 'visible', 'on');
-    %                 end
-    %                 set(data.handles.playHeadButton, 'enable', 'on');
-    %                 headWav = curInputData(curTrial).s{2};
-    %                 %headTime = (0+(0:numel(headWav)-1*1/curInputData(curTrial).fs));
-    %                 %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
-    %                 headTime = (0+(0:numel(headWav)-1)*1/curInputData(curTrial).fs);
-    %                 data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis);
-    %                 set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.1);
-    %                 set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(curTrial).fs]);
-    %                 data.vars.headWav = headWav;
-    %                 data.vars.headTime = headTime;
-    %             else
-    %                 set(data.handles.headAxis, 'visible', 'off');
-    %                 if isfield(data.handles, 'headPlot')
-    %                     set(data.handles.headPlot, 'visible', 'off');
-    %                 end
-    %                 set(data.handles.playHeadButton, 'enable', 'off');
-    %             end
-    %
-    %             % update spectogram plots
-    %             axes(data.handles.pitchAxis);
-    %             s = curInputData(curTrial).s{1}; %NOTE always s{1}?
-    %             fs = curInputData(curTrial).fs;
-    %             data.handles.fPlot = plot((0:numel(s)-1)/fs,s, 'Parent', data.handles.pitchAxis);
-    %             set(data.handles.pitchAxis,'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs,'ylim',max(abs(s))*[-1.1 1.1],'ytick',max(abs(s))*linspace(-1.1,1.1,7),'yticklabel',[]);
-    %             hold on; yyaxis('right'); ylabel('pitch (Hz)'); ylim([0, 600]); yticks(0:100:600); hold off;
-    %             % .timingTrial = [TIME_TRIAL_START; TIME_TRIAL_ACTUALLYSTART; TIME_VOICE_START; TIME_PERT_START; TIME_PERT_ACTUALLYSTART; TIME_PERT_END; TIME_PERT_ACTUALLYEND; TIME_SCAN_START; TIME_SCAN_ACTUALLYSTART; TIME_SCAN_END];
-    %             if isfield(curInputData(curTrial), 'timingTrial')
-    %                 voiceOnset = (curInputData(curTrial).timingTrial(3)- curInputData(curTrial).timingTrial(2));
-    %                 pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(2));
-    %                 if isnan(pertOnset)
-    %                     pertOnset = (curInputData(curTrial).timingTrial(4)- curInputData(curTrial).timingTrial(1));
-    %                 end
-    %             else
-    %                 pertOnset = curInputData(curTrial).pertOnset;
-    %             end
-    %             hold on; xline(pertOnset,'b--',{'Pert','onset'},'linewidth',2, 'LabelHorizontalAlignment', 'Right'); grid on;
-    %             hold on; xline(voiceOnset,'m-.',{'Voice','onset'},'linewidth',2,'LabelHorizontalAlignment', 'Left'); grid on;
-    %
-    %             axes(data.handles.ppAxis);
-    %             if 0,%strcmp(data.vars.curTask, 'som') % alfnote: not allowed special conditions based on task names
-    %                 f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0measure1'));
-    %                 f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
-    %                 fs2 = curOutputData(curTrial).fs;
-    %                 %t = (0.025:0.001:2.524); % how do I derive this from given data?
-    %                 t = [0+(0:numel(f0)-1)/fs2]; % correct??
-    %                 ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
-    %             else
-    %                 f0idx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-mic'));
-    %                 f0 = curOutputData(curTrial).s{1,f0idx};%NOTE always s{1,1}?
-    %                 fs2 = curOutputData(curTrial).fs;
-    %                 %t = (0.025:0.001:2.524); % how do I derive this from given data?
-    %                 t = [0+(0:numel(f0)-1)/fs2]; % correct??
-    %                 ppMic=plot(t,f0,'.','LineWidth',.6, 'Color', [.6 .6 .6]);
-    %                 hold on;
-    %                 f0headIdx = find(contains(curOutputData(curTrial).dataLabel,'raw-F0-headphones'));
-    %                 f0head = curOutputData(curTrial).s{1,f0headIdx};
-    %                 ppHead=plot(t,f0head,'.','LineWidth',.6, 'Color', [0 0 0]);
-    %                 uistack(ppMic, 'top'); % making sure mic trace is on top
-    %             end
-    %             set(gca,'xlim',[0 numel(s)/fs]);
-    %             set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
-    %             hold off;
-    %
-    %             axes(data.handles.formantAxis);
-    %             set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
-    %             %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
-    %             flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs));
-    %             if 0,%strcmp(data.vars.curTask, 'som') % alfnote: not allowed special conditions based on task names
-    %                 f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1measure1'));
-    %                 f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2measure1'));
-    %                 fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-    %                 hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
-    %             else
-    %                 f1micIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-mic'));
-    %                 f2micIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-mic'));
-    %                 fmt = [curOutputData(1).s{1,f1micIdx},curOutputData(1).s{1,f2micIdx}];
-    %                 hold on; fmtMic = plot(t,fmt'/1e3,'.-','LineWidth',.6, 'Color', [.6 .6 .6]); hold off;
-    %                 %hold on; fmtMic = plot(t,fmt'/1e3,'--','LineWidth',.3, 'Color', [.6 .6 .6]); hold off;
-    %                 hold on;
-    %                 f1headIdx = find(contains(curOutputData(1).dataLabel,'raw-F1-headphones'));
-    %                 f2headIdx = find(contains(curOutputData(1).dataLabel,'raw-F2-headphones'));
-    %                 fmtHead = [curOutputData(1).s{1,f1headIdx},curOutputData(1).s{1,f2headIdx}];
-    %                 hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.6, 'Color', [0 0 0]); hold off;
-    %                 %hold on; fmtHead = plot(t,fmtHead'/1e3,'.-','LineWidth',.3, 'Color', [0 0 0]); hold off;
-    %                 uistack(fmtMic, 'top'); % making sure mic trace is on top
-    %             end
-    %
-    %             %hold on; plot(headTime,headWav); hold off;
-    %             set(data.handles.formantAxis, 'yscale','lin');
-    %             set(data.handles.formantAxis, 'units','norm', 'fontsize',0.09,'position',[0.028, 0.12, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',.5:.5:numel(s)/fs);
-    %             set(data.handles.formantAxis, 'ylim', [0 4],'ytick',[0 1 2 3 4]) % helps  but not quite the same scale I think
-    %             set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.1193    0.017    0.2007]);
-    %             %colormap(jet)
-    %             % can change colormap by doing the following:
-    %             % colormap(jet); caxis('auto') %caxis([-170 0
-    %             % maybe add button to do this?
-    %             % should probably also make the legend visible if so
-    %             %xlabel('Time (s)'); ylabel('formants (KHz)');
-
-end % set values based on given inputs
-% update subjects
-if isfield(data, 'vars') && isfield(data.vars, 'subList')
-    subList = data.vars.subList;
 else
-    subList = flvoice('import');
-    for i = 1:numel(subList)
-        if isempty(flvoice('import', subList{i})) % if no sessions skip subj
-            subList{i} = [];
-            continue
-        else
-            sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
-            allempty = 1;
-            for j = 1:numel(sessL)
-                tsess = sessL{j};
-                if ~isempty(flvoice('import', subList{i},tsess))
-                    allempty = 0;
-                    continue
-                end
-            end
-            if allempty == 1 % if all sessions are empty, exclude the subject
-                subList{i} = [];
-                continue
-            end
-        end
-    end
+    % init = 0;
+    sub = varargin{1}; if ischar(sub), sub=regexprep(sub,'sub-',''); end
+    sess = varargin{2}; if ischar(sess), sess=str2double(regexprep(sess,'ses-','')); end
+    run = varargin{3};  if ischar(run), run=str2double(regexprep(run,'run-','')); end
+    task = varargin{4};
+    trial = varargin{5}; if ischar(trial), trial=str2double(regexprep(trial,'trial-','')); end
+    % if it's the same sub, sess, task, no need to run fl_import in the future
+    % if 0,%isfield(data,'vars')
+    %     if isequal(sub,data.vars.curSub) && isequal(sess,data.vars.curSess) && isequal(run,data.vars.curRun) && isequal(task,data.vars.curTask)
+    %         loadData = 0;
+    %     else
+    %         loadData = 1;
+    %     end
+    % else
+    %     loadData = 1;
+    % end
 end
-emptyIdx = cellfun(@isempty,subList);
-subList(emptyIdx) = [];
-data.vars.subList = subList;
-subIdx = find(contains(subList,sub));
-set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
+
+subList=data.vars.allsubList;
+sesList=data.vars.allsesList;
+runList=data.vars.allrunList;
+taskList=data.vars.alltaskList;
+
+if isempty(sub)&&isfield(data.vars,'curSub')&&ismember(data.vars.curSub,subList), sub=data.vars.curSub; end
+if isempty(sub), sub=subList{1}; end
+ok = ismember(subList,regexprep(sub,'sub-',''));
+assert(any(ok), 'unable to find subject %s',sub);
+[usubList,nill,isubList]=unique(subList);
+[subList,sesList,runList,taskList]=deal(subList(ok),sesList(ok),runList(ok),taskList(ok));
+data.vars.subList = regexprep(usubList,'^.*','sub-$0');
+set(data.handles.subDrop, 'String',data.vars.subList, 'Value', isubList(find(ok,1)));
 data.vars.curSub = sub;
 
-% update sess
-sessList = flvoice('import', sub);
-% check for empty sessions
-for i = 1:numel(sessList)
-    if ~isempty(flvoice('import', sub, sessList{i}))
-        continue
-    else
-        sessList{i} = [];
-    end
-end
-emptyIdx = cellfun(@isempty,sessList);
-sessList(emptyIdx) = [];
-if isempty(sess)
-    sess = sessList{1};
-end
-sessIdx = find(contains(sessList,sess));
-set(data.handles.sessionDrop, 'String', sessList, 'Value', sessIdx);
-data.vars.sessList = sessList;
+if isempty(sess)&&isfield(data.vars,'curSess')&&ismember(data.vars.curSess,sesList), sess=data.vars.curSess; end
+if isempty(sess), sess=sesList(1); end
+[ok,idx] = ismember(sesList,sess);
+assert(any(ok), 'unable to find session %d',sess);
+[usesList,nill,isesList]=unique(sesList);
+[subList,sesList,runList,taskList]=deal(subList(ok),sesList(ok),runList(ok),taskList(ok));
+data.vars.sessList=arrayfun(@(n)sprintf('ses-%d',n),usesList,'uni',0);
+set(data.handles.sessionDrop, 'String',data.vars.sessList, 'Value', isesList(find(ok,1)));
 data.vars.curSess = sess;
 
-% update run
-runList = flvoice('import', sub,sess);
-if isempty(run)
-    run = runList{1};
-end
-runIdx = find(contains(runList,run));
-set(data.handles.runDrop, 'String', runList, 'Value', runIdx);
-data.vars.runList = runList;
+if isempty(run)&&isfield(data.vars,'curRun')&&ismember(data.vars.curRun,runList), run=data.vars.curRun; end
+if isempty(run), run=runList(1); end
+[ok,idx] = ismember(runList,run);
+assert(any(ok), 'unable to find run %d',run);
+[urunList,nill,irunList]=unique(runList);
+[subList,sesList,runList,taskList]=deal(subList(ok),sesList(ok),runList(ok),taskList(ok));
+data.vars.runList=arrayfun(@(n)sprintf('run-%d',n),urunList,'uni',0);
+set(data.handles.runDrop, 'String',data.vars.runList, 'Value', irunList(find(ok,1)));
 data.vars.curRun = run;
 
-% update task
-taskList = flvoice('import', sub,sess,run);
-if isempty(task)
-    task = taskList{1};
-end
-taskIdx = find(contains(taskList,task));
-set(data.handles.taskDrop, 'String', taskList, 'Value', taskIdx);
-data.vars.taskList = taskList;
+if isempty(task)&&isfield(data.vars,'curTask')&&ismember(data.vars.curTask,taskList), task=data.vars.curTask; end
+if isempty(task), task=taskList{1}; end
+[ok,idx] = ismember(taskList,task);
+assert(any(ok), 'unable to find task %d',task);
+[utaskList,nill,itaskList]=unique(taskList);
+[subList,sesList,runList,taskList]=deal(subList(ok),sesList(ok),runList(ok),taskList(ok));
+data.vars.taskList=utaskList;
+set(data.handles.taskDrop, 'String',data.vars.taskList, 'Value', itaskList(find(ok,1)));
 data.vars.curTask = task;
 
+% if init % set values to first value in each droplist
+% 
+%     if isempty(subList),
+%         close(data.handles.hfig);
+%         warndlg({sprintf('Unable to find any sub-* directories in root folder %s',flvoice('private.root')),'Please change the root folder of your subject directories using the syntax:',' ','flvoice root YOURROOTFOLDER'});
+%         return
+%     end
+% 
+% 
+%     % update subjects
+%     subList = flvoice('import');
+%     for i = 1:numel(subList)
+%         if isempty(flvoice('import', subList{i})) % if no sessions skip subj
+%             subList{i} = [];
+%             continue
+%         else
+%             sessL = flvoice('import', subList{i}); %  if session is empty, exclude it
+%             allempty = 1;
+%             for j = 1:numel(sessL)
+%                 tsess = sessL{j};
+%                 if ~isempty(flvoice('import', subList{i},tsess))
+%                     allempty = 0;
+%                     continue
+%                 end
+%             end
+%             if allempty == 1 % if all sessions are empty, exclude the subject
+%                 subList{i} = [];
+%                 continue
+%             end
+%         end
+%     end
+%     emptyIdx = cellfun(@isempty,subList);
+%     subList(emptyIdx) = [];
+%     if isempty(subList),
+%         close(data.handles.hfig);
+%         warndlg({sprintf('Unable to find any sub-* directories in root folder %s',flvoice('private.root')),'Please change the root folder of your subject directories using the syntax:',' ','flvoice root YOURROOTFOLDER'});
+%         return
+%     end
+%     data.vars.subList = subList;
+%     set(data.handles.subDrop, 'String', subList, 'Value', 1);
+%     disp('Loading default data from root folder:')
+%     curSub = subList{get(data.handles.subDrop, 'Value')};
+%     fprintf('Loading subject %s:', curSub);
+%     data.vars.subList = subList;
+%     data.vars.curSub = curSub;
+% 
+%     % update sess
+%     sessList = flvoice('import', curSub);
+%     % check for empty sessions
+%     for i = 1:numel(sessList)
+%         if ~isempty(flvoice('import', curSub, sessList{i}))
+%             continue
+%         else
+%             sessList{i} = [];
+%         end
+%     end
+%     emptyIdx = cellfun(@isempty,sessList);
+%     sessList(emptyIdx) = [];
+%     set(data.handles.sessionDrop, 'String', sessList, 'Value', 1);
+%     curSess = sessList{get(data.handles.sessionDrop, 'Value')};
+%     data.vars.sessList = sessList;
+%     data.vars.curSess = curSess;
+% 
+%     sub=curSub;
+%     sess=curSess;
+%     run=[];
+%     task=[];
+%     trial=[];
+%     loadData=true;
+% 
+% end % set values based on given inputs
+
+% update subjects
+% if isfield(data, 'vars') && isfield(data.vars, 'subList')
+%     subList = data.vars.subList;
+% else
+%     subList = flvoice('import');
+%     for i = 1:numel(subList)
+%         sessL = flvoice('import', subList{i});
+%         if isempty(sessL) % if no sessions skip subj
+%             subList{i} = [];
+%             continue
+%         else
+%             allempty = 1;
+%             for j = 1:numel(sessL)
+%                 tsess = sessL{j};
+%                 if ~isempty(flvoice('import', subList{i},tsess))
+%                     allempty = 0;
+%                     continue
+%                 end
+%             end
+%             if allempty == 1 % if all sessions are empty, exclude the subject
+%                 subList{i} = [];
+%                 continue
+%             end
+%         end
+%     end
+% end
+
+% emptyIdx = cellfun(@isempty,subList);
+% subList(emptyIdx) = [];
+% data.vars.subList = subList;
+% subIdx = find(contains(subList,sub));
+% set(data.handles.subDrop, 'String', subList, 'Value', subIdx);
+% data.vars.curSub = sub;
+
+% % update sess
+% sessList = flvoice('import', sub);
+% % check for empty sessions
+% for i = 1:numel(sessList)
+%     if ~isempty(flvoice('import', sub, sessList{i}))
+%         continue
+%     else
+%         sessList{i} = [];
+%     end
+% end
+% emptyIdx = cellfun(@isempty,sessList);
+% sessList(emptyIdx) = [];
+% if isempty(sess)
+%     sess = sessList{1};
+% end
+% sessIdx = find(contains(sessList,sess));
+% set(data.handles.sessionDrop, 'String', sessList, 'Value', sessIdx);
+% data.vars.sessList = sessList;
+% data.vars.curSess = sess;
+
+% % update run
+% runList = flvoice('import', sub,sess);
+% if isempty(run)
+%     run = runList{1};
+% end
+% runIdx = find(contains(runList,run));
+% set(data.handles.runDrop, 'String', runList, 'Value', runIdx);
+% data.vars.runList = runList;
+% data.vars.curRun = run;
+
+% % update task
+% taskList = flvoice('import', sub,sess,run);
+% if isempty(task)
+%     task = taskList{1};
+% end
+% taskIdx = find(contains(taskList,task));
+% set(data.handles.taskDrop, 'String', taskList, 'Value', taskIdx);
+% data.vars.taskList = taskList;
+% data.vars.curTask = task;
+
 % get trial data
+loadData=1;
 if loadData % only run fl_voice_import() if data being loaded is different from current
     curInputData = flvoice_import(sub,sess,run,task,'input');
     curInputData = curInputData{1};
@@ -1541,16 +1382,18 @@ data.vars.micTime = micTime;
 
 if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{1},'^[-_\s]',''),'</html>']); end
 pertOnset=[];
-if isfield(curInputData,'reference_time')
-    pertOnset = curInputData(trial).reference_time;
+if isfield(curInputData,'reference_time')&&isfield(curInputData,'t')
+    pertOnset = curInputData(trial).reference_time - curInputData(trial).t; 
+elseif isfield(curInputData,'reference_time')
+    pertOnset = curInputData(trial).reference_time; 
     pertLabel = {'Reference time'};
-elseif isfield(curInputData,'pertOnset')
-    pertOnset = curInputData(trial).pertOnset;
-    pertLabel = {'Pert onset'};
 elseif isfield(curInputData(trial), 'timingTrial')
     pertOnset = [(curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2)), (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2))];
     pertLabel = {'Voice onset','Pert onset'};
     %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
+elseif isfield(curInputData,'pertOnset')
+    pertOnset = curInputData(trial).pertOnset;
+    pertLabel = {'Pert onset'};
 end
 htemp=[];
 for npertonset=1:numel(pertOnset), 

@@ -34,6 +34,7 @@ fields={'windowsize',.050,...%.050, ...     % s
         'bwcutoff',400,...                  % Hz
         'plot',false, ...
         'viterbifilter',1,...               % 1/0
+        'viterbifiltersize',1,...           % 1:inf
         'medianfilter',.025};               % s
 
 data=[]; for n1=1:2:nargin-4, data=setfield(data,lower(varargin{n1}),varargin{n1+1}); end
@@ -64,7 +65,7 @@ rthr=exp(-2*data.bwcutoff*2*pi/fs);
 fthr=data.fcutoff*2*pi/fs;
 if data.viterbifilter,
     Fmt=[];
-    for lpcorder=[data.lpcorder-1,data.lpcorder+1,data.lpcorder] % increase by 3 factor
+    for lpcorder=[data.lpcorder-data.viterbifiltersize:data.lpcorder+data.viterbifiltersize] % increase by factor of viterbifiltersize
         [a,g]=lpc(s2,lpcorder);
         a(isnan(a))=0;
         fmt=nan+zeros(data.Nfmt,Nt); for n1=1:Nt, r=roots(a(n1,:)); r(abs(r)<rthr | angle(r)<=fthr)=[]; r=sort(angle(r)/(2*pi)*fs); fmt(1:min(data.Nfmt,length(r)),n1)=r(1:min(data.Nfmt,length(r))); end
@@ -85,23 +86,53 @@ if nargout>3,
 end
 
 if data.viterbifilter,
-    nfmt=size(fmt,1);
-    D=zeros([nfmt,nfmt,Nt-1]); for n1=1:Nt-1, D(1:nfmt,1:nfmt,n1)=-abs(fmt(:,n1+zeros(1,nfmt))-fmt(:,n1+1+zeros(1,nfmt))').^2; end
-    C=-fmt;
-    D=data.viterbifilter/max(1,k1)*D;
-    P=max(0,svar);
-    P=tanh(max(0,P/(mean(P)/8)-1));
-    D=D.*repmat(shiftdim(min(P(1:end-1),P(2:end)),-1),[size(D,1),size(D,2),1]);
-    fmt2=fmt;
-    for n1=1:nfmt,
-        idx=flvoice_pathsearch(C,D);
-        for n2=1:Nt,
-            fmt2(n1,n2)=fmt(idx(n2),n2);
-            fmt(idx(n2),n2)=nan;
-            C(idx(n2),n2)=-1e6;
+    if 1
+        P=max(0,svar);
+        P=tanh(max(0,P/(mean(P)/8)-1));
+        Nvariations=2*data.viterbifiltersize+1;
+        fmt2=fmt;
+        for nfmt=1:data.Nfmt
+            D=zeros([Nvariations,Nvariations,Nt-1]); for n1=1:Nt-1, D(1:Nvariations,1:Nvariations,n1)=-abs(fmt(nfmt:data.Nfmt:end,n1+zeros(1,Nvariations))-fmt(nfmt:data.Nfmt:end,n1+1+zeros(1,Nvariations))').^2; end
+            C=-fmt(nfmt:data.Nfmt:end,:);
+            %C=[C;-1e6*ones(1,size(fmt,2))];
+            %D=cat(1,cat(2,D, zeros(size(D,1),1,size(D,3))),zeros(1,size(D,2)+1,size(D,3)));
+            D=data.viterbifilter/max(1,k1)*D;
+            D=D.*repmat(shiftdim(min(P(1:end-1),P(2:end)),-1),[size(D,1),size(D,2),1]);
+            idx=flvoice_pathsearch(C,D);
+            for n2=1:Nt,
+                if idx(n2)>Nvariations
+                    fmt2(n1,n2)=nan;
+                else
+                    fmt2(nfmt,n2)=fmt(nfmt+data.Nfmt*(idx(n2)-1),n2);
+                end
+            end
         end
+        fmt=fmt2;
+    else
+        nfmt=size(fmt,1);
+        D=zeros([nfmt,nfmt,Nt-1]); for n1=1:Nt-1, D(1:nfmt,1:nfmt,n1)=-abs(fmt(:,n1+zeros(1,nfmt))-fmt(:,n1+1+zeros(1,nfmt))').^2; end
+        C=-fmt;
+        %C=[C;-1e6*ones(1,size(fmt,2))];
+        %D=cat(1,cat(2,D, zeros(size(D,1),1,size(D,3))),zeros(1,size(D,2)+1,size(D,3)));
+        D=data.viterbifilter/max(1,k1)*D;
+        P=max(0,svar);
+        P=tanh(max(0,P/(mean(P)/8)-1));
+        D=D.*repmat(shiftdim(min(P(1:end-1),P(2:end)),-1),[size(D,1),size(D,2),1]);
+        fmt2=fmt;
+        for n1=1:nfmt,
+            idx=flvoice_pathsearch(C,D);
+            for n2=1:Nt,
+                if idx(n2)>nfmt
+                    fmt2(n1,n2)=nan;
+                else
+                    fmt2(n1,n2)=fmt(idx(n2),n2);
+                    fmt(idx(n2),n2)=nan;
+                    C(idx(n2),n2)=-1e6;
+                end
+            end
+        end
+        fmt=fmt2(1:3:end,:); % decrease by 3 factor
     end
-    fmt=fmt2(1:3:end,:); % decrease by 3 factor
 end
 
 if medianfilter>1, 

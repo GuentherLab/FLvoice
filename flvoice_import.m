@@ -18,15 +18,16 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).t                 : optional time of initial sample (seconds) (default 0)
 %             trialData(n).reference_time    : optional reference time for time-alignment (seconds)  (default 0)
 %             trialData(n).condLabel         : optional condition label/name associated with this trial (default 'unknown')
-%             trialData(n).covariates        : optional covariate value(s) associated with this trial (default []) 
 %             trialData(n).dataLabel         : optional data label (default '')
 %             trialData(n).dataUnits         : optional data units (default '')
+%             trialData(n).covariates        : optional covariate value(s) associated with this trial (default []) 
 %
 %   notes: trialData(n).s may alternatively be defined as a cell-array to enter multiple timeseries
 %                         may alternatively be defined implicitly as trialData(n).s = {trialData(n).audapData.signalIn,trialData(n).audapData.signalOut} for Audapter data with fs=16000Hz
 %                         may alternatively be defined implicitly as trialData(n).s = trialData(n).audioData.signalIn for devicereader data with fs=48000Hz
 %          trialData(n).reference_time may alternatively be defined implicitly as reference_time = trialData(n).timingTrial(4)-trialData(n).timingTrial(2))
 %          when trailData(n).s is a cell array containing multiple timeseries, trialData(n).t, trialData(n).dataLabel, and trialData(n).dataUnits may be defined as a cell array as well to indicate a different value per timeseries
+%          when trialData(n).timingTrial is defined, its value is added to the output trialData(n).covariates list as an additional/last element 
 %          when trialData(n).pertSize is defined, its value is added to the output trialData(n).covariates list as an additional/last element 
 %
 % Output data files: $ROOT$/derivatives/acoustic/sub-##/ses-##/sub-##_ses-##_run-##_task-##_desc-formants.jpg
@@ -119,6 +120,7 @@ if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
+if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -277,14 +279,16 @@ for nsample=1:numel(RUNS)
                     newbadTrial=zeros(0,size(tdata.badTrial,2));
                     for idxj=reshape(find(any(tdata.badTrial>0,1)),1,[]),
                         label=tdata.dictionary{idxj};
-                        if iscell(label), label=sprintf('%s ',label{:}); end
-                        label=deblank(label);
-                        [ok,imatch]=ismember(label,newdictionary);
-                        if ~ok
-                            newdictionary{end+1}=label;
-                            imatch=numel(newdictionary);
+                        if ~iscell(label), label={label}; end
+                        for nlabel=1:numel(label)
+                            tlabel=deblank(char(label{nlabel}));
+                            [ok,imatch]=ismember(tlabel,newdictionary);
+                            if ~ok
+                                newdictionary{end+1}=tlabel;
+                                imatch=numel(newdictionary);
+                            end
+                            newbadTrial(imatch,idxj)=1;
                         end
-                        newbadTrial(imatch,idxj)=1;
                     end
                     tdata.badTrial=newbadTrial;
                     tdata.dictionary=newdictionary;
@@ -394,6 +398,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t={};
                 out_trialData(trialNum).covariates=[];
                 if isfield(in_trialData,'covariates'), out_trialData(trialNum).covariates=in_trialData(trialNum).covariates; end
+                if isfield(in_trialData,'timingTrial'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, reshape(in_trialData(trialNum).timingTrial,1,[])]; end
                 if isfield(in_trialData,'pertSize'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, max([nan in_trialData(trialNum).pertSize])]; end
                 out_trialData(trialNum).options.formants.fs=fs;
                 out_trialData(trialNum).options.formants.lpcorder=Nlpc;
@@ -440,7 +445,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
-                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - t0{ns}; % note: pertOnset relative to beginning of audio sample
+                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
                     elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
                     else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
                     end

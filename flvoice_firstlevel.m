@@ -1,6 +1,6 @@
 
 function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
-% data = flvoice_firstlevel(SUB,RUN,SES,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR [, CONTRAST_TIME]) : runs first-level model estimation on audio data
+% data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN [, CONTRAST_VECTOR] [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
 %   RUN              : run number (e.g. 1 or 'run-1')
@@ -15,9 +15,9 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of categorical or continuous values associated with this trial
 %                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
 %                         the GLM 1st-level design matrix will be defined in this case by concatenating the @fun output vectors with one row per trial (across all selected sessions and runs)
-%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or K x N matrix)
+%   CONTRAST_VECTOR  : condition weights defining first-level contrast across modeled effects / columns of design matrix (1 x N vector or K x N matrix; defaults to eye(N) if empty)
 %                          e.g. [1, -1]
-%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or Kt x Nt matrix)
+%   CONTRAST_TIME    : condition weights defining first-level contrast across data elements (e.g. timepoints) (1 x Nt vector or Kt x Nt matrix; defaults to eye(Nt) if empty)
 %                          e.g. [0 0 0 0 1 1 1 1 0 0 0 0 0]
 %                      alternatively, function defining contrast values for each timepoint (or column of CONTRAST_TIME matrix)
 %                          e.g. @(t) (t>0&t<.200) - (t<0)
@@ -43,6 +43,8 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %                           EXPORTDIVA=1 -> a separate trial will be created for each combination of CONTRAST_TIME*CONTRAST_VECTOR rows (i.e. the SimpleDIVA file will have dimensions Kt*K x 2)
 %                           EXPORTDIVA=2 -> each row of CONTRAST_TIME will be treated as a separate TRIAL, and each row of CONTRAST_VECTOR as a separate observation (i.e. the SimpleDIVA file will have dimensions Kt x 1+K)
 %                           EXPORTDIVA=3 -> each row of CONTRAST_VECTOR will be treated as a separate trial, and each row of CONTRAST_TIME as a separate observation (i.e. the SimpleDIVA file will have dimensions K x 1+Kt)
+%                           EXPORTDIVA=4 -> like EXPORTDIVA=2 but observation are output as different segments in file (i.e. the SimpleDIVA file will have K blocks separated by # symbols, each block with dimensions Kt x 2)
+%                           EXPORTDIVA=5 -> like EXPORTDIVA=3 but observation are output as different segments in file (i.e. the SimpleDIVA file will have Kt blocks separated by # symbols, each block with dimensions K x 2)
 %                           Enter as field 'EXPORTDIVA_PERT' the experimental perturbation size for each trial (1 x K*Kt vector, 1 x Kt vector, or 1 x K vector for the three options above) 
 %                           If EXPORTDIVA_PERT is undefined the experimental perturbation size will be computed by applying the same first-level model and contrast estimation procedure to the data defined by the last covariate in the input file for each trial
 %
@@ -230,6 +232,7 @@ if isempty(TASK)
 end
 
 USUBS=unique(SUBS);
+emptyCONTRAST_VECTOR=isempty(CONTRAST_VECTOR);
 out=struct([]);
 for nsub=1:numel(USUBS)
     X=[]; 
@@ -276,7 +279,7 @@ for nsub=1:numel(USUBS)
             for ntrial=1:numel(in_trialData)
                 % finds design
                 if ~keepData(ntrial), ok=false;
-                elseif isa(DESIGN,'function_handle'), x=full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))); ok=all(~isnan(x))&any(x~=0);
+                elseif isa(DESIGN,'function_handle'), x=reshape(full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))),1,[]); ok=all(~isnan(x))&any(x~=0);
                 elseif ~isempty(idxconstant), ok=true; x=zeros(1,numel(DESIGN)); 
                 else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
                 end
@@ -291,6 +294,7 @@ for nsub=1:numel(USUBS)
                     idx=find(strcmp(MEASURE,in_trialData(ntrial).dataLabel));
                     assert(numel(idx)==1,'unable to find %s in trial %d (%s)',MEASURE,ntrial,sprintf('%s ',in_trialData(ntrial).dataLabel{:}));
                     y=in_trialData(ntrial).s{idx};
+                    if size(y,2)==1, y=y.'; end
                     t=in_trialData(ntrial).t{idx}+(0:numel(y)-1)/in_trialData(ntrial).fs;
                     if isempty(Ylabel)
                         Ylabel=MEASURE;
@@ -345,18 +349,24 @@ for nsub=1:numel(USUBS)
                     if size(T,2)<size(t,2), T=[T, nan(size(T,1),size(t,2)-size(T,2))]; end
                     if size(t,2)<size(T,2), t=[t, nan(size(t,1),size(T,2)-size(t,2))]; end
                     T=[T;t];
-                    if isfield(in_trialData,'covariates'), COVS=[COVS;in_trialData(ntrial).covariates(:)']; end
+                    if isfield(in_trialData,'covariates'), 
+                        tCOVS=in_trialData(ntrial).covariates(:)';
+                        if ~isempty(COVS)&&size(COVS,2)<size(tCOVS,2), fprintf('warning: covariates field in %s has more values (%d) than previous trials (%d)\n',filename_fmtData, size(tCOVS,2),size(COVS,2)); COVS=[COVS, zeros(size(COVS,1),size(tCOVS,2)-size(COVS,2))]; end
+                        if size(tCOVS,2)<size(COVS,2), fprintf('warning: covariates field in %s has fewer values (%d) than previous trials (%d)\n',filename_fmtData, size(tCOVS,2),size(COVS,2)); tCOVS=[tCOVS, zeros(1,size(COVS,2)-size(tCOVS,2))]; end
+                        COVS=[COVS;tCOVS]; 
+                    end
                 end
             end
             fprintf('  included %d trials in analysis\n',ntrials);
-            assert(ntrials>0,'no trials found');
         end
     end
     validX=any(X~=0,1);
     validY=~isnan(Y);
+    if emptyCONTRAST_VECTOR, CONTRAST_VECTOR=eye(size(X,2)); end
     validC=~any(CONTRAST_VECTOR(:,~validX)~=0,2);
     nvalid=sum(validY,1);
     fprintf('Data: %d (%d-%d) samples/trials, %d (%d-%d) measures/timepoints\n',size(Y,1),min(nvalid),max(nvalid),size(Y,2),min(sum(validY,2)),max(sum(validY,2)));
+    assert(size(Y,1)>0,'no trials found');
     stats=struct('X',X,'Y',Y,'T',T,'Ylabel',Ylabel,'Tlabel',Tlabel,'C1',CONTRAST_VECTOR,'C2',CONTRAST_TIME,'covs',COVS);
     options={'collapse_predictors','collapse_none'}; %'collapse_all_satterthwaite');
     contrasts={CONTRAST_VECTOR(validC,validX), CONTRAST_VECTOR(:,validX)};
@@ -414,7 +424,15 @@ for nsub=1:numel(USUBS)
         elseif ~isempty(COVS), 
             exportdiva_pert=conn_glm(X(:,validX),COVS(:,end),CONTRAST_VECTOR(:,validX)); 
             if size(COVS,2)>1, fprintf('Warning: perturbation size values computed from last covariate among %d covariates defined\n',size(COVS,2)); end
-            exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
+            %exportdiva_pert=reshape(exportdiva_pert*mean(double(T>=0),1,'omitnan'),1,[]);
+            exportdiva_pert=repmat(exportdiva_pert,1,size(T,2)).*conn_glm(X(:,validX),double(T>=0),CONTRAST_VECTOR(:,validX));
+            switch(OPTIONS.EXPORTDIVA)
+                case 1, exportdiva_pert=exportdiva_pert(:).';
+                case 2, exportdiva_pert=mean(exportdiva_pert,1,'omitnan');
+                case 3, exportdiva_pert=mean(exportdiva_pert,2,'omitnan').';
+                case 4, exportdiva_pert=exportdiva_pert';
+                case 5, 
+            end
         else error('Unable to find any covariates; please specify an EXPORTDIVA_PERT vector explicitly'); 
         end
         switch(OPTIONS.EXPORTDIVA)
@@ -427,6 +445,12 @@ for nsub=1:numel(USUBS)
             case 3, % K x Kt
                 assert(size(exportdiva_pert,1)==1&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),1,size(effect,1));
                 export_effect=[exportdiva_pert.', effect]; % K x (1+Kt) matrix (e.g. timepoints perturbation vector + timepoints x conditions matrix)
+            case 4, % Kt x 1 x K
+                assert(size(exportdiva_pert,1)==size(effect,2)&size(exportdiva_pert,2)==size(effect,1),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,2),size(effect,1));
+                export_effect=permute(cat(3,exportdiva_pert, effect.'),[1,3,2]); % K blocks each with Kt x 2 matrix
+            case 5, % K x 1 x Kt
+                assert(size(exportdiva_pert,1)==size(effect,1)&size(exportdiva_pert,2)==size(effect,2),'mismatched size of EXPORTDIVA_PERT (observed %dx%d, expected %dx%d)',size(exportdiva_pert,1),size(exportdiva_pert,2),size(effect,1),size(effect,2));
+                export_effect=permute(cat(3,exportdiva_pert, effect),[1,3,2]); % Kt blocks each with K x 2 matrix
         end
         conn_savetextfile(filename_outExport,export_effect);
         fprintf('Output exported to SimpleDIVA file %s\n',filename_outExport);
@@ -462,7 +486,8 @@ for nsub=1:numel(USUBS)
         h=[]; axes('units','norm','position',[.2 .2 .6 .6]); 
         if isequal(Tlabel,'time (ms)')||isequal(Tlabel,'contrast rows')||isequal(Tlabel,'contrast_time rows')
             for n1=1:size(effect,1)
-                masknan=~(isnan(t)|any(isnan(effect),1));
+                assert(numel(t)==size(effect,2),'mismatch between plot time axis (%d timepoints) and effect-size data (%d timepoints)',numel(t),size(effect,2));
+                masknan=true|~(isnan(t)|any(isnan(effect),1));
                 h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',2,'color',color(n1,:))];
                 hold all;
                 tempx=[t,fliplr(t)];
@@ -482,7 +507,7 @@ for nsub=1:numel(USUBS)
             yline(0);
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
-            if numel(effect)>1, set(gca,'ylim',[min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5]); end
+            if numel(effect(~isnan(effect)))>1, set(gca,'ylim',sort([min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5])); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(h, OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(h,arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
@@ -509,7 +534,7 @@ for nsub=1:numel(USUBS)
             grid on
             xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
             set(gca,'xtick',[]); 
-            if numel(t)>1, set(gca,'xlim',[min(t(:)),max(t(:))]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
+            if numel(t)>1, set(gca,'xlim',[min(t(:))-eps,max(t(:))+eps]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
                 if ~isempty(OPTIONS.PLOTLABELS), legend(hpatch(:,end), OPTIONS.PLOTLABELS); 
                 elseif numel(h)==size(CONTRAST_VECTOR,1), legend(hpatch(:,end),arrayfun(@(n)sprintf('contrast %s',mat2str(CONTRAST_VECTOR(n,:))),1:numel(h),'uni',0)); 
