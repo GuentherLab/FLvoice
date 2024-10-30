@@ -1,5 +1,5 @@
 
-function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, varargin)
+function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN, CONTRAST_VECTOR, CONTRAST_TIME, CUSTOM_WEIGHT_OPS, varargin)
 % data = flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE, DESIGN [, CONTRAST_VECTOR] [, CONTRAST_TIME]) : runs first-level model estimation on audio data
 %   SUB              : subject id (e.g. 'test244' or 'sub-test244')
 %   SES              : session number (e.g. 1 or 'ses-1')
@@ -105,6 +105,7 @@ persistent DEFAULTS;
 if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
+    if nargin>=10, varargin=[{CUSTOM_WEIGHT_OPS},varargin]; end
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
     if nargin>=8, varargin=[{CONTRAST_VECTOR},varargin]; end
     if nargin>=7, varargin=[{DESIGN},varargin]; end
@@ -134,6 +135,7 @@ if nargin<8||isempty(CONTRAST_VECTOR), CONTRAST_VECTOR=[]; end
 if ischar(CONTRAST_VECTOR), CONTRAST_VECTOR=str2num(CONTRAST_VECTOR); assert(~isempty(CONTRAST_VECTOR),'unable to interpret CONTRAST_VECTOR input'); end
 if nargin<9||isempty(CONTRAST_TIME), CONTRAST_TIME=[]; end
 if ischar(CONTRAST_TIME), CONTRAST_TIME=str2num(CONTRAST_TIME); assert(~isempty(CONTRAST_TIME),'unable to interpret CONTRAST_TIME input'); end
+if nargin<10||isempty(CUSTOM_WEIGHT_OPS), CUSTOM_WEIGHT_OPS=[]; end
 
 OPTIONS=DEFAULTS;
 if numel(varargin)>0, for n=1:2:numel(varargin)-1, assert(isfield(DEFAULTS,upper(varargin{n})),'unrecognized default field %s',varargin{n}); OPTIONS.(upper(varargin{n}))=varargin{n+1}; end; end %fprintf('%s = %s\n',upper(varargin{n}),mat2str(varargin{n+1})); end; end
@@ -229,6 +231,10 @@ if isempty(TASK)
         disp(char(TASKS));
     end
     return
+end
+
+if ~isempty(CUSTOM_WEIGHT_OPS) && (~isempty(DESIGN) || ~isempty(CONTRAST_VECTOR)) % added by AM+AK
+    error('if CUSTOM_WEIGHT_OPS is not empty, then DESIGN and CONTRAST_VECTOR must be empty');
 end
 
 USUBS=unique(SUBS);
