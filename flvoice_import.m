@@ -315,7 +315,27 @@ for nsample=1:numel(RUNS)
         hfig=[];
         starttif=true;
         fprintf('loading file %s\n',filename_trialData);
+        [json_path,json_name,mat_ext] = fileparts(filename_trialData);
+        json_filename = [json_path filesep json_name '_trialInfo.json'];
         tdata=conn_loadmatfile(filename_trialData,'-cache');
+        
+        % 2024/11/6 AM + AK added this option for adding extra trial condition data via json file 
+        % % %         this json file must be created before calling flvoice_import, and should have the same number of struct elements as tdata.trialData; 
+        % % %         it should also have the same filepath as the filename_trialData file, but with the suffix '_trialInfo.json'
+        % fields that are shared by the json file table and the trialData table will be overwritten in the trialData table
+        if isfile(json_filename)
+            % load json file
+            jsonStr = fileread(json_filename);
+            json_data = jsondecode(jsonStr);
+            
+            fields = fieldnames(json_data);
+            for ifield = 1:numel(fields)
+                thisfieldname = fields{ifield};
+                for i_elm = 1:numel(json_data) % usually there will be one of these elements for each trial
+                    tdata.trialData(i_elm).(thisfieldname) = json_data(i_elm).(thisfieldname);
+                end
+            end
+        end
         assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_trialData);
         in_trialData = tdata.trialData;
         if isfield(tdata,'gender'), gender=tdata.gender; 
