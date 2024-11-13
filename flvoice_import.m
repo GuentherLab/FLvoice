@@ -331,7 +331,8 @@ for nsample=1:numel(RUNS)
             json_data = jsondecode(jsonStr);
             
             fields = fieldnames(json_data);
-            for ifield = 1:numel(fields)
+            for ifield = 1:numel(fields) % run through each field name present in the json file table and add it to tdata.trialData
+                % overwrite in trialData any field with an identitcal name to the json file
                 thisfieldname = fields{ifield};
                 for i_elm = 1:numel(json_data) % usually there will be one of these elements for each trial
                     tdata.trialData(i_elm).(thisfieldname) = json_data(i_elm).(thisfieldname);
