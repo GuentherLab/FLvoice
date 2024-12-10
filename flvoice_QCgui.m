@@ -25,7 +25,7 @@ switch(lower(option))
         initGUI(setup)
     case 'setup'
         setup = 1;
-        if nargin <2; disp('Please inputa subject');
+        if nargin <2; disp('Please input a subject');
         else; sub = varargin{1}; end
         if nargin <3; sess = [];
         else; sess = varargin{2}; end
@@ -53,7 +53,7 @@ else
 end
 
 % Main figure
-data.handles.hfig=figure('Units','norm','Position',[.05 .15 .9 .8],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w','colormap',parula(256).*repmat(linspace(0,1,256)',1,3));
+data.handles.hfig=figure('Units','norm','Position',[.05 .15 .9 .8],'Menubar','none','Name','FLvoice QC GUI','numbertitle','off','color','w','colormap',jet(256)); %parula(256).*repmat(linspace(0,1,256)',1,3));
 % reminder; position is [(bottom left corner normalized x pos) (bottom left corner normalized y pos) (width) (heigth)]
 
 % SETTINGS PANEL
@@ -1446,7 +1446,8 @@ fs = curInputData(trial).fs;
 %hold on; xline(pertOnset,'y:','linewidth',2); grid on; % problem pertOnset
 
 axes(data.handles.ppAxis);
-flvoice_spectrogram(s,fs,round(.025*fs),round(.024*fs),1024);
+hwindowsize=str2num(get(data.handles.winSizePtxtBox,'string')); % .025
+flvoice_spectrogram(s,fs,round(hwindowsize*fs),round((hwindowsize-.001)*fs),1024);
 %set(data.handles.ppAxis, 'OuterPosition', [-0.12, 0.32, 1, 0.25]);
 xlabel 'Time (s)'
 ylabel 'Pitch Frequency (Hz)';
@@ -1482,7 +1483,8 @@ hold off;
 axes(data.handles.formantAxis);
 %set(data.handles.formantAxis, 'OuterPosition', [-0.12, 0.10, 1, 0.25]);
 %spectrogram(s,round(.015*fs),round(.014*fs),[],fs,'yaxis');
-flvoice_spectrogram(s,fs,round(.005*fs),round(.004*fs),1024);
+hwindowsize=.005; %str2num(get(data.handles.winSizeFtxtBox,'string')); % .005
+flvoice_spectrogram(s,fs,round(hwindowsize*fs),round((hwindowsize-.001)*fs),1024);
 xlabel ''
 ylabel 'Formant Frequency (Hz)';
 fmtMic=[];
