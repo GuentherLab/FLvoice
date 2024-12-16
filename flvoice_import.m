@@ -59,6 +59,8 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'CROP_TIME'        : crop window (fill with NaN/missing-values all formant&pitch values between times CROP_TIME(1) and CROP_TIME(2)) (default [])
 %   'OUT_WINDOW'       : time-window in formant&pitch traces around time-alignment reference_time (seconds) (default [-0.2 1.0])
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
+%   'MINAMP'           : minimum amplitude (in dB): timepoints with 'Amp' values below MINAMP or with suprathreshold segments shorter than MINDUR will be filled with NaN / missing-values (default []; enter NaN to use an automatic threshold = mode of amplitude distribution)
+%   'MINDUR'           : minimum duration (in seconds): timepoints with 'Amp' values below MINAMP or with suprathreshold segments shorter than MINDUR will be filled with NaN /missing-values (default [])
 %   'SKIP_CONDITIONS'  : QC skip specific conditions; list of conditions labels (condLabel values) to be marked as invalid with a "Skipped condition" QC flag (default {})
 %   'SKIP_LOWAMP'      : QC skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be marked as invalid with a "Low amplitude" QC flag (default [])
 %   'SKIP_LOWDUR'      : QC skip low-duration trials; trials with no single continuos segment of at least SKIP_LOWDUR seconds with 'Amp' value above SKIP_LOWAMP will be marked as invalid with a "Utterance too short" QC flag (default []; e.g. [1 0.1] removes trials where Amp was higher than 0.1 during less than 1 second)
@@ -94,7 +96,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -126,6 +128,8 @@ if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL)
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
 if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
 if ischar(OPTIONS.REFERENCE_TIME), OPTIONS.REFERENCE_TIME=str2num(OPTIONS.REFERENCE_TIME); end
+if ischar(OPTIONS.MINAMP), OPTIONS.MINAMP=str2num(OPTIONS.MINAMP); end
+if ischar(OPTIONS.MINDUR), OPTIONS.MINDUR=str2num(OPTIONS.MINDUR); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -462,12 +466,27 @@ for nsample=1:numel(RUNS)
                     out_trialData(trialNum).dataUnits{end+1} = out_trialData(trialNum).dataUnits{ns};
                     out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
                     if ~isempty(OPTIONS.CROP_TIME), 
-                        %if ns<=3, out_trialData(trialNum).s{ns}(time1<OPTIONS.CROP_TIME(1)|time1>OPTIONS.CROP_TIME(2))=NaN; end % note: mask with NaN's only raw-F*
-                        out_trialData(trialNum).s{end}(time2<OPTIONS.CROP_TIME(1)|time2>OPTIONS.CROP_TIME(2))=NaN; 
+                        if ~isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-F\d')), out_trialData(trialNum).s{ns}(time1<OPTIONS.CROP_TIME(1)|time1>OPTIONS.CROP_TIME(2))=NaN; end % note: mask with NaN's raw-F*
+                        if ~isempty(regexp(out_trialData(trialNum).dataLabel{end},'^F\d')), out_trialData(trialNum).s{end}(time2<OPTIONS.CROP_TIME(1)|time2>OPTIONS.CROP_TIME(2))=NaN; end % mask with NaN's F*
                     end
+                end
+                if ~isempty(OPTIONS.MINAMP), 
+                    if isnan(OPTIONS.MINAMP), % use data-driven amplitude threshold (mode of amplitude distribution)
+                        ampWav=out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^raw-Amp'))>0,1)};
+                        ampWavScale=max(ampWav)-min(ampWav)+eps;
+                        minamp=[]; for n1=1:100, minamp=[minamp, mode(round(ampWav/ampWavScale*n1))*ampWavScale/n1]; end
+                        minamp=mean(minamp);
+                    else minamp=OPTIONS.MINAMP;
+                    end
+                    [nill,ValidData]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^raw-Amp'))>0,1)},minamp,OPTIONS.MINDUR*out_trialData(trialNum).fs);
+                    for ns=reshape(find(cellfun('length', regexp(out_trialData(trialNum).dataLabel,'^raw-F\d'))>0),1,[]), out_trialData(trialNum).s{ns}(~ValidData)=NaN; end
+                    [nill,ValidData]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^Amp'))>0,1)},minamp,OPTIONS.MINDUR*out_trialData(trialNum).fs);
+                    for ns=reshape(find(cellfun('length', regexp(out_trialData(trialNum).dataLabel,'^F\d'))>0),1,[]), out_trialData(trialNum).s{ns}(~ValidData)=NaN; end
                 end
                 out_trialData(trialNum).options.time.reference=OPTIONS.REFERENCE_TIME;
                 out_trialData(trialNum).options.time.crop=OPTIONS.CROP_TIME;
+                out_trialData(trialNum).options.time.minamp=OPTIONS.MINAMP;
+                out_trialData(trialNum).options.time.mindur=OPTIONS.MINDUR;
                 out_trialData(trialNum).fs=OPTIONS.OUT_FS;
                 if isfield(data,'condLabel')&&~isempty(data.condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
                 else out_trialData(trialNum).condLabel='unknown';
@@ -633,10 +652,12 @@ end
 if somethingout, varargout={fileout}; end
 end
 
-function ok=findsuprathresholdsegment(x,thr,N)
-in=reshape(x>thr,1,[]);
-idx=reshape(find(diff([false, in, false])),2,[]);
+function [ok,in]=findsuprathresholdsegment(x,thr,N)
+if isempty(N), N=0; end
+in=x>thr;
+idx=reshape(find(diff([false, reshape(in,1,[]), false])),2,[]);
 ok=any(idx(2,:)-idx(1,:)>=N);
+for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
 end
 
 

@@ -60,15 +60,13 @@ data.handles.hfig=figure('Units','norm','Position',[.05 .15 .9 .8],'Menubar','no
 data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .45 .2 .52],'Parent',data.handles.hfig);
 
 % Time Settings
-data.handles.FSettText=uicontrol('Style', 'text','String','Time Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .90 .8 .05],'Parent',data.handles.settPanel);
-data.handles.selectReferenceText=uicontrol('Style', 'text','String','Reference time:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .05],'Parent',data.handles.settPanel);
-data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
-data.handles.selectCropText=uicontrol('Style', 'text','String','Crop window:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
-data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): values outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
-%data.handles.selectMinAmpText=uicontrol('Style', 'text','String','Minimum amplitude:','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'left','Position',[.845 .64 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel);
-%data.handles.selectMinAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.945 .64 .05 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','<HTML>Enter minimum amplitude to determine voice onset/offset (in dB units)<br/>Leave empty to use an automatic threshold','Parent',data.handles.axes1Panel);
-%data.handles.selectMinDurText=uicontrol('Style', 'text','String','Minimum duration:','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'left','Position',[.845 .61 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel);
-%data.handles.selectMinDur=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.945 .61 .05 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','<HTML>Enter minimum duration to determine voice onset/offset (in seconds)<br/>Leave empty to use an automatic threshold','Parent',data.handles.axes1Panel);
+data.handles.FSettText=uicontrol('Style', 'text','String','General Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .95 .8 .05],'Parent',data.handles.settPanel);
+data.handles.selectReferenceText=uicontrol('Style', 'text','String','Reference Time:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .90 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .90 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
+data.handles.selectCropText=uicontrol('Style', 'text','String','Crop:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): timepoints outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
+data.handles.selectAmpText=uicontrol('Style', 'text','String','Amp/Dur Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Amplitude & Duration threshold:  Two values: minimum amplitude threshold (in dB units), and minimum duration (in seconds)<br/>Timepoints with amplitude/duration below this threshold will be filled with NaN / missing-values<br/>Set the minimum amplitude to NaN to determine this threshold automatically<br/>Leave empty to keep all of the data irrespective of amplitude','Parent',data.handles.settPanel);
 
 % Formant Settings
 data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .725 .8 .05],'Parent',data.handles.settPanel);
@@ -240,6 +238,9 @@ medianfilterP = str2num(get(data.handles.mfilterPtxtBox, 'String'));
 outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
 ReferenceTime = str2num(get(data.handles.selectReference, 'String'));
 CropTime = str2num(get(data.handles.selectCrop, 'String'));
+MinAmp = str2num(get(data.handles.selectAmp, 'String'));
+if numel(MinAmp)>1, MinDur=MinAmp(2); else MinDur=[]; end
+if numel(MinAmp)>0, MinAmp=MinAmp(1); end
 %lowamp = str2num(get(data.handles.selectMinAmp, 'String'));
 %lowdur = str2num(get(data.handles.selectMinDur, 'String'));
 % General
@@ -284,7 +285,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
 
     case 'Just Trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -304,7 +305,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime);
+            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -1371,6 +1372,9 @@ if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.for
     if isfield(curOutputData(trial).options,'time')&&isfield(curOutputData(trial).options.time,'crop')&&~isempty(curOutputData(trial).options.time.crop), set(data.handles.selectCrop, 'String', mat2str(curOutputData(trial).options.time.crop));
     else set(data.handles.selectCrop, 'String', ''); 
     end
+    if isfield(curOutputData(trial).options,'time')&&isfield(curOutputData(trial).options.time,'minamp')&&~isempty(curOutputData(trial).options.time.minamp), set(data.handles.selectAmp, 'String', mat2str([curOutputData(trial).options.time.minamp curOutputData(trial).options.time.mindur]));
+    else set(data.handles.selectAmp, 'String', ''); 
+    end
     %if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
     %set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
     % backward compat for trial prior to 'options' field additon in flvoice
@@ -1415,6 +1419,7 @@ if isempty(reference_time), reference_time = pertOnset(end); end
 OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
 if isempty(OUT_WINDOW), OUT_WINDOW=[-0.2 1.0]; end
 crop_time= str2num(get(data.handles.selectCrop,'string'));
+min_amp= str2num(get(data.handles.selectAmp,'string'));
 
 % update mic plot
 cla(data.handles.micAxis);
@@ -1477,6 +1482,7 @@ data.handles.spectPlot = updateSpect(data.handles.spectAxis, micWav, curInputDat
 % update amp plot
 set([data.handles.flagPrev, data.handles.flagNext],'visible','off');
 ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
+VALID=[];
 if ~isempty(ampidx)
     skip_lowamp=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWAMP), skip_lowamp =  curOutputINFO.options.SKIP_LOWAMP; end; end
     skip_lowdur=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWDUR), skip_lowdur =  curOutputINFO.options.SKIP_LOWDUR; end; end
@@ -1487,14 +1493,21 @@ if ~isempty(ampidx)
         ampWav = curOutputData(trial).s{ampidx(nampidx)};
         ampWav(ampWav<0)=nan;
         ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
-        temp_skip_lowdur=skip_lowdur; if isempty(temp_skip_lowdur), temp_skip_lowdur=.500; end
-        temp_skip_lowamp=skip_lowamp; if isempty(temp_skip_lowamp), 
+        temp_skip_lowamp = [];
+        if ~isempty(min_amp), temp_skip_lowamp = min_amp(1); end
+        if isempty(temp_skip_lowamp), temp_skip_lowamp=skip_lowamp; end
+        if isempty(temp_skip_lowamp)||isnan(temp_skip_lowamp), 
             m=[]; for n1=1:100, m=[m, mode(round(ampWav/(max(ampWav)-min(ampWav)+eps)*n1))*(max(ampWav)-min(ampWav)+eps)/n1]; end; temp_skip_lowamp=mean(m);
             %temp_skip_lowamp=mean(ampWav(~isnan(ampWav))); 
         end
+        temp_skip_lowdur = [];
+        if numel(min_amp)>1, temp_skip_lowdur = min_amp(2); end
+        if isempty(temp_skip_lowdur), temp_skip_lowdur=skip_lowdur; end
+        if isempty(temp_skip_lowdur)&&isempty(min_amp), temp_skip_lowdur=.5; end
+        if isempty(temp_skip_lowdur), temp_skip_lowdur=0; end
         ampPlot=max(ampWav,temp_skip_lowamp);
-        [nill,in]=findsuprathresholdsegment(ampWav,temp_skip_lowamp,temp_skip_lowdur*curOutputData(trial).fs);
-        ampPlot(~in)=temp_skip_lowamp;
+        [nill,VALID]=findsuprathresholdsegment(ampWav,temp_skip_lowamp,temp_skip_lowdur*curOutputData(trial).fs);
+        ampPlot(~VALID)=temp_skip_lowamp;
         hold on; area(ampTime,ampPlot,temp_skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off;
         % if ~isempty(skip_lowamp)
         %     ampPlot=max(ampWav,skip_lowamp); 
@@ -1504,7 +1517,7 @@ if ~isempty(ampidx)
         % end
         hold on; ampPlot=plot(ampTime,ampWav,'.-', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
     end
-    if ~isempty(skip_lowamp), hold on; htemp=yline(skip_lowamp,'b-',sprintf('%d dB',round(skip_lowamp)),'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','top','LabelOrientation','horizontal'); hold off; end
+    if ~isempty(min_amp)||~isempty(skip_lowamp), hold on; htemp=yline(temp_skip_lowamp,'b-',sprintf('%d dB',round(temp_skip_lowamp)),'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','top','LabelOrientation','horizontal'); hold off; end
     set(data.handles.ampAxis, 'FontUnits', 'normalized', 'FontSize', 0.20);
     set(data.handles.ampAxis,'XLim', xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right')
     grid(data.handles.ampAxis,'on');
@@ -1528,12 +1541,12 @@ cla(data.handles.referenceAxis);
 axes(data.handles.referenceAxis);
 if isempty(crop_time), 
     hold on; patch(reference_time+OUT_WINDOW([1 2 2 1]),[0 0 1 1],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off;
-    hold on; text(reference_time+OUT_WINDOW(1),-.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
+    hold on; text(reference_time+OUT_WINDOW(1),1.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
 else 
-    hold on; patch(reference_time+OUT_WINDOW([1 2 2 1]),[0 0 .5 .5],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off;
-    hold on; patch(crop_time([1 2 2 1]),[.5 .5 1 1],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off; 
-    hold on; text(reference_time+OUT_WINDOW(1),-.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
-    hold on; text(crop_time(1),1.25,'crop window','color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
+    hold on; patch(reference_time+OUT_WINDOW([1 2 2 1]),[.5 .5 1 1],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off;
+    hold on; patch(crop_time([1 2 2 1]),[0 0 .5 .5],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off; 
+    hold on; text(reference_time+OUT_WINDOW(1),1.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
+    hold on; text(crop_time(1),-.25,'crop window','color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
 end
 hold on; htemp=xline(reference_time,'k-','T0 (output data reference time)','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
 %hold on; htemp=xline(reference_time+[OUT_WINDOW(1) 0 OUT_WINDOW(2)],'b-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
@@ -1579,7 +1592,8 @@ else
         f0 = curOutputData(trial).s{1,f0idx(nf0idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
         hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf0idx-1)/max(eps,numel(f0idx)-1)))]; hold off
-        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(VALID), t(VALID)=NaN; hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     %uistack(ppMic, 'top'); % making sure mic trace is on top
 end
@@ -1615,14 +1629,16 @@ else
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
         hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
-        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(VALID), t(VALID)=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     f1idx = find(contains(curOutputData(trial).dataLabel,'raw-F1'));
     for nf1idx=numel(f1idx):-1:1
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
         hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
-        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
+        %if ~isempty(VALID), t(VALID)=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     %             f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1-mic'));
     %             f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2-mic'));
