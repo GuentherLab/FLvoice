@@ -55,7 +55,7 @@ k1=data.stepsize/.005;
 
 k=reshape(s(2:end),[],1)\reshape(s(1:end-1),[],1);
 s1=convn(s(:),[1;-k],'same');
-%s1=convn(s(:),[1;-.98],'same');
+%s1=convn(s(:),[1;-.98],'same');  %pre-emphasis
 s2=flvoice_samplewindow(s1,windowsize,windowoverlap,'none','same');
 Nt=size(s2,2);
 s2=s2.*repmat(flvoice_hanning(windowsize),[1,Nt]);

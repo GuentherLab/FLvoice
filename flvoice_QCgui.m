@@ -58,36 +58,49 @@ data.handles.hfig=figure('Units','norm','Position',[.05 .15 .9 .8],'Menubar','no
 
 % SETTINGS PANEL
 data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .45 .2 .52],'Parent',data.handles.hfig);
+
+% Time Settings
+data.handles.FSettText=uicontrol('Style', 'text','String','Time Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .90 .8 .05],'Parent',data.handles.settPanel);
+data.handles.selectReferenceText=uicontrol('Style', 'text','String','Reference time:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
+data.handles.selectCropText=uicontrol('Style', 'text','String','Crop window:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): values outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
+%data.handles.selectMinAmpText=uicontrol('Style', 'text','String','Minimum amplitude:','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'left','Position',[.845 .64 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel);
+%data.handles.selectMinAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.945 .64 .05 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','<HTML>Enter minimum amplitude to determine voice onset/offset (in dB units)<br/>Leave empty to use an automatic threshold','Parent',data.handles.axes1Panel);
+%data.handles.selectMinDurText=uicontrol('Style', 'text','String','Minimum duration:','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'left','Position',[.845 .61 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel);
+%data.handles.selectMinDur=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.945 .61 .05 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','<HTML>Enter minimum duration to determine voice onset/offset (in seconds)<br/>Leave empty to use an automatic threshold','Parent',data.handles.axes1Panel);
+
 % Formant Settings
-data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .915 .8 .08],'Parent',data.handles.settPanel);
+data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .725 .8 .05],'Parent',data.handles.settPanel);
 % Formants (FMT_ARGS)
 % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
 % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
-data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .86 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
-data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .78 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .79 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
-data.handles.vfiltertxt=uicontrol('Style','text','String','Viterbi Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .71 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .72 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
-data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .64 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .65 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
+data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .675 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .675 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
+data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .625 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .625 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.vfiltertxt=uicontrol('Style','text','String','Viterbi Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .575 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .575 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
+data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .525 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .525 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
+
 % Pitch Settings
-data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.48,'HorizontalAlignment', 'left','Position',[.2 .555 .8 .08],'Parent',data.handles.settPanel);
+data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .45 .8 .05],'Parent',data.handles.settPanel);
 % Pitch (F0_ARGS)
 % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
 % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
-data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .49 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .50 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
-data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .42 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .43 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : CEP (Cepstrum), PEF (Pitch Estimation Filter), NCF (Normalized Correlation Function), LHS (Log-harmonic Summation), SRH (Summation of Residual Harmonics)');
-data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .36 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
-data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .28 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .29 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (0-1; increase this value to remove segments with low evidence of periodicity)');
-data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .21 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .22 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
-data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .14 .4 .07],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .15 .45 .065],'Parent',data.handles.settPanel,'Tooltip','Outlier filter (0/1 values; detect&interpolate outlier values)');
+data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .40 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .40 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .35 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : CEP (Cepstrum), PEF (Pitch Estimation Filter), NCF (Normalized Correlation Function), LHS (Log-harmonic Summation), SRH (Summation of Residual Harmonics)');
+data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .30 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .30 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
+data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .25 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .25 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (0-1; increase this value to remove segments with low evidence of periodicity)');
+data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .20 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .20 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
+data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .15 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .15 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Outlier filter (0/1 values; detect&interpolate outlier values)');
 % General
 % 'SKIP_LOWAMP'
 % 'skipLowAMPtxtBox'
@@ -99,7 +112,7 @@ data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settin
 
 % QC FLAG PANEL
 data.handles.flagPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .02 .2 .42],'Parent',data.handles.hfig);
-data.handles.flagText=uicontrol('Style', 'text','String','QC Flags:','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.53,'HorizontalAlignment', 'center','Position',[.2 .915 .6 .08],'Parent',data.handles.flagPanel);
+data.handles.flagText=uicontrol('Style', 'text','String','QC Flags','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.53,'HorizontalAlignment', 'center','Position',[.2 .915 .6 .08],'Parent',data.handles.flagPanel);
 data.handles.Flags={'Performed incorrectly','Bad F0 trace','Bad F1 trace','Incorrect voice onset','Utterance too short','Distortion / audio issues','Needs review'};
 FlagsExtended=[data.handles.Flags, {'Others:'}];
 %         data.handles.flag1txt=uicontrol('Style', 'checkbox','String',,'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'right','Position',[.02 .83 .9 .1],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.flagPanel,'Callback', @checkFlag1);
@@ -147,23 +160,34 @@ data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with 
 
 % Axes (Mic / Head / Spectograms) Panel
 data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .84],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
-data.handles.ampAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [.028, 0.54, .886, 0.06], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
-data.handles.micAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [.028, 0.81, .886, 0.17], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
-data.handles.headAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position',[.028, 0.62, .886, 0.17], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'head_axis','Parent',data.handles.axes1Panel);
+data.handles.ampAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position', [.028, 0.54, .786, 0.06], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.micAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position', [.028, 0.81, .786, 0.17], 'ticklength',[0 0], 'Visible', 'on', 'box','on', 'Tag', 'mic_axis','Parent',data.handles.axes1Panel);
+data.handles.referenceAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position',[.028, 0.67, .786, 0.04], 'ticklength',[0 0], 'Visible', 'on', 'Tag', 'reference_axis','Parent',data.handles.axes1Panel);
 %data.handles.pitchAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [-0.12, 0.32, 1.14, 0.25], 'Visible', 'on', 'Tag', 'pitch_axis','Parent',data.handles.axes1Panel);
-data.handles.ppAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.10, 0.886, 0.2], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
-data.handles.formantAxis = axes('FontUnits', 'normalized', 'Units', 'normalized', 'Position', [0.028, 0.32, 0.886, 0.2], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
+data.handles.ppAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position', [0.028, 0.10, 0.786, 0.2], 'Visible', 'on', 'Tag', 'pp_axis','Parent',data.handles.axes1Panel);
+data.handles.formantAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position', [0.028, 0.32, 0.786, 0.2], 'Visible', 'on', 'Tag', 'formant_axis','Parent',data.handles.axes1Panel);
+data.handles.globalAxis = axes('FontUnits', 'normalized', 'fontsize', .05, 'Units', 'normalized', 'Position',[.028, 0.10, .786, 0.88], 'ticklength',[0 0], 'Visible', 'off', 'Tag', 'global_axis','Parent',data.handles.axes1Panel);
+
 % Axes Buttons
-data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Mic</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .85 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playMic);
-data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .67 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+data.handles.selectSourceText=uicontrol('Style', 'text','String','Input source:','Units','norm','FontWeight','normal','FontUnits','norm','fontsize',0.65,'HorizontalAlignment', 'left','Position',[.845 .96 .15 .025],'BackgroundColor', [1 1 1],'Parent',data.handles.axes1Panel);
+data.handles.selectSource=uicontrol('Style', 'popupmenu','String',{'mic'},'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.845 .91 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', @trialDrop);
+data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','Play','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.845 .75 .15 .04],'Parent',data.handles.axes1Panel,'Callback', @playMic);
+data.handles.spectAxis = axes('FontUnits', 'normalized', 'fontsize', .10, 'Units', 'normalized', 'Position', [0.845, 0.81, 0.15, 0.10], 'xcolor',.75*[1 1 1], 'ycolor',.75*[1 1 1], 'Visible', 'on', 'box','on', 'Tag', 'spectrum_axis','Parent',data.handles.axes1Panel);
+
+%data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .67 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
+
 data.handles.ppMic=[];
 data.handles.fmtMic=[];
 data.handles.ppAxis_checkbox = uicontrol('style','checkbox','Units', 'normalized', 'Position', [0.008, 0.10, 0.02, 0.02], 'backgroundcolor',[1 1 1], 'value',1, 'Visible', 'on', 'Tag', 'pp_checkbox','Parent',data.handles.axes1Panel,'callback','data=get(gcbf,''userdata''); if get(gcbo,''value'')>0, set(data.handles.ppMic, ''visible'',''on''); else set(data.handles.ppMic, ''visible'',''off''); end');
 data.handles.formantAxis_checkbox = uicontrol('style','checkbox','Units', 'normalized', 'Position', [0.008, 0.32, 0.02, 0.02], 'backgroundcolor',[1 1 1], 'value', 1, 'Visible', 'on', 'Tag', 'pp_checkbox','Parent',data.handles.axes1Panel,'callback','data=get(gcbf,''userdata''); if get(gcbo,''value'')>0, set(data.handles.fmtMic, ''visible'',''on''); else set(data.handles.fmtMic, ''visible'',''off''); end');
+data.handles.selectColormap=uicontrol('Style', 'popupmenu','String',regexprep({'jet','parula','turbo','hsv','hot','cool','spring','summer','autumn','winter','gray','bone','copper','pink','sky','abyss'},'^.*$','colormap $0'),'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.028 .01 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', 'map=regexprep(get(gcbo,''string''),''colormap\s*'',''''); colormap(map{get(gcbo,''value'')});');
+data.handles.selectZoomText=uicontrol('Style', 'pushbutton','String','Reset zoom','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'right','Position',[.20 .035 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel,'callback',@(varargin)ZoomIn(varargin{:},'reset'));
+data.handles.selectZoom=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.20 .01 .10 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','Enter window limits for display (in seconds)','Parent',data.handles.axes1Panel, 'Callback', @ZoomIn);
+
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
 %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
-data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Save & Exit</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.845 .005 .15 .06],'Parent',data.handles.axes1Panel,'Callback', @saveExit);
+data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Exit</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.845 .005 .15 .06],'Parent',data.handles.axes1Panel,'Callback', @dontsaveExit);
 
 % Update GUI to current sub / trial
 switch setup
@@ -179,7 +203,7 @@ switch setup
         %if trial missing default to 1st......
 end
 
-zoom(data.handles.hfig,'on');
+set(zoom(data.handles.hfig),'motion','horizontal','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -214,6 +238,10 @@ range = str2num(get(data.handles.rangetxtBox, 'String'));
 hr_min = str2num(get(data.handles.hr_mintxtBox, 'String'));
 medianfilterP = str2num(get(data.handles.mfilterPtxtBox, 'String'));
 outlierfilter = str2num(get(data.handles.ofilterPtxtBox, 'String'));
+ReferenceTime = str2num(get(data.handles.selectReference, 'String'));
+CropTime = str2num(get(data.handles.selectCrop, 'String'));
+%lowamp = str2num(get(data.handles.selectMinAmp, 'String'));
+%lowdur = str2num(get(data.handles.selectMinDur, 'String'));
 % General
 % 'SKIP_LOWAMP'
 % 'skipLowAMPtxtBox'
@@ -253,10 +281,10 @@ switch choice
         end
         flvoice_import(curSub,curSess,curRun,curTask, ...
             'PRINT',false,...
-            'N_LPC',lporder, 'F0_RANGE',range, ...
+            'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime);
 
     case 'Just Trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -273,10 +301,10 @@ switch choice
         OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
         flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
             'PRINT',false,...
-            'N_LPC',lporder, 'F0_RANGE',range, ...
+            'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'OUT_WINDOW', OUT_WINDOW);
+            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -914,6 +942,25 @@ end
 set(data.handles.hfig,'userdata',data);
 end
 
+function ZoomIn(ObjH, EventData, xlimits)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+data=get(hfig,'userdata');
+if nargin<3||isempty(xlimits), xlimits=str2num(get(data.handles.selectZoom,'string')); end
+if isequal(xlimits,'reset'), set(data.handles.micAxis,'xtick',round(10*data.vars.xlimits(1))/10:.1:round(10*data.vars.xlimits(end))/10);
+else set(data.handles.micAxis,'xticklabel',[],'xtickmode','auto','xticklabelmode','auto'); 
+end
+if isequal(xlimits,'callback'), 
+    xlimits=get(EventData.Axes,'xlim');
+    if isequal(EventData.Axes,data.handles.spectAxis), set(data.handles.spectAxis,'xticklabel',[],'xtickmode','auto','xticklabelmode','auto'); return; end
+elseif isequal(xlimits,'reset'), xlimits=data.vars.xlimits; 
+end
+if numel(xlimits)~=2, return; end
+set(data.handles.selectZoom,'string',mat2str(xlimits,4)); 
+set([data.handles.globalAxis, data.handles.referenceAxis,data.handles.micAxis,data.handles.ampAxis, data.handles.formantAxis,data.handles.ppAxis],'xlim', xlimits);
+set(data.handles.micAxis,'ylim',1.1*max(abs(data.vars.micWav))*[-1 1]);
+updateSpect(data.handles.spectAxis, data.vars.micWav(data.vars.micTime>=xlimits(1)&data.vars.micTime<=xlimits(2)), data.vars.fs, data.handles.spectPlot);
+end
+
 function playMic(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
@@ -926,18 +973,18 @@ soundsc(micWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound 
 %set(data.handles.hfig,'userdata',data);
 end
 
-function playHead(ObjH, EventData)
-hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
-data=get(hfig,'userdata');
-
-curTrial = data.vars.curTrial;
-headWav = data.vars.headWav;
-fs = data.vars.curInputData(curTrial).fs;
-soundsc(headWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
-
-%set(data.handles.hfig,'userdata',data);
-end
-
+% function playHead(ObjH, EventData)
+% hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+% data=get(hfig,'userdata');
+% 
+% curTrial = data.vars.curTrial;
+% headWav = data.vars.headWav;
+% fs = data.vars.curInputData(curTrial).fs;
+% soundsc(headWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
+% 
+% %set(data.handles.hfig,'userdata',data);
+% end
+% 
 function viewTime(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
@@ -965,6 +1012,10 @@ flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
 closereq();
 end
 
+function dontsaveExit(ObjH, EventData)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+close(hfig);
+end
 
 function updateSubj(data,varargin)
 % Helper function that updates the GUI based on current sub / trial
@@ -1299,6 +1350,7 @@ else
 end
 data.vars.curRunQC = curRunQC;
 
+% gets information from output files to update GUI values
 if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
     if isempty(curOutputData(trial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(trial).options.formants.lpcorder); end
     set(data.handles.NLPCtxtBox, 'String', lporder);
@@ -1312,10 +1364,17 @@ if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.for
     set(data.handles.hr_mintxtBox, 'String', num2str(curOutputData(trial).options.pitch.hr_min));
     set(data.handles.mfilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.medianfilter));
     set(data.handles.ofilterPtxtBox, 'String', num2str(curOutputData(trial).options.pitch.outlierfilter));
+    set(data.handles.methodstxtBox, 'String', curOutputData(trial).options.pitch.methods);
+    if isfield(curOutputData(trial).options,'time')&&isfield(curOutputData(trial).options.time,'reference')&&~isempty(curOutputData(trial).options.time.reference), set(data.handles.selectReference, 'String', curOutputData(trial).options.time.reference); 
+    else set(data.handles.selectReference, 'String', ''); 
+    end
+    if isfield(curOutputData(trial).options,'time')&&isfield(curOutputData(trial).options.time,'crop')&&~isempty(curOutputData(trial).options.time.crop), set(data.handles.selectCrop, 'String', mat2str(curOutputData(trial).options.time.crop));
+    else set(data.handles.selectCrop, 'String', ''); 
+    end
     %if isempty(curOutputINFO.options.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curOutputINFO.options.SKIP_LOWAMP); end
     %set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
     % backward compat for trial prior to 'options' field additon in flvoice
-elseif isfield(curRunQC,'settings') && numel(curRunQC.settings)>=trial && ~isempty(curRunQC.settings{trial})
+elseif isfield(curRunQC,'settings') && numel(curRunQC.settings)>=trial && ~isempty(curRunQC.settings{trial}) % OBSOLETE: this information is now stored in output data files 'options' field
     if isempty(curRunQC.settings{trial}.lporder); lporder = '[ ]'; else; lporder =  num2str(curRunQC.settings{trial}.lporder); end
     set(data.handles.NLPCtxtBox, 'String', lporder);
     set(data.handles.winSizeFtxtBox, 'String', num2str(curRunQC.settings{trial}.windowsizeF));
@@ -1328,6 +1387,8 @@ elseif isfield(curRunQC,'settings') && numel(curRunQC.settings)>=trial && ~isemp
     set(data.handles.hr_mintxtBox, 'String', num2str(curRunQC.settings{trial}.hr_min));
     set(data.handles.mfilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.medianfilterP));
     set(data.handles.ofilterPtxtBox, 'String', num2str(curRunQC.settings{trial}.outlierfilter));
+    set(data.handles.selectReference, 'String', ''); 
+    set(data.handles.selectCrop, 'String', ''); 
     %if isempty(curRunQC.settings{trial}.SKIP_LOWAMP); SKIP_LOWAMP = '[ ]'; else; SKIP_LOWAMP =  num2str(curRunQC.settings{trial}.SKIP_LOWAMP); end
     %set(data.handles.skipLowAMPtxtBox, 'String', SKIP_LOWAMP);
 else
@@ -1335,98 +1396,148 @@ else
     return
 end
 
+pertOnset=[];
+if isfield(curInputData,'reference_time')&&~isempty(curInputData(trial).reference_time)&&isfield(curInputData,'t')&&~isempty(curInputData(trial).t')
+    pertOnset = curInputData(trial).reference_time - curInputData(trial).t; 
+elseif isfield(curInputData,'reference_time')&&~isempty(curInputData(trial).reference_time)
+    pertOnset = curInputData(trial).reference_time; 
+    pertLabel = {'Reference time'};
+elseif isfield(curInputData(trial), 'timingTrial')&&numel(curInputData(trial).timingTrial)>=4
+    pertOnset = [(curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2)), (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2))];
+    pertLabel = {'Voice onset','Pert onset'};
+    %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
+elseif isfield(curInputData,'pertOnset')&&~isempty(curInputData(trial).pertOnset)
+    pertOnset = curInputData(trial).pertOnset;
+    pertLabel = {'Pert onset'};
+end
+reference_time = str2num(get(data.handles.selectReference,'string'));
+if isempty(reference_time), reference_time = pertOnset(end); end
+OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
+if isempty(OUT_WINDOW), OUT_WINDOW=[-0.2 1.0]; end
+crop_time= str2num(get(data.handles.selectCrop,'string'));
+
+% update mic plot
+cla(data.handles.micAxis);
+axes(data.handles.micAxis);
+if ~isfield(curInputData,'dataLabel')||numel(curInputData(trial).dataLabel)<=1, set(data.handles.selectSource,'string','mic','value',1);
+else set(data.handles.selectSource,'string',regexprep(curInputData(trial).dataLabel,'^[-_\s]',''),'value',min(get(data.handles.selectSource,'value'),numel(curInputData(trial).dataLabel)));
+end
+selectSource = get(data.handles.selectSource,'value');
+micWav = curInputData(trial).s{selectSource};
+xlimits=[0, numel(micWav)/curInputData(trial).fs];
+set(data.handles.selectZoom,'string',mat2str(xlimits,4));
+%micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
+%set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
+micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
+hold on; data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]); hold off
+set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.06, 'XLim', xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10,'XAxisLocation','top','ylim',1.1*max(abs(micWav))*[-1 1],'yaxislocation','right')
+grid(data.handles.micAxis,'on');
+data.vars.micWav = micWav;
+data.vars.micTime = micTime;
+data.vars.xlimits=xlimits;
+data.vars.fs=curInputData(trial).fs;
+
+if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on'); end %,'string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{selectSource},'^[-_\s]',''),'</html>']); end
+htemp=[];
+for npertonset=1:numel(pertOnset), 
+    hold on; 
+    htemp=xline(pertOnset(npertonset),'k-',pertLabel{npertonset},'linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal'); 
+    if npertonset>1&&pertOnset(npertonset)>pertOnset(npertonset-1), text(.5*pertOnset(npertonset)+.5*pertOnset(npertonset-1),get(data.handles.micAxis,'ylim')*[.95;.05],sprintf('[ %d ms ]',round(1e3*(pertOnset(npertonset)-pertOnset(npertonset-1)))),'FontSize', 6.5,'horizontalalignment','center'); end
+    if npertonset==numel(pertOnset), set(htemp,'LabelHorizontalAlignment','Right'); end
+    hold off; 
+end
+
+% update spectrum plot
+data.handles.spectPlot = updateSpect(data.handles.spectAxis, micWav, curInputData(trial).fs);
+
+% update headphones plot
+% if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
+%     cla(data.handles.headAxis);
+%     axes(data.handles.headAxis);
+%     set(data.handles.headAxis, 'visible', 'on');
+%     set(data.handles.playHeadButton, 'enable', 'on');
+%     if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{2},'^[-_\s]',''),'</html>']); end
+%     headWav = curInputData(trial).s{2};
+%     %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
+%     %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
+%     headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
+%     hold on; data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]); hold off
+%     set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
+%     set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off');
+%     grid(data.handles.headAxis,'on');
+%     data.vars.headWav = headWav;
+%     data.vars.headTime = headTime;
+% else
+%     set(data.handles.headAxis, 'visible', 'off');
+%     %set(data.handles.playHeadButton, 'enable', 'off');
+%     data.vars.headWav = [];
+%     data.vars.headTime = [];
+% end
+
 % update amp plot
 set([data.handles.flagPrev, data.handles.flagNext],'visible','off');
 ampidx=find(contains(curOutputData(trial).dataLabel,'raw-Amp'));
 if ~isempty(ampidx)
     skip_lowamp=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWAMP), skip_lowamp =  curOutputINFO.options.SKIP_LOWAMP; end; end
     skip_lowdur=[]; try, if ~isempty(curOutputINFO.options.SKIP_LOWDUR), skip_lowdur =  curOutputINFO.options.SKIP_LOWDUR; end; end
-    if isempty(skip_lowdur), skip_lowdur=0; end
+    %if isempty(skip_lowdur), skip_lowdur=0; end
     cla(data.handles.ampAxis)
     axes(data.handles.ampAxis);
     for nampidx=numel(ampidx):-1:1
         ampWav = curOutputData(trial).s{ampidx(nampidx)};
         ampWav(ampWav<0)=nan;
         ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
-        if ~isempty(skip_lowamp), 
-            ampPlot=max(ampWav,skip_lowamp); 
-            [nill,in]=findsuprathresholdsegment(ampWav,skip_lowamp,skip_lowdur*curOutputData(trial).fs);
-            ampPlot(~in)=skip_lowamp;
-            hold on; area(ampTime,ampPlot,skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off; 
+        temp_skip_lowdur=skip_lowdur; if isempty(temp_skip_lowdur), temp_skip_lowdur=.500; end
+        temp_skip_lowamp=skip_lowamp; if isempty(temp_skip_lowamp), 
+            m=[]; for n1=1:100, m=[m, mode(round(ampWav/(max(ampWav)-min(ampWav)+eps)*n1))*(max(ampWav)-min(ampWav)+eps)/n1]; end; temp_skip_lowamp=mean(m);
+            %temp_skip_lowamp=mean(ampWav(~isnan(ampWav))); 
         end
-        hold on; ampPlot=plot(ampTime,ampWav,'.', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
+        ampPlot=max(ampWav,temp_skip_lowamp);
+        [nill,in]=findsuprathresholdsegment(ampWav,temp_skip_lowamp,temp_skip_lowdur*curOutputData(trial).fs);
+        ampPlot(~in)=temp_skip_lowamp;
+        hold on; area(ampTime,ampPlot,temp_skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off;
+        % if ~isempty(skip_lowamp)
+        %     ampPlot=max(ampWav,skip_lowamp); 
+        %     [nill,in]=findsuprathresholdsegment(ampWav,skip_lowamp,skip_lowdur*curOutputData(trial).fs);
+        %     ampPlot(~in)=skip_lowamp;
+        %     hold on; area(ampTime,ampPlot,skip_lowamp,'facecolor','y','edgecolor','none','facealpha',.5); hold off; 
+        % end
+        hold on; ampPlot=plot(ampTime,ampWav,'.-', 'Color', [.6 .6 .6]*((nampidx-1)/max(eps,numel(ampidx)-1))); hold off
     end
     if ~isempty(skip_lowamp), hold on; htemp=yline(skip_lowamp,'b-',sprintf('%d dB',round(skip_lowamp)),'linewidth',1,'LabelHorizontalAlignment', 'Right','LabelVerticalAlignment','top','LabelOrientation','horizontal'); hold off; end
     set(data.handles.ampAxis, 'FontUnits', 'normalized', 'FontSize', 0.20);
-    set(data.handles.ampAxis,'XLim', [0, numel(ampWav)/curOutputData(trial).fs],'xtick',0:.1:numel(ampWav)/curOutputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off')
+    set(data.handles.ampAxis,'XLim', xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right')
     grid(data.handles.ampAxis,'on');
     hold on; text(-.01*numel(ampWav)/curOutputData(trial).fs, mean(get(data.handles.ampAxis,'ylim')), 'Amp','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
+    %hold on; htemp=xline(reference_time,'k-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+    %hold on; htemp=xline(reference_time+[OUT_WINDOW(1) 0 OUT_WINDOW(2)],'b-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
     ylabel 'Amplitude (dB)';
 else
     set(data.handles.ampAxis, 'visible', 'off');
 end
 
-% update mic plot
-cla(data.handles.micAxis);
-axes(data.handles.micAxis);
-micWav = curInputData(trial).s{1};
-%micTime = (0+(0:numel(micWav)-1*1/curInputData(trial).fs));
-%set(data.handles.micAxis, 'XLim', [0, numel(micTime)]);
-micTime = (0+(0:numel(micWav)-1)*1/curInputData(trial).fs);
-hold on; data.handles.micPlot = plot(micTime,micWav, 'Parent', data.handles.micAxis, 'color',[0 0 0]); hold off
-set(data.handles.micAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
-set(data.handles.micAxis, 'XLim', [0, numel(micWav)/curInputData(trial).fs],'xtick',0:.1:numel(micWav)/curInputData(trial).fs,'XAxisLocation','top','yaxislocation','right','box','off')
-grid(data.handles.micAxis,'on');
-data.vars.micWav = micWav;
-data.vars.micTime = micTime;
 
-if numel(curInputData(trial).dataLabel)>0, set(data.handles.playMicButton, 'enable', 'on','string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{1},'^[-_\s]',''),'</html>']); end
-pertOnset=[];
-if isfield(curInputData,'reference_time')&&isfield(curInputData,'t')
-    pertOnset = curInputData(trial).reference_time - curInputData(trial).t; 
-elseif isfield(curInputData,'reference_time')
-    pertOnset = curInputData(trial).reference_time; 
-    pertLabel = {'Reference time'};
-elseif isfield(curInputData(trial), 'timingTrial')
-    pertOnset = [(curInputData(trial).timingTrial(3)- curInputData(trial).timingTrial(2)), (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(2))];
-    pertLabel = {'Voice onset','Pert onset'};
-    %if isnan(pertOnset(end)), pertOnset(end) = (curInputData(trial).timingTrial(4)- curInputData(trial).timingTrial(1)); end
-elseif isfield(curInputData,'pertOnset')
-    pertOnset = curInputData(trial).pertOnset;
-    pertLabel = {'Pert onset'};
-end
-htemp=[];
-for npertonset=1:numel(pertOnset), 
-    hold on; 
-    htemp=xline(pertOnset(npertonset),'b-',pertLabel{npertonset},'linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal'); 
-    if npertonset>1&&pertOnset(npertonset)>pertOnset(npertonset-1), text(.5*pertOnset(npertonset)+.5*pertOnset(npertonset-1),get(data.handles.micAxis,'ylim')*[.95;.05],sprintf('[ %d ms ]',round(1e3*(pertOnset(npertonset)-pertOnset(npertonset-1)))),'FontSize', 6.5,'horizontalalignment','center'); end
-    if npertonset==numel(pertOnset), set(htemp,'LabelHorizontalAlignment','Right'); end
-    hold off; 
-end
+% update reference plot
+cla(data.handles.globalAxis);
+axes(data.handles.globalAxis);
+hold on; htemp=xline(reference_time,'k-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+set(data.handles.globalAxis, 'XLim', xlimits,'xtick',[],'xticklabel',[],'ytick',[],'box','off','visible','off');
 
-% update headphones plot
-if numel(curInputData(trial).s)>1,%strcmp(task, 'aud')
-    cla(data.handles.headAxis);
-    axes(data.handles.headAxis);
-    set(data.handles.headAxis, 'visible', 'on');
-    set(data.handles.playHeadButton, 'enable', 'on');
-    if numel(curInputData(trial).dataLabel)>1, set(data.handles.playHeadButton, 'string',['<html>Play<br/>',regexprep(curInputData(trial).dataLabel{2},'^[-_\s]',''),'</html>']); end
-    headWav = curInputData(trial).s{2};
-    %headTime = (0+(0:numel(headWav)-1*1/curInputData(trial).fs));
-    %set(data.handles.headAxis, 'XLim', [0, numel(headTime)]);
-    headTime = (0+(0:numel(headWav)-1)*1/curInputData(trial).fs);
-    hold on; data.handles.headPlot = plot(headTime,headWav, 'Parent', data.handles.headAxis, 'color',[.6 .6 .6]); hold off
-    set(data.handles.headAxis, 'FontUnits', 'normalized', 'FontSize', 0.06);
-    set(data.handles.headAxis, 'XLim', [0, numel(headWav)/curInputData(trial).fs],'xtick',0:.1:numel(headWav)/curInputData(trial).fs,'xticklabel',[],'XAxisLocation','bottom','yaxislocation','right','box','off');
-    grid(data.handles.headAxis,'on');
-    data.vars.headWav = headWav;
-    data.vars.headTime = headTime;
-else
-    set(data.handles.headAxis, 'visible', 'off');
-    set(data.handles.playHeadButton, 'enable', 'off');
-    data.vars.headWav = [];
-    data.vars.headTime = [];
+% update reference plot
+cla(data.handles.referenceAxis);
+axes(data.handles.referenceAxis);
+if isempty(crop_time), 
+    hold on; patch(reference_time+OUT_WINDOW([1 2 2 1]),[0 0 1 1],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off;
+    hold on; text(reference_time+OUT_WINDOW(1),-.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
+else 
+    hold on; patch(reference_time+OUT_WINDOW([1 2 2 1]),[0 0 .5 .5],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off;
+    hold on; patch(crop_time([1 2 2 1]),[.5 .5 1 1],'w','facecolor',[1 1 0],'edgecolor','k','facealpha',.5,'linewidth',2); hold off; 
+    hold on; text(reference_time+OUT_WINDOW(1),-.25,sprintf('output data window (from T0%+dms to T0%+dms)',round(OUT_WINDOW(1)*1e3),round(OUT_WINDOW(2)*1e3)),'color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
+    hold on; text(crop_time(1),1.25,'crop window','color',.75*[1 1 1],'fontsize',10,'HorizontalAlignment','left'); hold off;
 end
+hold on; htemp=xline(reference_time,'k-','T0 (output data reference time)','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+%hold on; htemp=xline(reference_time+[OUT_WINDOW(1) 0 OUT_WINDOW(2)],'b-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+set(data.handles.referenceAxis, 'XLim', xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10,'xticklabel',[],'ytick',[],'box','off','visible','off');
 
 % update spectogram plots
 set([data.handles.ppAxis,data.handles.formantAxis],'visible','off');
@@ -1452,6 +1563,8 @@ flvoice_spectrogram(s,fs,round(hwindowsize*fs),round((hwindowsize-.001)*fs),1024
 xlabel 'Time (s)'
 ylabel 'Pitch Frequency (Hz)';
 ppMic=[];
+hold on; text(numel(s)/fs+zeros(1,7),.1:.1:.7,arrayfun(@(n)sprintf(' %dHz',round(n)),1000*(.1:.1:.7),'uni',0),'horizontalalignment','left','fontsize',9); hold off
+hold on; plot([0 numel(s)/fs]'*ones(1,7),ones(2,1)*[.1:.1:.7],'k:','color',.5*[1 1 1]); hold off
 if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
     f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0measure1'));
     f0 = curOutputData(trial).s{1,f0idx};%NOTE always s{1,1}?
@@ -1464,19 +1577,20 @@ else
     f0idx = find(contains(curOutputData(trial).dataLabel,'raw-F0'));
     for nf0idx=numel(f0idx):-1:1
         f0 = curOutputData(trial).s{1,f0idx(nf0idx)};
-        %t = (0.025:0.001:2.524); % how do I derive this from given data?
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf0idx-1)/max(eps,numel(f0idx)-1)))]; hold off
+        hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf0idx-1)/max(eps,numel(f0idx)-1)))]; hold off
+        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; ppMic=[ppMic,plot(t,1e-3*f0,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     %uistack(ppMic, 'top'); % making sure mic trace is on top
 end
 data.handles.ppMic=ppMic;
 if get(data.handles.ppAxis_checkbox,'value')==0, set(ppMic,'visible','off'); end;
 hold on; text(-.01*numel(s)/fs, .375, 'Pitch','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
-set(data.handles.ppAxis, 'yscale','lin');
-set(data.handles.ppAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.10, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs);
-set(data.handles.ppAxis, 'ylim', [.01 .75],'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.1:1),'uni',0));
-set(data.handles.ppAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.10    0.017    0.2007]);
+hold on; htemp=xline(reference_time,'k-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+%hold on; htemp=xline(reference_time+[OUT_WINDOW(1) 0 OUT_WINDOW(2)],'b-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+set(data.handles.ppAxis, 'yscale','lin','xlim',xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10, 'ytick',[]);%, 'yaxislocation','right', 'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.1:1),'uni',0));
+set(data.handles.ppAxis, 'ylim', [.01 .75],'ytick',0:.1:1,'yticklabel',arrayfun(@(n)sprintf('%dHz',round(n)),1000*(.1:.1:7),'uni',0));
+set(data.handles.ppAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.8550    0.10    0.017    0.2007]);
 %set(data.handles.ppAxis,'visible','off','ylim',[0 600]);
 hold off;
 
@@ -1488,6 +1602,8 @@ flvoice_spectrogram(s,fs,round(hwindowsize*fs),round((hwindowsize-.001)*fs),1024
 xlabel ''
 ylabel 'Formant Frequency (Hz)';
 fmtMic=[];
+hold on; text(numel(s)/fs+zeros(1,7),.5:.5:3.5,arrayfun(@(n)sprintf(' %dHz',round(n)),1000*(.5:.5:3.5),'uni',0),'horizontalalignment','left','fontsize',9); hold off
+hold on; plot([0 numel(s)/fs]'*ones(1,7),ones(2,1)*[.5:.5:3.5],'k:','color',.5*[1 1 1]); hold off
 if 0,%strcmp(task, 'som') % alfnote: not allowed special conditions based on task names
     f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1measure1'));
     f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2measure1'));
@@ -1498,13 +1614,15 @@ else
     for nf1idx=numel(f1idx):-1:1
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
+        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
+        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     f1idx = find(contains(curOutputData(trial).dataLabel,'raw-F1'));
     for nf1idx=numel(f1idx):-1:1
         f1 = curOutputData(trial).s{1,f1idx(nf1idx)};
         t = [0+(0:numel(f0)-1)/fs2]; % correct??
-        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
+        hold on; fmtMic=[fmtMic, plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.6 .6 .6]*((nf1idx-1)/max(eps,numel(f1idx)-1)))]; hold off
+        if ~isempty(crop_time), t(t>=crop_time(1)&t<=crop_time(2))=NaN; hold on; fmtMic=[fmtMic,plot(t,1e-3*f1,'.-','LineWidth',1, 'Color', [.5 .5 .5])]; hold off; end
     end
     %             f1micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F1-mic'));
     %             f2micIdx = find(contains(curOutputData(trial).dataLabel,'raw-F2-mic'));
@@ -1517,16 +1635,22 @@ else
     %             hold on; fmtHead = plot(t,fmtHead'/1e3,'.-', 'Color', [0 0 0]); hold off;
     %             uistack(fmtMic, 'top'); % making sure mic trace is on top
 end
-
 data.handles.fmtMic=fmtMic;
 if get(data.handles.formantAxis_checkbox,'value')==0, set(fmtMic,'visible','off'); end;
 %hold on; plot(headTime,headWav); hold off;
 hold on; text(-.01*numel(s)/fs, 2, 'Formants','fontweight','bold','fontsize',14,'Rotation',90,'horizontalalignment','center'); hold off;
-set(data.handles.formantAxis, 'yscale','lin');
-set(data.handles.formantAxis, 'units','norm', 'fontsize',0.05,'position',[0.028, 0.32, 0.886, 0.2],'yaxislocation','right', 'xlim',[0 numel(s)/fs],'xtick',0:.1:numel(s)/fs,'xticklabel',[]);
-set(data.handles.formantAxis, 'ylim', [.01 4], 'ytick',0:.25:4,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.25:4),'uni',0));
-set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.9550    0.32    0.017    0.2007]);
-set([data.handles.ppAxis,data.handles.formantAxis],'visible','on');
+hold on; htemp=xline(reference_time,'k-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+%hold on; htemp=xline(reference_time+[OUT_WINDOW(1) 0 OUT_WINDOW(2)],'b-','','linewidth',1,'LabelHorizontalAlignment', 'Left','LabelVerticalAlignment','bottom','LabelOrientation','horizontal','LabelHorizontalAlignment','Right'); hold off;
+set(data.handles.formantAxis, 'yscale','lin', 'xlim',xlimits,'xtick',round(10*xlimits(1))/10:.1:round(10*xlimits(end))/10,'xticklabel',[], 'ylim', [.01 4], 'ytick', []); %'yaxislocation','right', 'ytick',0:.25:4,'yticklabel',arrayfun(@(n)sprintf('%d',round(n)),1000*(0:.25:4),'uni',0));
+set(data.handles.formantAxis.Colorbar, 'FontSize', 6.5, 'Position', [0.8550    0.32    0.017    0.2007]);
+%set([data.handles.ppAxis,data.handles.formantAxis],'visible','on');
+
+%if isempty(ReferenceTime), set(data.handles.selectReference,'string','');
+%else set(data.handles.selectReference,'string',num2str(reference_time));
+%end
+%if isempty(crop_time), set(data.handles.selectCrop,'string','');
+%else set(data.handles.selectCrop,'string',mat2str(crop_time));
+%end
 
 % update button enable status
 for nflags=1:numFlags,
@@ -1556,3 +1680,17 @@ ok=any(idx(2,:)-idx(1,:)>=N);
 for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
 end
 
+function h=updateSpect(spectAxis, micWav, fs, spectPlot)
+FmicWav=log10(abs(fft(micWav.*reshape(.5*(1 - cos(2*pi*(1:numel(micWav))/(numel(micWav)+1))),size(micWav)))));
+if nargin<4
+    cla(spectAxis);
+    axes(spectAxis);
+    hold on; h=plot((0:floor(numel(micWav)/2)-1)/numel(micWav)*fs,FmicWav(1:floor(numel(micWav)/2)), 'k-', 'Parent', spectAxis, 'color',.0*[1 1 1]); hold off
+    set(spectAxis,'xlim',[0 8000],'xtick',2000:2000:8000,'xticklabel',{'2KHz','4KHz','6KHz','8KHz'},'ytick',[],'ylim',[min(FmicWav) max(FmicWav)]*[1.1 -.1; -.1 1.1],'FontUnits', 'normalized', 'FontSize', 0.10);
+    grid(spectAxis,'on');
+else
+    h=[];
+    set(spectPlot,'xdata',(0:floor(numel(micWav)/2)-1)/numel(micWav)*fs,'ydata',FmicWav(1:floor(numel(micWav)/2)));
+    set(spectAxis,'ylim',[min(FmicWav(1:floor(numel(micWav)/2))) max(FmicWav(1:floor(numel(micWav)/2)))]*[1.1 -.1; -.1 1.1]);
+end
+end

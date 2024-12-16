@@ -53,11 +53,11 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %             trialData(n).dataUnits         : data units (cell array)
 %
 % flvoice_import(SUB,RUN,SES,TASK [, OPTION_NAME, OPTION_VALUE, ...]) : imports/processes data using non-default options
-%   'N_LPC'            : number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
-%   'F0_RANGE'         : valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
 %   'FMT_ARGS'         : additional arguments for FLVOICE_FORMANTS (default {})
 %   'F0_ARGS'          : additional arguments for FLVOICE_PITCH (default {})
-%   'OUT_WINDOW'       : time-window around time-alignment reference_time (seconds) (default [-0.2 1.0])
+%   'REFERENCE_TIME'   : reference time (output data t=0, used for time-alignment) (default []; use 'reference_time' field in input files to specify a different reference_time value per trial)
+%   'CROP_TIME'        : crop window (fill with NaN/missing-values all formant&pitch values between times CROP_TIME(1) and CROP_TIME(2)) (default [])
+%   'OUT_WINDOW'       : time-window in formant&pitch traces around time-alignment reference_time (seconds) (default [-0.2 1.0])
 %   'OUT_FS'           : sampling frequency of formant&pitch estimation output (Hz) (default 1000)
 %   'SKIP_CONDITIONS'  : QC skip specific conditions; list of conditions labels (condLabel values) to be marked as invalid with a "Skipped condition" QC flag (default {})
 %   'SKIP_LOWAMP'      : QC skip low-amplitude trials; trials without any 'Amp' values above SKIP_LOWAMP will be marked as invalid with a "Low amplitude" QC flag (default [])
@@ -66,6 +66,9 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
+%
+%   'N_LPC'            : obsolete (use FMT_ARGS 'lpcorder' field instead) number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
+%   'F0_RANGE'         : obsolete (use F0_ARGS 'range' field instead) valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
@@ -91,7 +94,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -121,6 +124,8 @@ if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
+if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
+if ischar(OPTIONS.REFERENCE_TIME), OPTIONS.REFERENCE_TIME=str2num(OPTIONS.REFERENCE_TIME); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -328,7 +333,7 @@ for nsample=1:numel(RUNS)
         if ~isempty(OPTIONS.SINGLETRIAL) % re-processes a single trial
             starttif=false;
             modifytrials=OPTIONS.SINGLETRIAL;
-            conn_loadmatfile(filename_fmtData);%,'trialData','INFO');
+            conn_loadmatfile(filename_fmtData,'-cache');%,'trialData','INFO');
             out_trialData=trialData; out_INFO=INFO; 
         else
             if OPTIONS.SAVE||OPTIONS.PRINT, conn_fileutils('mkdir',fileparts(filename_fmtData)); end
@@ -422,10 +427,11 @@ for nsample=1:numel(RUNS)
                     [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
                     f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,OPTIONS.F0_ARGS{:});                                                                   % pitch estimation
                     
-                    out_trialData(trialNum).s{ns,1} = interp1(t', f0,(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);
-                    out_trialData(trialNum).s{ns,2} = interp1(t',fmt(1,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            % note: (raw = implicit timing) these data starts at t=0 and it is sampled at out_trialData(trialNum).fs rate
-                    out_trialData(trialNum).s{ns,3} = interp1(t',fmt(2,:)',(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);            
-                    out_trialData(trialNum).s{ns,4} = interp1(t', 10*log10(svar(:))+100,(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs)','lin',nan);
+                    time1=(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs);
+                    out_trialData(trialNum).s{ns,1} = interp1(t', f0,time1','lin',nan);
+                    out_trialData(trialNum).s{ns,2} = interp1(t',fmt(1,:)',time1','lin',nan);            % note: (raw = implicit timing) these data starts at t=0 and it is sampled at out_trialData(trialNum).fs rate
+                    out_trialData(trialNum).s{ns,3} = interp1(t',fmt(2,:)',time1','lin',nan);            
+                    out_trialData(trialNum).s{ns,4} = interp1(t', 10*log10(svar(:))+100,time1','lin',nan);
                     out_trialData(trialNum).dataLabel{ns,1} = ['raw-F0',labels{ns}]; % F0 (Hz)
                     out_trialData(trialNum).dataLabel{ns,2} = ['raw-F1',labels{ns}]; % F1 (Hz)
                     out_trialData(trialNum).dataLabel{ns,3} = ['raw-F2',labels{ns}]; % F2 (Hz)
@@ -445,8 +451,9 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
-                    if isfield(in_trialData(trialNum),'reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
-                    elseif isfield(in_trialData(trialNum),'timingTrial'), pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
+                    if ~isempty(OPTIONS.REFERENCE_TIME), pertOnset = OPTIONS.REFERENCE_TIME;
+                    elseif isfield(in_trialData(trialNum),'reference_time')&&~isempty(in_trialData(trialNum).reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
+                    elseif isfield(in_trialData(trialNum),'timingTrial')&&numel(in_trialData(trialNum).timingTrial)>=4, pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
                     else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
                     end
                     time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); % e.g. defines time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
@@ -454,7 +461,13 @@ for nsample=1:numel(RUNS)
                     out_trialData(trialNum).dataLabel{end+1} = regexprep(out_trialData(trialNum).dataLabel{ns},'^raw-','');     % note: timealigned data first sample is at t = reference_time + OUT_WINDOW(1)
                     out_trialData(trialNum).dataUnits{end+1} = out_trialData(trialNum).dataUnits{ns};
                     out_trialData(trialNum).t{end+1} = OPTIONS.OUT_WINDOW(1); % note: time relative to reference_time
+                    if ~isempty(OPTIONS.CROP_TIME), 
+                        %if ns<=3, out_trialData(trialNum).s{ns}(time1<OPTIONS.CROP_TIME(1)|time1>OPTIONS.CROP_TIME(2))=NaN; end % note: mask with NaN's only raw-F*
+                        out_trialData(trialNum).s{end}(time2<OPTIONS.CROP_TIME(1)|time2>OPTIONS.CROP_TIME(2))=NaN; 
+                    end
                 end
+                out_trialData(trialNum).options.time.reference=OPTIONS.REFERENCE_TIME;
+                out_trialData(trialNum).options.time.crop=OPTIONS.CROP_TIME;
                 out_trialData(trialNum).fs=OPTIONS.OUT_FS;
                 if isfield(data,'condLabel')&&~isempty(data.condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
                 else out_trialData(trialNum).condLabel='unknown';
