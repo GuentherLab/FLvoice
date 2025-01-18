@@ -66,6 +66,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
+%   'SHOW_FIGURES'     : (default 1) 1/0 makes the figure plotting formants visible to the user before saving it [added by AM 2024/11/6]
 %
 % flvoice_import('default',OPTION_NAME,OPTION_VALUE): defines default values for any of the options above (changes will affect all subsequent flvoice_import commands where those options are not explicitly defined; defaults will revert back to their original values after your Matlab session ends)
 %
@@ -91,7 +92,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0],'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -121,6 +122,7 @@ if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
+if isempty(OPTIONS.SHOW_FIGURES), OPTIONS.SHOW_FIGURES=1; end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -462,7 +464,7 @@ for nsample=1:numel(RUNS)
                 
                 if OPTIONS.PRINT,
                     if any(ishandle(hfig)), close(hfig(ishandle(hfig))); end
-                    hfig=figure;
+                    hfig=figure('Visible',OPTIONS.SHOW_FIGURES); %%%%% SHOW_FIGURES option modified by AM and AK 2025/1/18
                     for ns=1:numel(s)
                         clf
                         h3=axes('units','norm','position',[.1 .5 .7 .4]);
