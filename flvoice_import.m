@@ -68,6 +68,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
+%   'SHOW_FIGURES'     : (default 1) 1/0 makes the figure plotting formants visible to the user before saving it [added by AM 2024/11/6]
 %
 %   'N_LPC'            : obsolete (use FMT_ARGS 'lpcorder' field instead) number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0_RANGE'         : obsolete (use F0_ARGS 'range' field instead) valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
@@ -96,7 +97,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -130,6 +131,7 @@ if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
 if ischar(OPTIONS.REFERENCE_TIME), OPTIONS.REFERENCE_TIME=str2num(OPTIONS.REFERENCE_TIME); end
 if ischar(OPTIONS.MINAMP), OPTIONS.MINAMP=str2num(OPTIONS.MINAMP); end
 if ischar(OPTIONS.MINDUR), OPTIONS.MINDUR=str2num(OPTIONS.MINDUR); end
+if isempty(OPTIONS.SHOW_FIGURES), OPTIONS.SHOW_FIGURES=1; end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -494,7 +496,7 @@ for nsample=1:numel(RUNS)
                 
                 if OPTIONS.PRINT,
                     if any(ishandle(hfig)), close(hfig(ishandle(hfig))); end
-                    hfig=figure;
+                    hfig=figure('Visible',OPTIONS.SHOW_FIGURES); %%%%% SHOW_FIGURES option added by AM and AK 2025/1/18
                     for ns=1:numel(s)
                         clf
                         h3=axes('units','norm','position',[.1 .5 .7 .4]);
