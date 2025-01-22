@@ -68,6 +68,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'OVERWRITE'        : (default 1) 1/0 re-computes formants&pitch trajectories even if output data file already exists
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
+%   'PLOT'             : (default 0) 1/0 plots mat formant trajectory files
 %
 %   'N_LPC'            : obsolete (use FMT_ARGS 'lpcorder' field instead) number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0_RANGE'         : obsolete (use F0_ARGS 'range' field instead) valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
@@ -96,7 +97,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'PLOT',false,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}}); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -124,6 +125,7 @@ if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
+if ischar(OPTIONS.PLOT), OPTIONS.PLOT=str2num(OPTIONS.PLOT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
 if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
@@ -546,6 +548,13 @@ for nsample=1:numel(RUNS)
             assert(isfield(tdata,'trialData'), 'data file %s does not contain trialData variable',filename_fmtData);
             out_trialData = tdata.trialData;
             if isfield(tdata,'INFO'), out_INFO=tdata.INFO; end
+        end
+
+        if OPTIONS.PLOT
+            filename_plot=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+            if conn_existfile(filename_plot)
+                open(filename_plot)
+            end
         end
         
         if isempty(OPTIONS.SINGLETRIAL)

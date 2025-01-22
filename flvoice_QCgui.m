@@ -186,6 +186,7 @@ data.handles.selectZoom=uicontrol('Style', 'edit','String','','Units','norm','Fo
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
 %data.handles.refTimeButton=uicontrol('Style', 'pushbutton','String','Change reference time','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.4 .02 .3 .06], 'Enable', 'off','Parent',data.handles.axes1Panel,'Callback', @changeReference);
 data.handles.saveExitButton=uicontrol('Style', 'pushbutton','String','<html>Exit</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.845 .005 .15 .06],'Parent',data.handles.axes1Panel,'Callback', @dontsaveExit);
+data.handles.plotGraphsButton=uicontrol('Style', 'pushbutton','String','<html>Plot Graphs</html>','Units','norm','FontUnits','norm','FontSize',0.33,'HorizontalAlignment', 'left','Position',[.650 .005 .15 .06],'Parent',data.handles.axes1Panel,'Callback', @plotGraphs);
 
 % Update GUI to current sub / trial
 switch setup
@@ -1016,6 +1017,16 @@ end
 function dontsaveExit(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 close(hfig);
+end
+
+function plotGraphs(ObjH, EventData)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+data=get(hfig,'userdata');
+sub = data.vars.curSub;
+ses = data.vars.curSess;
+run = data.vars.curRun;
+task = data.vars.curTask;
+flvoice_import(sub,ses,run,task, 'plot', true, 'overwrite', false)
 end
 
 function updateSubj(data,varargin)
