@@ -234,6 +234,7 @@ end
 USUBS=unique(SUBS);
 emptyCONTRAST_VECTOR=isempty(CONTRAST_VECTOR);
 out=struct([]);
+totkeeptrials = 0;
 for nsub=1:numel(USUBS)
     X=[]; 
     Y=[];
@@ -358,6 +359,7 @@ for nsub=1:numel(USUBS)
                 end
             end
             fprintf('  included %d trials in analysis\n',ntrials);
+            totkeeptrials = totkeeptrials+ntrials;
         end
     end
     validX=any(X~=0,1);
@@ -505,7 +507,7 @@ for nsub=1:numel(USUBS)
             grid on;
             if isequal(Tlabel,'time (ms)'), xline(0,'linewidth',3); end
             yline(0);
-            xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
+            xlabel(Tlabel); ylabel(Ylabel); ht=title([SUB ':  ' FIRSTLEVEL_NAME]); set(ht,'interpreter','none');
             %         legend(h,dispconds(1:3));
             if numel(effect(~isnan(effect)))>1, set(gca,'ylim',sort([min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5])); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
@@ -532,7 +534,7 @@ for nsub=1:numel(USUBS)
                 end
             end
             grid on
-            xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
+            xlabel(Tlabel); ylabel(Ylabel); ht=title([SUB ':  ' FIRSTLEVEL_NAME]); set(ht,'interpreter','none');
             set(gca,'xtick',[]); 
             if numel(t)>1, set(gca,'xlim',[min(t(:))-eps,max(t(:))+eps]*[1.5 -.5; -.5 1.5]); else set(gca,'xlim',[t-3,t+3]); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 
