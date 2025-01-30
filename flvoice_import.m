@@ -628,34 +628,54 @@ for nsample=1:numel(RUNS)
             end
 
             % plots
-            figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+            handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
             lnames=unique([out_trialData.dataLabel]);
             for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
             initax=false(1,numel(hax));
-            for trialNum=reshape(find(QC.keepData),1,[])
-                for ns=1:numel(out_trialData(trialNum).s),
-                    t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                    x=out_trialData(trialNum).s{ns};
-                    [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                    h=plot(t,x,'-','parent',hax(idx));
-                    if ~initax(idx)
-                        xlabel('Time (s)');
-                        ylabel(out_trialData(trialNum).dataUnits{ns});
-                        if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
-                            xline(0,'parent',hax(idx),'linewidth',3);
-                        end
-                        initax(idx)=true;
+            condLabels=unique({out_trialData.condLabel});
+            handle.c=gobjects(1, numel(condLabels)+1);
+            % handles for checkboxes along with number of trials not flagged per condition
+            for idx=1:numel(condLabels)
+                count = 0;
+                for i = 1:numel(QC.keepData)
+                    if strcmp(out_trialData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
+                        count = count+ 1;
                     end
-                    set(h,'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
                 end
+                handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
             end
-            for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
-            drawnow
+            idx = idx + 1;
+            handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
+            % plot
             if OPTIONS.PRINT,
+                fig = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
+                for idx=1:numel(lnames), hax_print(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+                initax_print=false(1,numel(hax));
+                for trialNum=reshape(find(QC.keepData),1,[])
+                    for ns=1:numel(out_trialData(trialNum).s),
+                        t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                        x=out_trialData(trialNum).s{ns};
+                        [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+                        plot_print(idx)=plot(t,x,'-','parent',hax_print(idx));
+                        if ~initax_print(idx)
+                            xlabel('Time (s)');
+                            ylabel(out_trialData(trialNum).dataUnits{ns});
+                            if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                                xline(0,'parent',hax(idx),'linewidth',3);
+                            end
+                            initax_print(idx)=true;
+                        end
+                        set(plot_print(idx),'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+                    end
+                end
+                for idx=1:numel(lnames), axis(hax_print(idx),'tight'); grid(hax_print(idx),'on'); end
+                drawnow;
                 conn_print(conn_prepend('',filename_fmtData,'.jpg'),'-nogui');
                 conn_fileutils('savefig',conn_prepend('',filename_fmtData,'.fig'));
             end
         end
+        
+            
     end
 end
 if somethingout, varargout={fileout}; end
@@ -669,5 +689,41 @@ ok=any(idx(2,:)-idx(1,:)>=N);
 for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
 end
 
+function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, keepData, OPTIONS, filename_fmtData)
+    checked=[];
+    for i = 1:numel(handle.c)
+        if isa(handle.c(i), 'matlab.ui.control.UIControl')
+            checkboxValue = get(handle.c(i), 'Value');
+            checkboxCondition = get(handle.c(i), 'String');
+            if checkboxValue==1
+                checked=[checked,checkboxCondition];
+            end
+        end
+    end
+    plotHandles=[];
+    cla(hax)
+    drawnow;
 
-                
+    for trialNum=reshape(find(keepData),1,[])
+        for ns=1:numel(out_trialData(trialNum).s),
+            if ismember(out_trialData(trialNum).condLabel,checked)
+                t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                x=out_trialData(trialNum).s{ns};
+                [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+                plotHandles(idx)=plot(t,x,'-','parent',hax(idx));
+                if ~initax(idx)
+                    xlabel('Time (s)');
+                    ylabel(out_trialData(trialNum).dataUnits{ns});
+                    if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                        xline(0,'parent',hax(idx),'linewidth',3);
+                    end
+                    initax(idx)=true;
+                end
+                set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+            end
+        end
+    end
+    drawnow
+    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
+end
+
