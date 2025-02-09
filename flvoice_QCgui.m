@@ -147,14 +147,20 @@ data.handles.taskDrop=uicontrol('Style', 'popupmenu','String','aud','Units','nor
 data.handles.trialText=uicontrol('Style', 'text','String','Trial:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.545 .45 .05 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
 data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.535 .0 .1 .6],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel, 'Callback', @trialDrop);
 % Cond
-data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.655 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.66 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
+data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.635 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
+data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.64 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
+% Token
+data.handles.tokText=uicontrol('Style', 'text','String','Tok:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.685 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
+data.handles.tokVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.695 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
 %data.handles.conditionDrop=uicontrol('Style', 'popupmenu','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.74 .16 .05 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
 % Prev / Next Buttons
-data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.75 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
-data.handles.nextButton=uicontrol('Style', 'pushbutton','String','Next>','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.87 .39 .12 .55],'Parent',data.handles.subPanel,'Callback', @nextTrial);
-data.handles.prevFlagButton=uicontrol('Style', 'pushbutton','String','<Prev with flag','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.75 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'prev'));
-data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with flag>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .09 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'next'));
+data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.75 .55 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
+data.handles.nextButton=uicontrol('Style', 'pushbutton','String','Next>','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.87 .55 .12 .55],'Parent',data.handles.subPanel,'Callback', @nextTrial);
+data.handles.prevFlagButton=uicontrol('Style', 'pushbutton','String','<Prev with flag','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.75 .30 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'prev'));
+data.handles.nextFlagButton=uicontrol('Style', 'pushbutton','String','Next with flag>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .30 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)FlagPN([],'next'));
+data.handles.prevCondButton=uicontrol('Style', 'pushbutton','String','<Prev with Cond','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.75 .00 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)CondPN([],'prev'));
+data.handles.nextCondButton=uicontrol('Style', 'pushbutton','String','Next with Cond>','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'left','Position',[.87 .00 .12 .30],'Parent',data.handles.subPanel,'Callback', @(varargin)CondPN([],'next'));
+
 
 % Axes (Mic / Head / Spectograms) Panel
 data.handles.axes1Panel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.24 .02 .742 .84],'Parent',data.handles.hfig,'backgroundcolor',[1 1 1],'BorderType','none');
@@ -219,7 +225,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons while loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % Formants (FMT_ARGS)
 % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
@@ -375,6 +381,36 @@ switch(option)
         data.vars.curRunQC = curRunQC;
         set(data.handles.hfig,'userdata',data);
 end
+end
+
+function CondPN(nflags,option)
+    hfig=gcbf;
+    data=get(hfig,'userdata');
+    switch(option)
+        case {'prev','next'}
+            % before changing subject save cur subj / ses / run's QC flags
+            sub = data.vars.curSub;
+            ses = data.vars.curSess;
+            run = data.vars.curRun;
+            task = data.vars.curTask;
+            curRunQC = data.vars.curRunQC;
+            flvoice_import(sub,ses,run,task, 'set_qc', curRunQC)
+    
+            curTrial = data.vars.curTrial;
+            curRunQC = data.vars.curRunQC;
+            if isempty(nflags), nflags=1:size(curRunQC.badTrial,1); 
+            elseif nflags>numel(data.handles.Flags), nflags=numel(data.handles.Flags)+1:size(curRunQC.badTrial,1);
+            end
+            if strcmp(option,'prev'), nextTrial = find(strcmp({data.vars.curOutputData(1:curTrial-1).condLabel}, data.vars.curOutputData(curTrial).condLabel), 1, 'last');
+            else nextTrial = curTrial + find(strcmp({data.vars.curOutputData(curTrial+1:end).condLabel}, data.vars.curOutputData(curTrial).condLabel), 1); end
+            if ~isempty(nextTrial)
+                updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, nextTrial);
+                data = get(data.handles.hfig, 'userdata');
+                %data.vars.curTrial = nextTrial;
+            end
+    
+            set(data.handles.hfig,'userdata',data);
+    end
 end
 
 %     function checkFlag1(ObjH, EventData)
@@ -633,7 +669,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons when loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton,  data.handles.prevCondButton, data.handles.nextCondButton], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -692,7 +728,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons when loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -738,7 +774,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons when loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -780,7 +816,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons when loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -815,7 +851,7 @@ data=get(hfig,'userdata');
 set(data.handles.hfig,'pointer','watch');
 drawnow;
 % disable buttons when loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -843,7 +879,7 @@ function prevTrial(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
 % disable buttons while loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -896,7 +932,7 @@ hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'
 data=get(hfig,'userdata');
 
 % disable buttons while loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 
 % before changing subject save cur subj / ses / run's QC flags
 sub = data.vars.curSub;
@@ -1033,7 +1069,7 @@ function updateSubj(data,varargin)
 % Helper function that updates the GUI based on current sub / trial
 set(data.handles.hfig,'pointer','watch');
 % disable buttons while loading
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton,  data.handles.prevCondButton, data.handles.nextCondButton, data.handles.flagPrev, data.handles.flagNext], 'Enable', 'off');
 drawnow;
 
 if ~isfield(data,'vars')||~isfield(data.vars,'allsubList')
@@ -1294,6 +1330,8 @@ trialIdx = find(trialList == trial); % most likely unecessary but useful for fut
 set(data.handles.trialDrop, 'String', trialList, 'Value', trialIdx);
 curCond = curInputData(trial).condLabel;
 set(data.handles.condVal, 'String', curCond);
+curTok = curInputData(trial).stimName;
+set(data.handles.tokVal, 'String', curTok)
 data.vars.trialList = trialList;
 data.vars.curCond = curCond;
 data.vars.curTrial = trial;
@@ -1686,7 +1724,7 @@ for nflags=1:numFlags,
 end
 if nnz(curRunQC.badTrial(numFlags+1:end,trial+1:end)), set(data.handles.flagNext(numFlags+1),'visible','on','enable','on'); else set(data.handles.flagNext(numFlags+1),'visible','off'); end
 if nnz(curRunQC.badTrial(numFlags+1:end,1:trial-1)), set(data.handles.flagPrev(numFlags+1),'visible','on','enable','on'); else set(data.handles.flagPrev(numFlags+1),'visible','off'); end
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton], 'Enable', 'on');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton], 'Enable', 'on');
 
 %end
 % save curr data
@@ -1696,7 +1734,7 @@ data.vars.curOutputINFO = curOutputINFO;
 set(data.handles.hfig,'userdata',data);
 set(data.handles.hfig,'pointer','arrow');
 % re-enable buttons when done
-set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton], 'Enable', 'on');
+set([data.handles.prevButton, data.handles.nextButton, data.handles.prevFlagButton, data.handles.nextFlagButton, data.handles.prevCondButton, data.handles.nextCondButton], 'Enable', 'on');
 drawnow;
 end
 
