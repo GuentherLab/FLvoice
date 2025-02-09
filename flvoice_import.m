@@ -552,12 +552,6 @@ for nsample=1:numel(RUNS)
             if isfield(tdata,'INFO'), out_INFO=tdata.INFO; end
         end
 
-        if OPTIONS.PLOT
-            filename_plot=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
-            if conn_existfile(filename_plot)
-                open(filename_plot)
-            end
-        end
         
         if isempty(OPTIONS.SINGLETRIAL)
             filename_qcData=fullfile(OPTIONS.FILEPATH,'derivatives','acoustic',sprintf('sub-%s',SUB),sprintf('ses-%d',SES),sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-qualitycontrol.mat',SUB,SES,RUN,TASK));
@@ -630,26 +624,28 @@ for nsample=1:numel(RUNS)
             end
 
             % plots
-            handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
-            lnames=unique([out_trialData.dataLabel]);
-            for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
-            initax=false(1,numel(hax));
-            condLabels=unique({out_trialData.condLabel});
-            handle.c=gobjects(1, numel(condLabels)+1);
-            % handles for checkboxes along with number of trials not flagged per condition
-            for idx=1:numel(condLabels)
-                count = 0;
-                for i = 1:numel(QC.keepData)
-                    if strcmp(out_trialData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
-                        count = count+ 1;
+            if OPTIONS.PLOT,
+                handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
+                lnames=unique([out_trialData.dataLabel]);
+                for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+                initax=false(1,numel(hax));
+                condLabels=unique({out_trialData.condLabel});
+                handle.c=gobjects(1, numel(condLabels)+1);
+                % handles for checkboxes along with number of trials not flagged per condition
+                for idx=1:numel(condLabels)
+                    count = 0;
+                    for i = 1:numel(QC.keepData)
+                        if strcmp(out_trialData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
+                            count = count+ 1;
+                        end
                     end
+                    handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
                 end
-                handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
+                idx = idx + 1;
+                handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
             end
-            idx = idx + 1;
-            handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
             % plot
-            if OPTIONS.PRINT,
+            if OPTIONS.PRINT && OPTIONS.PLOT == 0,
                 fig = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
                 for idx=1:numel(lnames), hax_print(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
                 initax_print=false(1,numel(hax));
@@ -696,9 +692,9 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
     for i = 1:numel(handle.c)
         if isa(handle.c(i), 'matlab.ui.control.UIControl')
             checkboxValue = get(handle.c(i), 'Value');
-            checkboxCondition = get(handle.c(i), 'String');
+            checkboxCondition = strsplit(get(handle.c(i), 'String'));
             if checkboxValue==1
-                checked=[checked,checkboxCondition];
+                checked=[checked,checkboxCondition(1)];
             end
         end
     end
@@ -708,7 +704,7 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
 
     for trialNum=reshape(find(keepData),1,[])
         for ns=1:numel(out_trialData(trialNum).s),
-            if ismember(out_trialData(trialNum).condLabel,checked)
+            if strcmp(out_trialData(trialNum).condLabel, char(checked))
                 t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
                 x=out_trialData(trialNum).s{ns};
                 [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
@@ -721,7 +717,7 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
                     end
                     initax(idx)=true;
                 end
-                set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d\n',trialNum));
+                set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
             end
         end
     end
