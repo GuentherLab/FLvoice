@@ -62,9 +62,11 @@ data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28
 % Time Settings
 data.handles.FSettText=uicontrol('Style', 'text','String','General Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .95 .8 .05],'Parent',data.handles.settPanel);
 data.handles.selectReferenceText=uicontrol('Style', 'text','String','Reference Time:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .90 .4 .05],'Parent',data.handles.settPanel);
-data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .90 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
+data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .90 .35 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
+data.handles.selectReferenceButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .90 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select reference time manually by clicking on the desired time in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)set(data.handles.selectReference,'string',sprintf('%.3f',ginput(1)*[1;0])));
 data.handles.selectCropText=uicontrol('Style', 'text','String','Crop:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .05],'Parent',data.handles.settPanel);
-data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): timepoints outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
+data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .35 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): timepoints outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
+data.handles.selectCropButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .85 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select crop window manually by clicking on the boundaries of the desired window in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)set(data.handles.selectCrop,'string',sprintf('%.3f ',ginput(2)*[1;0])));
 data.handles.selectAmpText=uicontrol('Style', 'text','String','Amp/Dur Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
 data.handles.selectAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Amplitude & Duration threshold:  Two values: minimum amplitude threshold (in dB units), and minimum duration (in seconds)<br/>Timepoints with amplitude/duration below this threshold will be filled with NaN / missing-values<br/>Set the minimum amplitude to NaN to determine this threshold automatically<br/>Leave empty to keep all of the data irrespective of amplitude','Parent',data.handles.settPanel);
 
@@ -106,7 +108,8 @@ data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm'
 %data.handles.skipLowAMPtxtBox=uicontrol('Style', 'edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.5 .11 .45 .065],'Parent',data.handles.settPanel);
 
 % Update Button
-data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settings','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.1 .01 .8 .08],'Parent',data.handles.settPanel,'Callback', @updateSettings);
+data.handles.upSettButton=uicontrol('Style','pushbutton','String','Update Settings','tooltip','This will re-process the current trial data with the chosen settings', 'Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.3 .01 .65 .08],'Parent',data.handles.settPanel,'Callback', @(varargin)updateSettings('trial'));
+data.handles.upSettRunButton=uicontrol('Style','pushbutton','String','Apply to all','tooltip','This will re-process all of the trials in the current run with the settings chosen for this individual trial', 'Units','norm','FontUnits','norm','FontSize',0.3,'HorizontalAlignment', 'left','Position',[.05 .01 .2 .08],'Parent',data.handles.settPanel,'Callback', @(varargin)updateSettings('run'));
 
 % QC FLAG PANEL
 data.handles.flagPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28,'Position',[.02 .02 .2 .42],'Parent',data.handles.hfig);
@@ -211,8 +214,8 @@ end
 
 
 
-function updateSettings(ObjH, EventData)
-hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+function updateSettings(choice)
+hfig=gcbf; %if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
 
 set(data.handles.hfig,'pointer','watch');
@@ -250,9 +253,9 @@ if numel(MinAmp)>0, MinAmp=MinAmp(1); end
 
 curSub = data.vars.curSub; curSess = data.vars.curSess; curRun = data.vars.curRun; curTask = data.vars.curTask; curTrial = data.vars.curTrial;
 
-choice = conn_questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Just Trial');
+%choice = conn_questdlg('Re-process this subjects entire run, or just this trial?', 'Update Settings', 'Current run', 'Just Trial', 'Cancel', 'Just Trial');
 switch choice
-    case 'Current run'
+    case 'run'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
@@ -265,6 +268,8 @@ switch choice
 %         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
 %         data.vars.curRunQC.settings(1:end) = data.vars.curRunQC.settings(data.vars.curTrial);
+
+        if ~isequal(conn_questdlg('This will re-import this subjects entire run with the settings chosen for this trial. Are you sure you want to proceed?', 'Update Settings', 'Yes', 'No','No'),'Yes'), return; end;
         SKIP_LOWAMP=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWAMP), SKIP_LOWAMP =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWAMP); end; end
         SKIP_LOWDUR=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWDUR), SKIP_LOWDUR =  mat2str(data.vars.curOutputINFO.options.SKIP_LOWDUR); end; end
         OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
@@ -287,7 +292,7 @@ switch choice
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
             'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
 
-    case 'Just Trial'
+    case 'trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.windowsizeF = windowsizeF;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.viterbfilter = viterbfilter;
@@ -965,9 +970,9 @@ end
 function playMic(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
-
+xlimits = get(data.handles.globalAxis,'xlim');
+micWav = data.vars.micWav(data.vars.micTime>=xlimits(1)&data.vars.micTime<=xlimits(2));
 curTrial = data.vars.curTrial;
-micWav = data.vars.micWav;
 fs = data.vars.curInputData(curTrial).fs;
 soundsc(micWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
 
