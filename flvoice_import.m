@@ -704,20 +704,22 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
 
     for trialNum=reshape(find(keepData),1,[])
         for ns=1:numel(out_trialData(trialNum).s),
-            if strcmp(out_trialData(trialNum).condLabel, char(checked))
-                t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                x=out_trialData(trialNum).s{ns};
-                [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                plotHandles(idx)=plot(t,x,'-','parent',hax(idx));
-                if ~initax(idx)
-                    xlabel('Time (s)');
-                    ylabel(out_trialData(trialNum).dataUnits{ns});
-                    if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
-                        xline(0,'parent',hax(idx),'linewidth',3);
+            for num=1:numel(checked)
+                if strcmp(out_trialData(trialNum).condLabel, char(checked{num}))
+                    t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                    x=out_trialData(trialNum).s{ns};
+                    [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+                    plotHandles(idx)=plot(t,x,'-','parent',hax(idx));
+                    if ~initax(idx)
+                        xlabel('Time (s)');
+                        ylabel(out_trialData(trialNum).dataUnits{ns});
+                        if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                            xline(0,'parent',hax(idx),'linewidth',3);
+                        end
+                        initax(idx)=true;
                     end
-                    initax(idx)=true;
+                    set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
                 end
-                set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
             end
         end
     end

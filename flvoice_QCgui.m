@@ -149,9 +149,6 @@ data.handles.trialDrop=uicontrol('Style', 'popupmenu','String','1','Units','norm
 % Cond
 data.handles.condText=uicontrol('Style', 'text','String','Cond:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.635 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
 data.handles.condVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.64 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
-% Token
-data.handles.tokText=uicontrol('Style', 'text','String','Tok:','Units','norm','FontWeight','bold','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'center','Position',[.685 .45 .055 .6],'BackgroundColor', [.94 .94 .94],'Parent',data.handles.subPanel);
-data.handles.tokVal=uicontrol('Style', 'text','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.695 .1 .05 .5],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.subPanel);
 %data.handles.conditionDrop=uicontrol('Style', 'popupmenu','String','N0','Units','norm','FontUnits','norm','fontsize',0.4,'HorizontalAlignment', 'left','Position',[.74 .16 .05 .6],'BackgroundColor', [1 1 1],'Parent',data.handles.subPanel);
 % Prev / Next Buttons
 data.handles.prevButton=uicontrol('Style', 'pushbutton','String','<Prev','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.75 .55 .12 .55],'Parent',data.handles.subPanel,'Callback', @prevTrial);
@@ -177,7 +174,8 @@ data.handles.selectSourceText=uicontrol('Style', 'text','String','Input source:'
 data.handles.selectSource=uicontrol('Style', 'popupmenu','String',{'mic'},'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.845 .91 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', @trialDrop);
 data.handles.playMicButton=uicontrol('Style', 'pushbutton','String','Play','Units','norm','FontUnits','norm','FontSize',0.5,'HorizontalAlignment', 'center','Position',[.845 .75 .15 .04],'Parent',data.handles.axes1Panel,'Callback', @playMic);
 data.handles.spectAxis = axes('FontUnits', 'normalized', 'fontsize', .10, 'Units', 'normalized', 'Position', [0.845, 0.81, 0.15, 0.10], 'xcolor',.75*[1 1 1], 'ycolor',.75*[1 1 1], 'Visible', 'on', 'box','on', 'Tag', 'spectrum_axis','Parent',data.handles.axes1Panel);
-
+data.handles.selectAdditionalData=uicontrol('Style', 'popupmenu','String',{'Additional Data'},'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.845 .66 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', @additionalData);
+data.handles.selectDispData=uicontrol('Style', 'text','String','Display Value','Units','norm','FontWeight','normal','FontUnits','norm','fontsize',0.65,'HorizontalAlignment', 'left','Position',[.845 .64 .15 .025],'BackgroundColor', [1 1 1],'Parent',data.handles.axes1Panel);
 %data.handles.playHeadButton=uicontrol('Style', 'pushbutton','String','<html>Play<br/>Head</html>','Units','norm','FontUnits','norm','FontSize',0.20,'HorizontalAlignment', 'center','Position',[.93 .67 .07 .08],'Parent',data.handles.axes1Panel,'Callback', @playHead);
 
 data.handles.ppMic=[];
@@ -1011,6 +1009,30 @@ soundsc(micWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound 
 %set(data.handles.hfig,'userdata',data);
 end
 
+
+function additionalData(ObjH, EventData)
+hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
+data=get(hfig,'userdata');
+curTrial = data.vars.curTrial;
+curInputData = data.vars.curInputData;
+
+fieldList = get(ObjH, 'String');
+selectedIndex = get(ObjH, 'Value');
+if selectedIndex > length(fieldList) || strcmp(fieldList{selectedIndex}, 'Data Label')
+    set(data.handles.selectDispData, 'String',  'Data Value');
+    return;
+end
+
+selectedField = fieldList{selectedIndex};
+fieldValue = curInputData(curTrial).(selectedField);
+
+if isnumeric(fieldValue) || islogical(fieldValue)
+    set(data.handles.selectDispData, 'String',  num2str(fieldValue));
+elseif ischar(fieldValue)
+    set(data.handles.selectDispData, 'String',  fieldValue);
+end
+end
+
 % function playHead(ObjH, EventData)
 % hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 % data=get(hfig,'userdata');
@@ -1330,8 +1352,6 @@ trialIdx = find(trialList == trial); % most likely unecessary but useful for fut
 set(data.handles.trialDrop, 'String', trialList, 'Value', trialIdx);
 curCond = curInputData(trial).condLabel;
 set(data.handles.condVal, 'String', curCond);
-curTok = curInputData(trial).stimName;
-set(data.handles.tokVal, 'String', curTok)
 data.vars.trialList = trialList;
 data.vars.curCond = curCond;
 data.vars.curTrial = trial;
@@ -1475,6 +1495,28 @@ cla(data.handles.micAxis);
 axes(data.handles.micAxis);
 if ~isfield(curInputData,'dataLabel')||numel(curInputData(trial).dataLabel)<=1, set(data.handles.selectSource,'string','mic','value',1);
 else set(data.handles.selectSource,'string',regexprep(curInputData(trial).dataLabel,'^[-_\s]',''),'value',min(get(data.handles.selectSource,'value'),numel(curInputData(trial).dataLabel)));
+end
+checkVal = get(data.handles.selectAdditionalData,'value');
+fieldNames = fieldnames(curInputData(trial));
+validFields = {};
+validFields{end+1} = 'Data Label';
+for i = 1:length(fieldNames)
+    fieldValue = curInputData(trial).(fieldNames{i});
+    if ~iscell(fieldValue) && ~isstruct(fieldValue)
+        validFields{end+1} = fieldNames{i};
+    end
+end
+if checkVal == 1
+    set(data.handles.selectAdditionalData, 'String', validFields, 'Value', 1);
+    set(data.handles.selectDispData, 'String', 'Display Value')
+else
+    selectedField = validFields{checkVal};
+    fieldValue = curInputData(trial).(selectedField);
+    if isnumeric(fieldValue) || islogical(fieldValue)
+        set(data.handles.selectDispData, 'String',  num2str(fieldValue));
+    elseif ischar(fieldValue)
+        set(data.handles.selectDispData, 'String',  fieldValue);
+    end
 end
 selectSource = get(data.handles.selectSource,'value');
 micWav = curInputData(trial).s{selectSource};
