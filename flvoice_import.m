@@ -110,10 +110,10 @@ end
 if nargin<1||isempty(SUB), SUB=[]; end
 if iscell(SUB)||ischar(SUB), SUB=regexprep(SUB,'^sub-',''); end
 if nargin<2||isempty(SES), SES=[]; end
-if ischar(SES)&&strcmpi(SES,'all'), SES=0; end
+if ischar(SES)&&strcmpi(SES,'all'), SES=inf; end
 if ischar(SES), SES=str2num(regexprep(SES,'^ses-','')); end
 if nargin<3||isempty(RUN), RUN=[]; end
-if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
+if ischar(RUN)&&strcmpi(RUN,'all'), RUN=inf; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 
@@ -145,7 +145,7 @@ if isempty(SUB),
     return
 end
 if ischar(SUB), SUB={SUB}; end % SUB is a cell array
-if isempty(SES)||isequal(SES,0),
+if isempty(SES)||isequal(SES,inf), % note: SES=[] will list all available sessions; SES='all' (or SES=inf) will process all available sessions
     SUBS={};
     SESS={};
     for nSUB=1:numel(SUB)
@@ -168,7 +168,7 @@ if iscell(SES), SES=str2double(regexprep(SESS,'^ses-','')); end % SES is a vecto
 if numel(SUB)==1&&numel(SES)>1, SUB=repmat(SUB,size(SES)); end
 if numel(SUB)>1&&numel(SES)==1, SES=repmat(SES,size(SUB)); end
 assert(numel(SUB)==numel(SES),'mismatched number of elements in SUB and SES entries');
-if isempty(RUN)||isequal(RUN,0),
+if isempty(RUN)||isequal(RUN,inf), % note: RUN=[] will list all available runs; RUN='all' (or RUN=inf) will process all available runs
     SUBS={};
     SESS=[];
     RUNS={};
