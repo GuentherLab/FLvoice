@@ -185,6 +185,11 @@ data.handles.formantAxis_checkbox = uicontrol('style','checkbox','Units', 'norma
 data.handles.selectColormap=uicontrol('Style', 'popupmenu','String',regexprep({'jet','parula','turbo','hsv','hot','cool','spring','summer','autumn','winter','gray','bone','copper','pink','sky','abyss'},'^.*$','colormap $0'),'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.028 .01 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', 'map=regexprep(get(gcbo,''string''),''colormap\s*'',''''); colormap(map{get(gcbo,''value'')});');
 data.handles.selectZoomText=uicontrol('Style', 'pushbutton','String','Reset zoom','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'right','Position',[.20 .035 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel,'callback',@(varargin)ZoomIn(varargin{:},'reset'));
 data.handles.selectZoom=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.20 .01 .10 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','Enter window limits for display (in seconds)','Parent',data.handles.axes1Panel, 'Callback', @ZoomIn);
+data.handles.contextMenu = uicontextmenu();
+uimenu(data.handles.contextMenu,"Text","reset zoom","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'reset'));
+uimenu(data.handles.contextMenu,"Text","set reference","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'reference'));
+uimenu(data.handles.contextMenu,"Text","set crop-start","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'crop_start'));
+uimenu(data.handles.contextMenu,"Text","set crop-end","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'crop_end'));
 
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
@@ -206,7 +211,7 @@ switch setup
         %if trial missing default to 1st......
 end
 
-set(zoom(data.handles.hfig),'motion','horizontal','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+set(zoom(data.handles.hfig),'motion','horizontal','contextmenu',data.handles.contextMenu,'actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -982,6 +987,34 @@ function ZoomIn(ObjH, EventData, xlimits)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
 if nargin<3||isempty(xlimits), xlimits=str2num(get(data.handles.selectZoom,'string')); end
+if isequal(xlimits, 'reference'),
+    cp = get(data.handles.micAxis, 'CurrentPoint');
+    set(data.handles.selectReference, 'String', num2str(cp(1,1))); 
+elseif isequal(xlimits,'crop_start'),
+    cp=get(data.handles.micAxis, 'CurrentPoint');
+    cropValues=get(data.handles.selectCrop,"String");
+    cropValues = strrep(cropValues, '[', '');
+    cropValues = strrep(cropValues, ']', '');
+    numbers_str = str2double(strsplit(cropValues)); 
+    numbers_str(1)=cp(1,1);
+    if numel(numbers_str)<2,
+        numbers_str(2) = numbers_str(1);
+    end
+    cropValues=[numbers_str(1) numbers_str(2)];
+    set(data.handles.selectCrop, 'String', mat2str(cropValues));
+elseif isequal(xlimits,'crop_end'),
+    cp=get(data.handles.micAxis, 'CurrentPoint');
+    cropValues=get(data.handles.selectCrop,"String");
+    cropValues = strrep(cropValues, '[', '');
+    cropValues = strrep(cropValues, ']', '');
+    numbers_str = str2double(strsplit(cropValues)); 
+    if numel(numbers_str)<2,
+        numbers_str(1)=cp(1,1);
+    end
+    numbers_str(2) = cp(1,1);
+    cropValues=[numbers_str(1) numbers_str(2)];
+    set(data.handles.selectCrop, 'String', mat2str(cropValues));
+end
 if isequal(xlimits,'reset'), set(data.handles.micAxis,'xtick',round(10*data.vars.xlimits(1))/10:.1:round(10*data.vars.xlimits(end))/10);
 else set(data.handles.micAxis,'xticklabel',[],'xtickmode','auto','xticklabelmode','auto'); 
 end
