@@ -1004,7 +1004,13 @@ data=get(hfig,'userdata');
 curTrial = data.vars.curTrial;
 micWav = data.vars.micWav;
 fs = data.vars.curInputData(curTrial).fs;
-soundsc(micWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
+micEnd = int32(fs*data.handles.micAxis.XLim(2));
+micStart = 1 + int32(fs*data.handles.micAxis.XLim(1));
+if int32(fs*data.handles.micAxis.XLim(2)) > length(micWav)
+    micEnd = length(micWav);
+end
+play_data = micWav(micStart:micEnd);
+soundsc(play_data, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
 
 %set(data.handles.hfig,'userdata',data);
 end
