@@ -211,7 +211,7 @@ switch setup
         %if trial missing default to 1st......
 end
 
-set(zoom(data.handles.hfig),'motion','horizontal','contextmenu',data.handles.contextMenu,'actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+set(zoom(data.handles.hfig),'motion','both','contextmenu',data.handles.contextMenu,'actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -989,7 +989,7 @@ data=get(hfig,'userdata');
 if nargin<3||isempty(xlimits), xlimits=str2num(get(data.handles.selectZoom,'string')); end
 if isequal(xlimits, 'reference'),
     cp = get(data.handles.micAxis, 'CurrentPoint');
-    set(data.handles.selectReference, 'String', num2str(cp(1,1))); 
+    set(data.handles.selectReference, 'String', num2str(round(100*cp(1,1))/100)); 
 elseif isequal(xlimits,'crop_start'),
     cp=get(data.handles.micAxis, 'CurrentPoint');
     cropValues=get(data.handles.selectCrop,"String");
@@ -1001,7 +1001,7 @@ elseif isequal(xlimits,'crop_start'),
         numbers_str(2) = numbers_str(1);
     end
     cropValues=[numbers_str(1) numbers_str(2)];
-    set(data.handles.selectCrop, 'String', mat2str(cropValues));
+    set(data.handles.selectCrop, 'String', mat2str(round(100*cropValues)/100));
 elseif isequal(xlimits,'crop_end'),
     cp=get(data.handles.micAxis, 'CurrentPoint');
     cropValues=get(data.handles.selectCrop,"String");
@@ -1013,7 +1013,7 @@ elseif isequal(xlimits,'crop_end'),
     end
     numbers_str(2) = cp(1,1);
     cropValues=[numbers_str(1) numbers_str(2)];
-    set(data.handles.selectCrop, 'String', mat2str(cropValues));
+    set(data.handles.selectCrop, 'String', mat2str(round(100*cropValues)/100));
 end
 if isequal(xlimits,'reset'), set(data.handles.micAxis,'xtick',round(10*data.vars.xlimits(1))/10:.1:round(10*data.vars.xlimits(end))/10);
 else set(data.handles.micAxis,'xticklabel',[],'xtickmode','auto','xticklabelmode','auto'); 
@@ -1119,12 +1119,76 @@ end
 function plotGraphs(ObjH, EventData)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
-sub = data.vars.curSub;
-ses = data.vars.curSess;
-run = data.vars.curRun;
-task = data.vars.curTask;
-flvoice_import(sub,ses,run,task, 'plot', true, 'overwrite', false)
+SUB = data.vars.curSub;
+SES = data.vars.curSess;
+RUN = data.vars.curRun;
+TASK = data.vars.curTask;
+curInputData = data.vars.curOutputData;
+QC = data.vars.curRunQC;
+disp(curInputData)
+% flvoice_import(sub,ses,run,task,'overwrite', false)
+% function plot(SUB,SES,RUN,TASK)
+handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
+lnames=unique([curInputData.dataLabel]);
+for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+initax=false(1,numel(hax));
+condLabels=unique({curInputData.condLabel});
+handle.c=gobjects(1, numel(condLabels)+1);
+% handles for checkboxes along with number of trials not flagged per condition
+for idx=1:numel(condLabels)
+    count = 0;
+    for i = 1:numel(QC.keepData)
+        if strcmp(curInputData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
+            count = count+ 1;
+        end
+    end
+    handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, curInputData, hax, lnames, QC.keepData));
 end
+idx = idx + 1;
+handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, curInputData, hax, lnames, QC.keepData));
+end
+
+function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, keepData)
+    checked=[];
+    for i = 1:numel(handle.c)
+        if isa(handle.c(i), 'matlab.ui.control.UIControl')
+            checkboxValue = get(handle.c(i), 'Value');
+            checkboxCondition = strsplit(get(handle.c(i), 'String'));
+            if checkboxValue==1
+                checked=[checked,checkboxCondition(1)];
+            end
+        end
+    end
+    plotHandles=[];
+    cla(hax)
+    drawnow;
+
+    for trialNum=reshape(find(keepData),1,[])
+        for ns=1:numel(out_trialData(trialNum).s),
+            for num=1:numel(checked)
+                if strcmp(out_trialData(trialNum).condLabel, char(checked{num}))
+                    t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
+                    x=out_trialData(trialNum).s{ns};
+                    [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
+                    % disp(idx)
+                    plotHandles(idx)=plot(t,x,'-','parent',hax(idx));
+                    if ~initax(idx)
+                        xlabel('Time (s)');
+                        ylabel(out_trialData(trialNum).dataUnits{ns});
+                        if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
+                            xline(0,'parent',hax(idx),'linewidth',3);
+                        end
+                        initax(idx)=true;
+                    end
+                    set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
+                end
+            end
+        end
+    end
+    drawnow
+    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
+end
+
 
 function updateSubj(data,varargin)
 % Helper function that updates the GUI based on current sub / trial

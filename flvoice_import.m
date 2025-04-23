@@ -69,7 +69,6 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %   'SAVE'             : (default 1) 1/0 saves formant&pitch trajectory files
 %   'PRINT'            : (default 1) 1/0 saves jpg files with formant&pitch trajectories
 %   'SHOW_FIGURES'     : (default 1) 1/0 makes the figure plotting formants visible to the user before saving it [added by AM 2024/11/6]
-%   'PLOT'             : (default 0) 1/0 plots mat formant trajectory files
 %
 %   'N_LPC'            : obsolete (use FMT_ARGS 'lpcorder' field instead) number of LPC coefficients for formant estimation (default -when empty- 17 for male and 15 for female subjects; note: data resampled to 16KHz)
 %   'F0_RANGE'         : obsolete (use F0_ARGS 'range' field instead) valid range for pitch estimation (Hz) (default -when empty- [50 200] for male and [150 300] for female subjects)
@@ -98,7 +97,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'PLOT',false,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -126,7 +125,6 @@ if ischar(OPTIONS.F0_RANGE), OPTIONS.F0_RANGE=str2num(OPTIONS.F0_RANGE); end
 if ischar(OPTIONS.OVERWRITE), OPTIONS.OVERWRITE=str2num(OPTIONS.OVERWRITE); end
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
-if ischar(OPTIONS.PLOT), OPTIONS.PLOT=str2num(OPTIONS.PLOT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
 if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
@@ -624,31 +622,11 @@ for nsample=1:numel(RUNS)
             end
 
             % plots
-            if OPTIONS.PLOT,
-                handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
-                lnames=unique([out_trialData.dataLabel]);
-                for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
-                initax=false(1,numel(hax));
-                condLabels=unique({out_trialData.condLabel});
-                handle.c=gobjects(1, numel(condLabels)+1);
-                % handles for checkboxes along with number of trials not flagged per condition
-                for idx=1:numel(condLabels)
-                    count = 0;
-                    for i = 1:numel(QC.keepData)
-                        if strcmp(out_trialData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
-                            count = count+ 1;
-                        end
-                    end
-                    handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
-                end
-                idx = idx + 1;
-                handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, QC.keepData, OPTIONS, filename_fmtData));
-            end
-            % plot
-            if OPTIONS.PRINT && OPTIONS.PLOT == 0,
+            lnames=unique([out_trialData.dataLabel]);
+            if OPTIONS.PRINT,
                 fig = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants.mat',SUB,SES,RUN,TASK));
                 for idx=1:numel(lnames), hax_print(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
-                initax_print=false(1,numel(hax));
+                initax_print=false(1,numel(hax_print));
                 for trialNum=reshape(find(QC.keepData),1,[])
                     for ns=1:numel(out_trialData(trialNum).s),
                         t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
@@ -659,7 +637,7 @@ for nsample=1:numel(RUNS)
                             xlabel('Time (s)');
                             ylabel(out_trialData(trialNum).dataUnits{ns});
                             if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
-                                xline(0,'parent',hax(idx),'linewidth',3);
+                                xline(0,'parent',hax_print(idx),'linewidth',3);
                             end
                             initax_print(idx)=true;
                         end
@@ -685,45 +663,5 @@ in=x>thr;
 idx=reshape(find(diff([false, reshape(in,1,[]), false])),2,[]);
 ok=any(idx(2,:)-idx(1,:)>=N);
 for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
-end
-
-function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, keepData, OPTIONS, filename_fmtData)
-    checked=[];
-    for i = 1:numel(handle.c)
-        if isa(handle.c(i), 'matlab.ui.control.UIControl')
-            checkboxValue = get(handle.c(i), 'Value');
-            checkboxCondition = strsplit(get(handle.c(i), 'String'));
-            if checkboxValue==1
-                checked=[checked,checkboxCondition(1)];
-            end
-        end
-    end
-    plotHandles=[];
-    cla(hax)
-    drawnow;
-
-    for trialNum=reshape(find(keepData),1,[])
-        for ns=1:numel(out_trialData(trialNum).s),
-            for num=1:numel(checked)
-                if strcmp(out_trialData(trialNum).condLabel, char(checked{num}))
-                    t=out_trialData(trialNum).t{ns}+(0:numel(out_trialData(trialNum).s{ns})-1)/out_trialData(trialNum).fs;
-                    x=out_trialData(trialNum).s{ns};
-                    [ok,idx]=ismember(out_trialData(trialNum).dataLabel{ns},lnames);
-                    plotHandles(idx)=plot(t,x,'-','parent',hax(idx));
-                    if ~initax(idx)
-                        xlabel('Time (s)');
-                        ylabel(out_trialData(trialNum).dataUnits{ns});
-                        if isempty(regexp(out_trialData(trialNum).dataLabel{ns},'^raw-'))
-                            xline(0,'parent',hax(idx),'linewidth',3);
-                        end
-                        initax(idx)=true;
-                    end
-                    set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
-                end
-            end
-        end
-    end
-    drawnow
-    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
 end
 
