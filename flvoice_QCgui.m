@@ -1125,7 +1125,7 @@ RUN = data.vars.curRun;
 TASK = data.vars.curTask;
 curInputData = data.vars.curOutputData;
 QC = data.vars.curRunQC;
-disp(curInputData)
+% disp(curInputData)
 % flvoice_import(sub,ses,run,task,'overwrite', false)
 % function plot(SUB,SES,RUN,TASK)
 handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
@@ -1137,7 +1137,7 @@ handle.c=gobjects(1, numel(condLabels)+1);
 % handles for checkboxes along with number of trials not flagged per condition
 for idx=1:numel(condLabels)
     count = 0;
-    for i = 1:numel(QC.keepData)
+    for i = 1:numel(curInputData)
         if strcmp(curInputData(i).condLabel,condLabels(idx)) == 1 && QC.keepData(i) == 1
             count = count+ 1;
         end
@@ -1164,6 +1164,9 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
     drawnow;
 
     for trialNum=reshape(find(keepData),1,[])
+        if trialNum > numel(out_trialData),
+            break
+        end
         for ns=1:numel(out_trialData(trialNum).s),
             for num=1:numel(checked)
                 if strcmp(out_trialData(trialNum).condLabel, char(checked{num}))
