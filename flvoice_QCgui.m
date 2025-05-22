@@ -213,8 +213,8 @@ switch setup
         %if task is missing find task of current run
         %if trial missing default to 1st......
 end
-
-set(zoom(data.handles.hfig),'motion','both','contextmenu',data.handles.contextMenu,'actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+% set(zoom(data.handles.hfig),'motion','both','contextmenu',data.handles.contextMenu,'actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+set(zoom(data.handles.hfig),'motion','both','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -1042,13 +1042,7 @@ xlimits = get(data.handles.globalAxis,'xlim');
 micWav = data.vars.micWav(data.vars.micTime>=xlimits(1)&data.vars.micTime<=xlimits(2));
 curTrial = data.vars.curTrial;
 fs = data.vars.curInputData(curTrial).fs;
-micEnd = int32(fs*data.handles.micAxis.XLim(2));
-micStart = 1 + int32(fs*data.handles.micAxis.XLim(1));
-if int32(fs*data.handles.micAxis.XLim(2)) > length(micWav)
-    micEnd = length(micWav);
-end
-play_data = micWav(micStart:micEnd);
-soundsc(play_data, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
+soundsc(micWav, fs, [-0.2 , 0.2]); % low and high placed as in some cases sound scaled to be way to loud
 
 %set(data.handles.hfig,'userdata',data);
 end
