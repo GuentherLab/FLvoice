@@ -1125,12 +1125,11 @@ RUN = data.vars.curRun;
 TASK = data.vars.curTask;
 curInputData = data.vars.curOutputData;
 QC = data.vars.curRunQC;
-% disp(curInputData)
 % flvoice_import(sub,ses,run,task,'overwrite', false)
 % function plot(SUB,SES,RUN,TASK)
 handle.f = figure('units','norm','position',[.2 .2 .6 .6],'name',sprintf('sub-%s_ses-%d_run-%d_task-%s_desc-formants-working.mat',SUB,SES,RUN,TASK));
 lnames=unique([curInputData.dataLabel]);
-for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold all; title(lnames{idx}); end
+for idx=1:numel(lnames), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold off; title(lnames{idx}); end
 initax=false(1,numel(hax));
 condLabels=unique({curInputData.condLabel});
 handle.c=gobjects(1, numel(condLabels)+1);
@@ -1160,8 +1159,6 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
         end
     end
     plotHandles=[];
-    cla(hax)
-    drawnow;
 
     for trialNum=reshape(find(keepData),1,[])
         if trialNum > numel(out_trialData),
@@ -1184,12 +1181,14 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
                         initax(idx)=true;
                     end
                     set(plotHandles(idx),'buttondownfcn',@(varargin)fprintf('trial # %d %s\n',trialNum, out_trialData(trialNum).condLabel));
+                    hold(hax(idx),"on");
+                    
                 end
             end
         end
     end
     drawnow
-    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); end
+    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); hold(hax(idx),"off"); end
 end
 
 
