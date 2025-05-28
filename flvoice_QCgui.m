@@ -63,10 +63,10 @@ data.handles.settPanel=uipanel('Units','norm','FontUnits','norm','FontSize',0.28
 data.handles.FSettText=uicontrol('Style', 'text','String','General Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .95 .8 .05],'Parent',data.handles.settPanel);
 data.handles.selectReferenceText=uicontrol('Style', 'text','String','Reference Time:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .90 .4 .05],'Parent',data.handles.settPanel);
 data.handles.selectReference=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .90 .35 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Reference time (in seconds). This will be the time t=0 in the (time-aligned) output traces<br/>Leave empty to use the default/automatic reference time (defined in the <i>reference_time</i> field of the input files)','Parent',data.handles.settPanel);
-data.handles.selectReferenceButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .90 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select reference time manually by clicking on the desired time in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)set(data.handles.selectReference,'string',sprintf('%.3f',ginput(1)*[1;0])));
+data.handles.selectReferenceButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .90 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select reference time manually by clicking on the desired time in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)setReference());
 data.handles.selectCropText=uicontrol('Style', 'text','String','Crop:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .85 .4 .05],'Parent',data.handles.settPanel);
 data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .85 .35 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Crop window (in seconds): timepoints outside the crop window will be filled with NaN / missing-values<br/>Leave empty to keep all of the data within the output window (defined in the <i>OUT_WINDOW</i> input to flvoice_import)','Parent',data.handles.settPanel);
-data.handles.selectCropButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .85 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select crop window manually by clicking on the boundaries of the desired window in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)set(data.handles.selectCrop,'string',sprintf('%.3f ',ginput(2)*[1;0])));
+data.handles.selectCropButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .85 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select crop window manually by clicking on the boundaries of the desired window in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)setCrop());
 data.handles.selectAmpText=uicontrol('Style', 'text','String','Amp/Dur Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
 data.handles.selectAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Amplitude & Duration threshold:  Two values: minimum amplitude threshold (in dB units), and minimum duration (in seconds)<br/>Timepoints with amplitude/duration below this threshold will be filled with NaN / missing-values<br/>Set the minimum amplitude to NaN to determine this threshold automatically<br/>Leave empty to keep all of the data irrespective of amplitude','Parent',data.handles.settPanel);
 
@@ -188,11 +188,6 @@ data.handles.formantAxis_checkbox = uicontrol('style','checkbox','Units', 'norma
 data.handles.selectColormap=uicontrol('Style', 'popupmenu','String',regexprep({'jet','parula','turbo','hsv','hot','cool','spring','summer','autumn','winter','gray','bone','copper','pink','sky','abyss'},'^.*$','colormap $0'),'value',1,'Units','norm','FontUnits','norm','FontSize',0.40,'HorizontalAlignment', 'left','Position',[.028 .01 .15 .04],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel, 'Callback', 'map=regexprep(get(gcbo,''string''),''colormap\s*'',''''); colormap(map{get(gcbo,''value'')});');
 data.handles.selectZoomText=uicontrol('Style', 'pushbutton','String','Reset zoom','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'right','Position',[.20 .035 .10 .025],'BackgroundColor', 1*[1 1 1],'Parent',data.handles.axes1Panel,'callback',@(varargin)ZoomIn(varargin{:},'reset'));
 data.handles.selectZoom=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.20 .01 .10 .025],'BackgroundColor', 1*[1 1 1],'Tooltip','Enter window limits for display (in seconds)','Parent',data.handles.axes1Panel, 'Callback', @ZoomIn);
-data.handles.contextMenu = uicontextmenu();
-uimenu(data.handles.contextMenu,"Text","reset zoom","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'reset'));
-uimenu(data.handles.contextMenu,"Text","set reference","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'reference'));
-uimenu(data.handles.contextMenu,"Text","set crop-start","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'crop_start'));
-uimenu(data.handles.contextMenu,"Text","set crop-end","MenuSelectedFcn",@(varargin)ZoomIn(varargin{:},'crop_end'));
 
 %optional buttons
 %data.handles.trialTimeButton=uicontrol('Style', 'pushbutton','String','View trial timing','Units','norm','FontUnits','norm','FontSize',0.4,'HorizontalAlignment', 'left','Position',[.02 .02 .3 .06], 'Enable', 'off', 'Parent',data.handles.axes1Panel, 'Callback', @viewTime);
@@ -335,6 +330,20 @@ drawnow;
 % re-enable buttons when done
 updateSubj(data, data.vars.curSub, data.vars.curSess, data.vars.curRun, data.vars.curTask, data.vars.curTrial);
 data = get(data.handles.hfig, 'userdata');
+end
+
+function setReference()
+hfig = gcbf;
+data = get(hfig, 'userdata');
+set(data.handles.selectReference,'string',sprintf('%.3f',ginput(1)*[1;0]));
+set(zoom(data.handles.hfig),'motion','both','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+end
+
+function setCrop()
+hfig = gcbf;
+data = get(hfig, 'userdata');
+set(data.handles.selectCrop,'string',sprintf('%.3f ',ginput(2)*[1;0]));
+set(zoom(data.handles.hfig),'motion','both','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
 end
 
 function FlagPN(nflags,option)
@@ -1140,10 +1149,10 @@ for idx=1:numel(condLabels)
             count = count+ 1;
         end
     end
-    handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,30+idx*15,50,15],'string',condLabels{idx}+ " " + num2str(count),'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, curInputData, hax, lnames, QC.keepData));
+    handle.c(idx)=uicontrol('style','checkbox','units','pixels','position',[15,400+idx*15,80,15],'string',condLabels{idx}+ " " + num2str(count));
 end
 idx = idx + 1;
-handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,30+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, curInputData, hax, lnames, QC.keepData));
+handle.c(idx)=uicontrol('style','pushbutton','units','pixels','position',[15,400+idx*15,50,15],'string',"Update",'Callback',@(src, event) loadFigure(src, condLabels, handle, initax, curInputData, hax, lnames, QC.keepData));
 end
 
 function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames, keepData)
@@ -1158,7 +1167,9 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
         end
     end
     plotHandles=[];
-
+    if isempty(checked)
+        for idx=1:numel(lnames),cla(hax(idx)), hax(idx)=subplot(floor(sqrt(numel(lnames))),ceil(numel(lnames)/floor(sqrt(numel(lnames)))),idx); hold off; title(lnames{idx}); end
+    end
     for trialNum=reshape(find(keepData),1,[])
         if trialNum > numel(out_trialData),
             break
@@ -1186,8 +1197,9 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
             end
         end
     end
+    for idx=1:numel(lnames), axis(hax(idx),'tight'); title(hax(idx),lnames{idx}); grid(hax(idx),'on'); hold(hax(idx),"off"); end
     drawnow
-    for idx=1:numel(lnames), axis(hax(idx),'tight'); grid(hax(idx),'on'); hold(hax(idx),"off"); end
+
 end
 
 
