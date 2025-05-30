@@ -101,6 +101,9 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %      evaluates the differences in F0-headphones timeseries when comparing across sessions (separately at each timepoint)
 %
 
+%  notes: define SES and/or RUN as 'all' to specify all sessions/runs for the specified subject
+%         define SUB/SES/RUN as cell arrays with the same number of elements to specify complex combinations of SUB/SES/RUN values
+%
 persistent DEFAULTS;
 if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
@@ -120,10 +123,10 @@ end
 if nargin<1||isempty(SUB), SUB=[]; end
 if iscell(SUB)||ischar(SUB), SUB=regexprep(SUB,'^sub-',''); end
 if nargin<2||isempty(SES), SES=[]; end
-if ischar(SES)&&strcmpi(SES,'all'), SES=0; end
+if ischar(SES)&&strcmpi(SES,'all'), SES=inf; end
 if ischar(SES), SES=str2num(regexprep(SES,'^ses-','')); end
 if nargin<3||isempty(RUN), RUN=[]; end
-if ischar(RUN)&&strcmpi(RUN,'all'), RUN=0; end
+if ischar(RUN)&&strcmpi(RUN,'all'), RUN=inf; end
 if ischar(RUN), RUN=str2num(regexprep(RUN,'^run-','')); end
 if nargin<4||isempty(TASK), TASK=[]; end
 if nargin<5||isempty(FIRSTLEVEL_NAME), FIRSTLEVEL_NAME=[]; end
@@ -157,7 +160,7 @@ if isempty(SUB),
     return
 end
 if ischar(SUB), SUB={SUB}; end
-if isempty(SES)||isequal(SES,0),
+if isempty(SES)||isequal(SES,inf),
     SUBS={};
     SESS={};
     for nSUB=1:numel(SUB)
@@ -178,7 +181,7 @@ if isempty(SES)||isequal(SES,0),
 end
 if numel(SUB)==1&&numel(SES)>1, SUB=repmat(SUB,size(SES)); end
 if numel(SUB)>1&&numel(SES)==1, SES=repmat(SES,size(SUB)); end
-if isempty(RUN)||isequal(RUN,0),
+if isempty(RUN)||isequal(RUN,inf),
     SUBS={};
     SESS=[];
     RUNS={};
