@@ -1001,34 +1001,6 @@ function ZoomIn(ObjH, EventData, xlimits)
 hfig=gcbf; if isempty(hfig), hfig=ObjH; while ~isequal(get(hfig,'type'),'figure'), hfig=get(hfig,'parent'); end; end
 data=get(hfig,'userdata');
 if nargin<3||isempty(xlimits), xlimits=str2num(get(data.handles.selectZoom,'string')); end
-if isequal(xlimits, 'reference'),
-    cp = get(data.handles.micAxis, 'CurrentPoint');
-    set(data.handles.selectReference, 'String', num2str(round(100*cp(1,1))/100)); 
-elseif isequal(xlimits,'crop_start'),
-    cp=get(data.handles.micAxis, 'CurrentPoint');
-    cropValues=get(data.handles.selectCrop,"String");
-    cropValues = strrep(cropValues, '[', '');
-    cropValues = strrep(cropValues, ']', '');
-    numbers_str = str2double(strsplit(cropValues)); 
-    numbers_str(1)=cp(1,1);
-    if numel(numbers_str)<2,
-        numbers_str(2) = numbers_str(1);
-    end
-    cropValues=[numbers_str(1) numbers_str(2)];
-    set(data.handles.selectCrop, 'String', mat2str(round(100*cropValues)/100));
-elseif isequal(xlimits,'crop_end'),
-    cp=get(data.handles.micAxis, 'CurrentPoint');
-    cropValues=get(data.handles.selectCrop,"String");
-    cropValues = strrep(cropValues, '[', '');
-    cropValues = strrep(cropValues, ']', '');
-    numbers_str = str2double(strsplit(cropValues)); 
-    if numel(numbers_str)<2,
-        numbers_str(1)=cp(1,1);
-    end
-    numbers_str(2) = cp(1,1);
-    cropValues=[numbers_str(1) numbers_str(2)];
-    set(data.handles.selectCrop, 'String', mat2str(round(100*cropValues)/100));
-end
 if isequal(xlimits,'reset'), set(data.handles.micAxis,'xtick',round(10*data.vars.xlimits(1))/10:.1:round(10*data.vars.xlimits(end))/10);
 else set(data.handles.micAxis,'xticklabel',[],'xtickmode','auto','xticklabelmode','auto'); 
 end
