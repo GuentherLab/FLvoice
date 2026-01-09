@@ -409,8 +409,16 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).t={};
                 out_trialData(trialNum).covariates=[];
                 if isfield(in_trialData,'covariates'), out_trialData(trialNum).covariates=in_trialData(trialNum).covariates; end
-                if isfield(in_trialData,'timingTrial'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, reshape(in_trialData(trialNum).timingTrial,1,[])]; end
-                if isfield(in_trialData,'pertSize'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, max([nan in_trialData(trialNum).pertSize])]; end
+                if isfield(in_trialData,'timingTrial'), 
+                    if isempty(out_trialData(trialNum).covariates)||isstruct(out_trialData(trialNum).covariates), out_trialData(trialNum).covariates.timingTrial=reshape(in_trialData(trialNum).timingTrial,1,[]); 
+                    else out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, reshape(in_trialData(trialNum).timingTrial,1,[])]; 
+                    end
+                end
+                if isfield(in_trialData,'pertSize'), 
+                    if isempty(out_trialData(trialNum).covariates)||isstruct(out_trialData(trialNum).covariates), out_trialData(trialNum).covariates.pertSize=max([nan in_trialData(trialNum).pertSize]);
+                    else out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, max([nan in_trialData(trialNum).pertSize])]; 
+                    end
+                end
                 out_trialData(trialNum).options.formants.fs=fs;
                 out_trialData(trialNum).options.formants.lpcorder=Nlpc;
                 out_trialData(trialNum).options.formants.windowsize=.050;
@@ -472,18 +480,31 @@ for nsample=1:numel(RUNS)
                         if ~isempty(regexp(out_trialData(trialNum).dataLabel{end},'^F\d')), out_trialData(trialNum).s{end}(time2<OPTIONS.CROP_TIME(1)|time2>OPTIONS.CROP_TIME(2))=NaN; end % mask with NaN's F*
                     end
                 end
-                if ~isempty(OPTIONS.MINAMP), 
-                    if isnan(OPTIONS.MINAMP), % use data-driven amplitude threshold (mode of amplitude distribution)
+                if isempty(OPTIONS.MINAMP)||isnan(OPTIONS.MINAMP), % use data-driven amplitude threshold (mode of amplitude distribution)
                         ampWav=out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^raw-Amp'))>0,1)};
-                        ampWavScale=max(ampWav)-min(ampWav)+eps;
-                        minamp=[]; for n1=1:100, minamp=[minamp, mode(round(ampWav/ampWavScale*n1))*ampWavScale/n1]; end
-                        minamp=mean(minamp);
-                    else minamp=OPTIONS.MINAMP;
-                    end
+                        %ampWavScale=max(ampWav)-min(ampWav)+eps;
+                        %minamp=[]; for n1=1:100, minamp=[minamp, mode(round(ampWav/ampWavScale*n1))*ampWavScale/n1]; end
+                        %minamp=mean(minamp);
+                        m1=[]; tampWav=ampWav(ampWav>=mean(ampWav(~isnan(ampWav)))); for n1=1:100, m1=[m1, mode(round(tampWav/(max(tampWav)-min(tampWav)+eps)*n1))*(max(tampWav)-min(tampWav)+eps)/n1]; end;
+                        m2=[]; tampWav=ampWav(ampWav<mean(ampWav(~isnan(ampWav)))); for n1=1:100, m2=[m2, mode(round(tampWav/(max(tampWav)-min(tampWav)+eps)*n1))*(max(tampWav)-min(tampWav)+eps)/n1]; end; 
+                        minamp=(mean(m1)+mean(m2))/2;
+                else minamp=OPTIONS.MINAMP;
+                end
+                if ~isempty(OPTIONS.MINAMP), % masks data
                     [nill,ValidData]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^raw-Amp'))>0,1)},minamp,OPTIONS.MINDUR*out_trialData(trialNum).fs);
                     for ns=reshape(find(cellfun('length', regexp(out_trialData(trialNum).dataLabel,'^raw-F\d'))>0),1,[]), out_trialData(trialNum).s{ns}(~ValidData)=NaN; end
                     [nill,ValidData]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^Amp'))>0,1)},minamp,OPTIONS.MINDUR*out_trialData(trialNum).fs);
                     for ns=reshape(find(cellfun('length', regexp(out_trialData(trialNum).dataLabel,'^F\d'))>0),1,[]), out_trialData(trialNum).s{ns}(~ValidData)=NaN; end
+                end
+                if 1 % adds duration covariate
+                    [nill,ValidData,Duration]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^raw-Amp'))>0,1)},minamp,0);
+                    if isempty(out_trialData(trialNum).covariates)||isstruct(out_trialData(trialNum).covariates), out_trialData(trialNum).covariates.RawDuration=Duration/out_trialData(trialNum).fs;
+                    else out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, Duration/out_trialData(trialNum).fs]; 
+                    end
+                    [nill,ValidData,Duration]=findsuprathresholdsegment(out_trialData(trialNum).s{find(cellfun('length',regexp(out_trialData(trialNum).dataLabel,'^Amp'))>0,1)},minamp,0);
+                    if isempty(out_trialData(trialNum).covariates)||isstruct(out_trialData(trialNum).covariates), out_trialData(trialNum).covariates.Duration=Duration/out_trialData(trialNum).fs;
+                    else out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, Duration/out_trialData(trialNum).fs]; 
+                    end
                 end
                 out_trialData(trialNum).options.time.reference=OPTIONS.REFERENCE_TIME;
                 out_trialData(trialNum).options.time.crop=OPTIONS.CROP_TIME;
@@ -654,12 +675,14 @@ end
 if somethingout, varargout={fileout}; end
 end
 
-function [ok,in]=findsuprathresholdsegment(x,thr,N)
+function [ok,in,maxN]=findsuprathresholdsegment(x,thr,N)
+% finds any segment x(i1:i2) with values x>thr and at least N samples (i2-i1+1>=N)
 if isempty(N), N=0; end
 in=x>thr;
 idx=reshape(find(diff([false, reshape(in,1,[]), false])),2,[]);
 ok=any(idx(2,:)-idx(1,:)>=N);
 for k=find(idx(2,:)-idx(1,:)<N), in(idx(1,k):idx(2,k)-1)=0; end
+maxN=max(idx(2,:)-idx(1,:));
 end
 
 

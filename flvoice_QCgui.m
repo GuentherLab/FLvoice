@@ -204,7 +204,7 @@ switch setup
         %if trial missing default to 1st......
 end
 
-set(zoom(data.handles.hfig),'motion','horizontal','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on');
+try, set(zoom(data.handles.hfig),'motion','horizontal','actionpostcallback',@(varargin)ZoomIn(varargin{:},'callback'),'enable','on'); end
 if ~ishandle(data.handles.hfig), return; end
 data = get(data.handles.hfig, 'userdata');
 % if ~isempty(data)
@@ -304,13 +304,16 @@ switch choice
 %         data.vars.curRunQC.settings{data.vars.curTrial}.medianfilterP = medianfilterP;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.outlierfilter = outlierfilter;
 %         data.vars.curRunQC.settings{data.vars.curTrial}.SKIP_LOWAMP = SKIP_LOWAMP;
+        SKIP_LOWAMP=''; try, if ~isempty(data.vars.curOutputINFO.options.SKIP_LOWAMP), SKIP_LOWAMP =  data.vars.curOutputINFO.options.SKIP_LOWAMP; end; end
         OUT_WINDOW=[]; try, if ~isempty(data.vars.curOutputINFO.options.OUT_WINDOW), OUT_WINDOW =  data.vars.curOutputINFO.options.OUT_WINDOW; end; end
+        temp_MinAmp=MinAmp;
+        if isempty(temp_MinAmp)&&~isempty(SKIP_LOWAMP), temp_MinAmp=SKIP_LOWAMP; end
         flvoice_import(curSub,curSess,curRun,curTask, 'SINGLETRIAL', curTrial, ...
             'PRINT',false,...
             'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
+            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', temp_MinAmp, 'MINDUR', MinDur);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -1499,10 +1502,12 @@ if ~isempty(ampidx)
         ampWav(ampWav<0)=nan;
         ampTime = (0+(0:numel(ampWav)-1)*1/curOutputData(trial).fs);
         temp_skip_lowamp = [];
-        if ~isempty(min_amp), temp_skip_lowamp = min_amp(1); end
-        if isempty(temp_skip_lowamp), temp_skip_lowamp=skip_lowamp; end
-        if isempty(temp_skip_lowamp)||isnan(temp_skip_lowamp), 
-            m=[]; for n1=1:100, m=[m, mode(round(ampWav/(max(ampWav)-min(ampWav)+eps)*n1))*(max(ampWav)-min(ampWav)+eps)/n1]; end; temp_skip_lowamp=mean(m);
+        if ~isempty(min_amp), temp_skip_lowamp = min_amp(1); end % from the GUI
+        if isempty(temp_skip_lowamp), temp_skip_lowamp=skip_lowamp; end % from SKIP_LOWAMP option previously run (session-level)
+        if isempty(temp_skip_lowamp)||isnan(temp_skip_lowamp), % from data
+            %m=[]; for n1=1:100, m=[m, mode(round(ampWav/(max(ampWav)-min(ampWav)+eps)*n1))*(max(ampWav)-min(ampWav)+eps)/n1]; end; temp_skip_lowamp=mean(m);
+            m=[]; tampWav=ampWav(ampWav>=mean(ampWav(~isnan(ampWav)))); for n1=1:100, m=[m, mode(round(tampWav/(max(tampWav)-min(tampWav)+eps)*n1))*(max(tampWav)-min(tampWav)+eps)/n1]; end; temp_skip_lowamp=mean(m);
+            m=[]; tampWav=ampWav(ampWav<mean(ampWav(~isnan(ampWav)))); for n1=1:100, m=[m, mode(round(tampWav/(max(tampWav)-min(tampWav)+eps)*n1))*(max(tampWav)-min(tampWav)+eps)/n1]; end; temp_skip_lowamp=(temp_skip_lowamp+mean(m))/2;
             %temp_skip_lowamp=mean(ampWav(~isnan(ampWav))); 
         end
         temp_skip_lowdur = [];
