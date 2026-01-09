@@ -463,6 +463,7 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).dataLabel=reshape(out_trialData(trialNum).dataLabel,1,[]);
                 out_trialData(trialNum).dataUnits=reshape(out_trialData(trialNum).dataUnits,1,[]);
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
+                out_trialData(trialNum).fs=OPTIONS.OUT_FS;
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
                     if ~isempty(OPTIONS.REFERENCE_TIME), pertOnset = OPTIONS.REFERENCE_TIME;
@@ -510,7 +511,6 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).options.time.crop=OPTIONS.CROP_TIME;
                 out_trialData(trialNum).options.time.minamp=OPTIONS.MINAMP;
                 out_trialData(trialNum).options.time.mindur=OPTIONS.MINDUR;
-                out_trialData(trialNum).fs=OPTIONS.OUT_FS;
                 if isfield(data,'condLabel')&&~isempty(data.condLabel), out_trialData(trialNum).condLabel=data.condLabel; 
                 else out_trialData(trialNum).condLabel='unknown';
                 end
