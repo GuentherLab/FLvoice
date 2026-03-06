@@ -39,9 +39,11 @@ elseif numel(varargin)>=1&&ischar(varargin{1})&&isfield(DEFAULTS,upper(varargin{
                     otherwise, DEFAULTS.REMOTE=str2num(DEFAULTS.REMOTE); 
                 end
             end
-            if DEFAULTS.REMOTE&&~conn_server('isconnected')
-                fprintf('Starting new remote connection to server\n');
-                conn remotely on;
+            if DEFAULTS.REMOTE
+                if ~conn_server('isconnected')
+                    fprintf('Starting new remote connection to server\n');
+                    conn remotely on;
+                end
                 conn_server('cmd','addpath(fullfile(fileparts(fileparts(which(''conn''))),''FLvoice''))');
             elseif ~DEFAULTS.REMOTE&&conn_server('isconnected')
                 fprintf('Terminating remote connection to server\n');

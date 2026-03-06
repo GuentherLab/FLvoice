@@ -11,6 +11,8 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %   DESIGN           : condition names defining N first-level conditions or covariate values (valid values from input data .condLabel to indicate individual conditions, or the keywords 'COVARIATE1', 'COVARIATE2', etc. to indicate individual covariates)
 %                          e.g. {'U1','N1'}
 %                         the GLM 1st-level design matrix will be defined in this case as N columns indicating individual conditions (0/1 values) or covariates (arbitrary values) 
+%                         note: by default you can use regexp notation to specify model regressors that combine individual conditions (e.g. '(U|D)1' will combine U1 and D1 conditions as a single regressor; 'U\d+' will combine all conditions named U followed by a number; etc.))
+%                               use the option flvoice_firstlevel(...,'ENABLE_REGEXP',false) to disable this behavior and only use exact matches to individual condition names
 %                      alternatively, function defining one row of design matrix (one row per trial)
 %                         fun(condLabel, sesNumber, runNumber, trialNumber) should return a [1,N] vector of categorical or continuous values associated with this trial
 %                          e.g. @(condLabel,sesNumber,runNumber,trialNumber)[strcmp(condLabel,'U1') strcmp(condLabel,'N1')]
@@ -105,7 +107,7 @@ function varargout=flvoice_firstlevel(SUB,SES,RUN,TASK, FIRSTLEVEL_NAME, MEASURE
 %         define SUB/SES/RUN as cell arrays with the same number of elements to specify complex combinations of SUB/SES/RUN values
 %
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
+if isempty(DEFAULTS), DEFAULTS=struct('REFERENCE',true,'REFERENCE_SCALE','subtract','CONTRAST_SCALE',true,'SAVE',true,'DOPLOT',true,'PRINT',true,'ENABLE_REGEXP',true,'PLOTASTIME',[],'PLOTLABELS',{{}},'EXPORTDIVA',false,'EXPORTDIVA_PERT',[]); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=9, varargin=[{CONTRAST_TIME},varargin]; end
@@ -146,6 +148,7 @@ if ischar(OPTIONS.CONTRAST_SCALE), OPTIONS.CONTRAST_SCALE=str2num(OPTIONS.CONTRA
 if ischar(OPTIONS.SAVE), OPTIONS.SAVE=str2num(OPTIONS.SAVE); end
 if ischar(OPTIONS.DOPLOT), OPTIONS.DOPLOT=str2num(OPTIONS.DOPLOT); end
 if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
+if ischar(OPTIONS.ENABLE_REGEXP), OPTIONS.ENABLE_REGEXP=str2num(OPTIONS.ENABLE_REGEXP); end
 OPTIONS.FILEPATH=flvoice('PRIVATE.ROOT');
 varargout=cell(1,nargout);
 
@@ -284,7 +287,12 @@ for nsub=1:numel(USUBS)
                 if ~keepData(ntrial), ok=false;
                 elseif isa(DESIGN,'function_handle'), x=reshape(full(double(DESIGN(in_trialData(ntrial).condLabel, SES, RUN, ntrial))),1,[]); ok=all(~isnan(x))&any(x~=0);
                 elseif ~isempty(idxconstant), ok=true; x=zeros(1,numel(DESIGN)); 
-                else [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN); if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
+                elseif ~OPTIONS.ENABLE_REGEXP, % DESIGN elements contain individual condition names
+                    [ok,x]=ismember({in_trialData(ntrial).condLabel},DESIGN);
+                    if ok, x=full(sparse(1,x,1,1,numel(DESIGN))); end
+                else % DESIGN elements contain regexp notation (e.g. 'conditionA|conditionB')
+                    x=reshape(double(cellfun(@(design)~isempty(regexp(in_trialData(ntrial).condLabel,['^(',design,')$'])),DESIGN)),1,numel(DESIGN)); 
+                    ok=any(x~=0);
                 end
                 if ok % adds this trial to analysis
                     ntrials=ntrials+1;
