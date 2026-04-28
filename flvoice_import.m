@@ -496,6 +496,8 @@ for nsample=1:numel(RUNS)
                 else
                     window = out_trialData(trialNum).options.formants.windowsize;
                     lpc_order = out_trialData(trialNum).options.formants.lpcorder;
+                    window_pitch = out_trialData(trialNum).options.pitch.windowsize;
+                    method = out_trialData(trialNum).options.pitch.methods;
                 end
 
                 
