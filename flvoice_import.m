@@ -97,7 +97,7 @@ function varargout=flvoice_import(SUB,SES,RUN,TASK, varargin)
 %
 
 persistent DEFAULTS;
-if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1); end 
+if isempty(DEFAULTS), DEFAULTS=struct('SAVE',true,'PRINT',true,'OVERWRITE',true,'N_LPC',[],'F0_RANGE',[],'OUT_FS',1000,'OUT_WINDOW',[-0.2 1.0], 'CROP_TIME',[], 'REFERENCE_TIME', [], 'MINTHRESHTIME', [], 'RMSTHRESH', [], 'MINAMP', [], 'MINDUR', [], 'SKIP_CONDITIONS',{{}},'SKIP_LOWAMP',[],'SKIP_LOWDUR',[],'SINGLETRIAL',[],'FMT_ARGS',{{}},'F0_ARGS',{{}},'SHOW_FIGURES',1,'OPTIMIZE',false); end 
 if nargin==1&&isequal(SUB,'default'), if nargout>0, varargout={DEFAULTS}; else disp(DEFAULTS); end; return; end
 if nargin>1&&isequal(SUB,'default'), 
     if nargin>=4, varargin=[{TASK},varargin]; end
@@ -128,6 +128,10 @@ if ischar(OPTIONS.PRINT), OPTIONS.PRINT=str2num(OPTIONS.PRINT); end
 if ischar(OPTIONS.SINGLETRIAL), OPTIONS.SINGLETRIAL=str2num(OPTIONS.SINGLETRIAL); end
 if isempty(OPTIONS.OUT_WINDOW), OPTIONS.OUT_WINDOW=[-0.2 1.0]; end
 if ischar(OPTIONS.CROP_TIME), OPTIONS.CROP_TIME=str2num(OPTIONS.CROP_TIME); end
+if isempty(OPTIONS.OPTIMIZE), OPTIONS.OPTIMIZE=false; end
+% if ischar(OPTIONS.OPTIMIZE), OPTIONS.OPTIMIZE=str2bool(OPTIONS.OPTIMIZE); end
+if ischar(OPTIONS.MINTHRESHTIME), OPTIONS.MINTHRESHTIME=str2num(OPTIONS.MINTHRESHTIME); end
+if ischar(OPTIONS.RMSTHRESH), OPTIONS.RMSTHRESH=str2num(OPTIONS.RMSTHRESH); end
 if ischar(OPTIONS.REFERENCE_TIME), OPTIONS.REFERENCE_TIME=str2num(OPTIONS.REFERENCE_TIME); end
 if ischar(OPTIONS.MINAMP), OPTIONS.MINAMP=str2num(OPTIONS.MINAMP); end
 if ischar(OPTIONS.MINDUR), OPTIONS.MINDUR=str2num(OPTIONS.MINDUR); end
@@ -411,6 +415,11 @@ for nsample=1:numel(RUNS)
                 if isfield(in_trialData,'covariates'), out_trialData(trialNum).covariates=in_trialData(trialNum).covariates; end
                 if isfield(in_trialData,'timingTrial'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, reshape(in_trialData(trialNum).timingTrial,1,[])]; end
                 if isfield(in_trialData,'pertSize'), out_trialData(trialNum).covariates=[out_trialData(trialNum).covariates, max([nan in_trialData(trialNum).pertSize])]; end
+                if isfield(in_trialData,'audapData')&&isfield(in_trialData(trialNum).audapData,'params'), out_trialData(trialNum).options.rmsThresh=in_trialData(trialNum).audapData.params.rmsThresh; end
+                if isfield(in_trialData,'audapData')&&isfield(in_trialData(trialNum).audapData,'params'), frameLen=in_trialData(trialNum).audapData.params.frameLen; end
+                out_trialData(trialNum).options.minThreshTime=OPTIONS.MINTHRESHTIME;
+                out_trialData(trialNum).options.rmsThresh=OPTIONS.RMSTHRESH;
+                if isfield(in_trialData,'minThreshTime'), out_trialData(trialNum).options.minThreshTime=in_trialData(trialNum).minThreshTime; end
                 out_trialData(trialNum).options.formants.fs=fs;
                 out_trialData(trialNum).options.formants.lpcorder=Nlpc;
                 out_trialData(trialNum).options.formants.windowsize=.050;
@@ -428,11 +437,75 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).options.pitch.outlierfilter=0;
                 for n1=1:2:numel(OPTIONS.F0_ARGS)-1, if isfield(out_trialData(trialNum).options.pitch,OPTIONS.F0_ARGS{n1}), out_trialData(trialNum).options.pitch.(OPTIONS.F0_ARGS{n1})=OPTIONS.F0_ARGS{n1+1}; else, fprintf('warning: field %s used but not logged in options.pitch\n',OPTIONS.F0_ARGS{n1}); end; end
                 
+                if OPTIONS.OPTIMIZE
+                    % optimize formants
+                    windowSizes = [0.04, 0.05, 0.06];
+                    lpcOrders = Nlpc + (-2:2);
+                    stepSize = min(0.001, 1/OPTIONS.OUT_FS);
+                    
+                    F1_F2_THRESHOLD = 500;
+                    MAX_CONVERGENCE_PCT = 5;
+                    
+                    best_mae = inf;
+                    window = out_trialData(trialNum).options.formants.windowsize;
+                    lpc_order = out_trialData(trialNum).options.formants.lpcorder;
+                    t = [];
+                    
+                    % Grid search
+                    for n1 = 1:numel(windowSizes), for n2 = 1:numel(lpcOrders),
+                        [fmt1, t, ~] = flvoice_formants(s{1}, fs, 6, 'lpcorder', lpcOrders(n2), 'windowsize', windowSizes(n1), 'stepsize', stepSize, OPTIONS.FMT_ARGS{:});
+                
+                        if size(fmt1, 1) >= 2
+                            % Check convergence
+                            valid_frames = abs(fmt1(2,:) - fmt1(1,:)) >= F1_F2_THRESHOLD;
+                
+                            if (100 * sum(~valid_frames) / numel(valid_frames)) <= MAX_CONVERGENCE_PCT && any(valid_frames)
+                                % Calculate MAE for F1 and F2 only
+                                fmt_valid = fmt1(1:2, valid_frames);
+                                mae_per_formant = mean(abs(fmt_valid - median(fmt_valid, 2)) ./ median(fmt_valid, 2), 2);
+                                current_mae = sum(mae_per_formant);
+                
+                                % Update if better
+                                if current_mae < best_mae
+                                    best_mae = current_mae;
+                                    window = windowSizes(n1);
+                                    lpc_order = lpcOrders(n2);
+                                    t = t;
+                                end
+                            end
+                        end
+                    end
+                    end
+
+                    % optimize pitch
+                    windowSizesPitch = [0.04, 0.05, 0.06];
+                    methods = {'CEP', 'PEF', 'NCF', 'LHS', 'SRH'};
+                    best_mae_pitch = inf;
+                    window_pitch = out_trialData(trialNum).options.pitch.windowsize;
+                    method = out_trialData(trialNum).options.pitch.methods;
+                    for n1 = 1:numel(windowSizesPitch), for n2 = 1:numel(methods),
+                        f0=flvoice_pitch(s{1},fs,'f0_t',t,'range',f0range,'windowsize',windowSizesPitch(n1),'methods',methods(n2),OPTIONS.F0_ARGS{:});
+                        mae = mean(abs(f0 - median(f0)));
+                        if mae < best_mae_pitch
+                            best_mae_pitch = mae;
+                            window_pitch = windowSizesPitch(n1);
+                            method = methods(n2);
+                        end
+                    end
+                    end
+                else
+                    window = out_trialData(trialNum).options.formants.windowsize;
+                    lpc_order = out_trialData(trialNum).options.formants.lpcorder;
+                end
+
+                
                 for ns=1:numel(s)
-                    
-                    [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',Nlpc,'windowsize',.050,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
-                    f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,OPTIONS.F0_ARGS{:});                                                                   % pitch estimation
-                    
+                    [fmt,t,svar]=flvoice_formants(s{ns},fs,6,'lpcorder',lpc_order,'windowsize',window,'stepsize',min(.001,1/OPTIONS.OUT_FS),OPTIONS.FMT_ARGS{:});    % formant estimation
+                    out_trialData(trialNum).options.formants.lpcorder   = lpc_order;
+                    out_trialData(trialNum).options.formants.windowsize = window;
+                    f0=flvoice_pitch(s{ns},fs,'f0_t',t,'range',f0range,'windowsize',window_pitch,'methods',method,OPTIONS.F0_ARGS{:});                                                                   % pitch estimation
+                    out_trialData(trialNum).options.pitch.windowsize = window_pitch;
+                    out_trialData(trialNum).options.pitch.methods = method;
                     time1=(0:1/OPTIONS.OUT_FS:(numel(s{ns})-1)/fs);
                     out_trialData(trialNum).s{ns,1} = interp1(t', f0,time1','lin',nan);
                     out_trialData(trialNum).s{ns,2} = interp1(t',fmt(1,:)',time1','lin',nan);            % note: (raw = implicit timing) these data starts at t=0 and it is sampled at out_trialData(trialNum).fs rate
@@ -455,13 +528,30 @@ for nsample=1:numel(RUNS)
                 out_trialData(trialNum).dataLabel=reshape(out_trialData(trialNum).dataLabel,1,[]);
                 out_trialData(trialNum).dataUnits=reshape(out_trialData(trialNum).dataUnits,1,[]);
                 out_trialData(trialNum).t=reshape(out_trialData(trialNum).t,1,[]);
+                if ~isempty(OPTIONS.REFERENCE_TIME), pertOnset = OPTIONS.REFERENCE_TIME;
+                elseif isfield(in_trialData(trialNum),'reference_time')&&~isempty(in_trialData(trialNum).reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
+                elseif isfield(in_trialData(trialNum),'timingTrial')&&numel(in_trialData(trialNum).timingTrial)>=4, pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
+                else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
+                end
+                if ~isempty(OPTIONS.MINTHRESHTIME)&&isfield(out_trialData(trialNum).options,'minThreshTime')&&out_trialData(trialNum).options.minThreshTime>0,
+                    if ~isempty(OPTIONS.RMSTHRESH)&&isfield(out_trialData(trialNum).options,'rmsThresh')&&out_trialData(trialNum).options.rmsThresh>0&&isfield(in_trialData(trialNum),'audapData')&&isfield(in_trialData(trialNum).audapData,'rms')&&~isempty(in_trialData(trialNum).audapData.rms),
+                        minThreshTimeFrames = (OPTIONS.MINTHRESHTIME*16000)/frameLen; % convert to # frames
+                        disp(out_trialData(trialNum).options.rmsThresh);
+                        rmsidx = find(diff([0; in_trialData(trialNum).audapData.rms(:,1) > out_trialData(trialNum).options.rmsThresh; 0]));
+                        rmsOnsetIdx = rmsidx(-1+2*find(rmsidx(2:2:end)-rmsidx(1:2:end-1) >= minThreshTimeFrames,1));
+                        if ~isempty(rmsOnsetIdx), 
+                            onset = ((rmsOnsetIdx(1))*frameLen)/16000; % convert to seconds    
+                            pertOnset = onset; % note: pertOnset relative to beginning of audio sample
+                            out_trialData(trialNum).reference_time = pertOnset;
+                            out_trialData(trialNum).options.rmsThresh=OPTIONS.RMSTHRESH;
+                            out_trialData(trialNum).options.minThreshTime=OPTIONS.MINTHRESHTIME;
+                        else if showwarn, disp('warning: unable to find valid perturbation onset based on RMS thresholding. Skipping time-alignment'); end; pertOnset=0;
+                        end
+                    end
+                end
+            
                 for ns=1:numel(out_trialData(trialNum).dataLabel), 
                     time1=(0:numel(out_trialData(trialNum).s{ns})-1)/OPTIONS.OUT_FS;
-                    if ~isempty(OPTIONS.REFERENCE_TIME), pertOnset = OPTIONS.REFERENCE_TIME;
-                    elseif isfield(in_trialData(trialNum),'reference_time')&&~isempty(in_trialData(trialNum).reference_time'), pertOnset = in_trialData(trialNum).reference_time - out_trialData(trialNum).t{ns}; % note: pertOnset relative to beginning of audio sample
-                    elseif isfield(in_trialData(trialNum),'timingTrial')&&numel(in_trialData(trialNum).timingTrial)>=4, pertOnset = in_trialData(trialNum).timingTrial(4)-in_trialData(trialNum).timingTrial(2);
-                    else if showwarn, disp('warning: not found reference_time or timingTrial fields in trialData structure. Skipping time-alignment'); showwarn=false; end; pertOnset=0;
-                    end
                     time2=(pertOnset + OPTIONS.OUT_WINDOW(1)):1/OPTIONS.OUT_FS:(pertOnset + OPTIONS.OUT_WINDOW(2)); % e.g. defines time window for perturbation analysis (-200ms to 1000ms relative to pertOnset)
                     out_trialData(trialNum).s{end+1} = interp1(time1, out_trialData(trialNum).s{ns}, time2, 'lin', nan);       % time-alignment
                     out_trialData(trialNum).dataLabel{end+1} = regexprep(out_trialData(trialNum).dataLabel{ns},'^raw-','');     % note: timealigned data first sample is at t = reference_time + OUT_WINDOW(1)

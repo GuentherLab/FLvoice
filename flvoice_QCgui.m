@@ -69,38 +69,42 @@ data.handles.selectCrop=uicontrol('Style', 'edit','String','','Units','norm','Fo
 data.handles.selectCropButton=uicontrol('Style', 'pushbutton','String','↑','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.85 .85 .10 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Select crop window manually by clicking on the boundaries of the desired window in one of the plots','Parent',data.handles.settPanel,'callback',@(varargin)setCrop());
 data.handles.selectAmpText=uicontrol('Style', 'text','String','Amp/Dur Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .80 .4 .05],'Parent',data.handles.settPanel);
 data.handles.selectAmp=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .80 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Amplitude & Duration threshold:  Two values: minimum amplitude threshold (in dB units), and minimum duration (in seconds)<br/>Timepoints with amplitude/duration below this threshold will be filled with NaN / missing-values<br/>Set the minimum amplitude to NaN to determine this threshold automatically<br/>Leave empty to keep all of the data irrespective of amplitude','Parent',data.handles.settPanel);
+data.handles.selectminThreshTime=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .75 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>Minimum threshold time: minimum duration (in seconds) voicing to be considered for the onset <br/>Leave empty to use the default value defined in the <i>reference_time</i> field of the input files','Parent',data.handles.settPanel);
+data.handles.selectminThreshTimeText=uicontrol('Style', 'text','String','Min Voicing Dur:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .75 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectrmsThreshText=uicontrol('Style', 'text','String','RMS Threshold:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .70 .4 .05],'Parent',data.handles.settPanel);
+data.handles.selectrmsThresh=uicontrol('Style', 'edit','String','','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .70 .45 .05],'BackgroundColor', [.94 .94 .94],'Tooltip','<HTML>RMS threshold: minimum RMS amplitude (in dB units) to be considered vowel onset<br/>Leave empty to use the default value defined in the <i>reference_time</i> field of the input files','Parent',data.handles.settPanel);
 
 % Formant Settings
-data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .725 .8 .05],'Parent',data.handles.settPanel);
+data.handles.FSettText=uicontrol('Style', 'text','String','Formant Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.65,'HorizontalAlignment', 'center','Position',[.1 .65 .8 .05],'Parent',data.handles.settPanel);
 % Formants (FMT_ARGS)
 % 'lporder', 'windowsize', 'viterbfilter', 'medianfilter'
 % 'NLPCtxtBox', 'winSizeFtxtBox', 'vfiltertxtBox', 'mfilterFtxtBox'
-data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .675 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .675 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
-data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .625 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .625 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
-data.handles.vfiltertxt=uicontrol('Style','text','String','Viterbi Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .575 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .575 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
-data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .525 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .525 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
+data.handles.NLPCtxt=uicontrol('Style','text','String','Num LPC:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .6 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.NLPCtxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .6 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Number of Linear Predictor Coefficients');
+data.handles.winSizeFtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .55 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizeFtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .55 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.vfiltertxt=uicontrol('Style','text','String','Viterbi Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .5 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.vfiltertxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .5 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Viterbi filter smoothing penalty term (0 for no filter)');
+data.handles.mfilterFtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .45 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterFtxtBox=uicontrol('Style','edit','String','0.25','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .45 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter sliding window size (in seconds)');
 
 % Pitch Settings
-data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .45 .8 .05],'Parent',data.handles.settPanel);
+data.handles.PSettText=uicontrol('Style', 'text','String','Pitch Settings','Units','norm','FontWeight','bold','FontUnits','norm','FontSize',0.7,'HorizontalAlignment', 'center','Position',[.1 .40 .8 .05],'Parent',data.handles.settPanel);
 % Pitch (F0_ARGS)
 % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
 % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
-data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .40 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .40 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
-data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .35 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : CEP (Cepstrum), PEF (Pitch Estimation Filter), NCF (Normalized Correlation Function), LHS (Log-harmonic Summation), SRH (Summation of Residual Harmonics)');
-data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .30 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .30 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
-data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .25 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .25 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (0-1; increase this value to remove segments with low evidence of periodicity)');
-data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .20 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .20 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
-data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .15 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
-data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .15 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Outlier filter (0/1 values; detect&interpolate outlier values)');
+data.handles.winSizePtxt=uicontrol('Style','text','String','Window Size:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .35 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.winSizePtxtBox=uicontrol('Style','edit','String','0.05','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .35 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Sliding window size (in seconds)');
+data.handles.methodstxt=uicontrol('Style','text','String','Methods:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .30 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.methodstxtBox=uicontrol('Style','edit','String','CEP','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .30 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Pitch estimation method : CEP (Cepstrum), PEF (Pitch Estimation Filter), NCF (Normalized Correlation Function), LHS (Log-harmonic Summation), SRH (Summation of Residual Harmonics)');
+data.handles.rangetxt=uicontrol('Style','text','String','Range:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .25 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.rangetxtBox=uicontrol('Style','edit','String','[ ]','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .25 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Range of valid pitch values (in Hz)');
+data.handles.hr_mintxt=uicontrol('Style','text','String','HR Min:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .20 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.hr_mintxtBox=uicontrol('Style','edit','String','0.5','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .20 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Harmonic ratio threshold (0-1; increase this value to remove segments with low evidence of periodicity)');
+data.handles.mfilterPtxt=uicontrol('Style','text','String','Median Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .15 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.mfilterPtxtBox=uicontrol('Style','edit','String','1','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .15 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Median filter (in multiples of window size; 0 for no median filtering)');
+data.handles.ofilterPtxt=uicontrol('Style','text','String','Outlier Filter:','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'right','Position',[.02 .10 .4 .05],'BackgroundColor', [.94 .94 .94], 'Parent',data.handles.settPanel);
+data.handles.ofilterPtxtBox=uicontrol('Style','edit','String','0','Units','norm','FontUnits','norm','FontSize',0.6,'HorizontalAlignment', 'left','Position',[.5 .10 .45 .05],'Parent',data.handles.settPanel,'Tooltip','Outlier filter (0/1 values; detect&interpolate outlier values)');
 % General
 % 'SKIP_LOWAMP'
 % 'skipLowAMPtxtBox'
@@ -235,6 +239,8 @@ lporder = str2num(get(data.handles.NLPCtxtBox, 'String'));
 windowsizeF = str2num(get(data.handles.winSizeFtxtBox, 'String'));
 viterbfilter = str2num(get(data.handles.vfiltertxtBox, 'String'));
 medianfilterF = str2num(get(data.handles.mfilterFtxtBox, 'String'));
+minThreshTime = str2num(get(data.handles.selectminThreshTime, 'String'));
+rmsThresh = str2num(get(data.handles.selectrmsThresh, 'String'));
 % Pitch (F0_ARGS)
 % 'windowsize', 'methods', 'range', 'hr_min', 'medianfilter', 'outlierfilter'
 % 'winSizePtxtBox', 'methodstxtBox', 'rangetxtBox', 'hr_mintxtBox', 'mfilterPtxtBox', 'ofilterPtxtBox'
@@ -295,7 +301,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
+            'SKIP_LOWAMP', SKIP_LOWAMP, 'SKIP_LOWDUR', SKIP_LOWDUR, 'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur, 'MINTHRESHTIME', minThreshTime, 'RMSTHRESH', rmsThresh); % Add PERSISTENT = DEFAULTS
 
     case 'trial'
 %         data.vars.curRunQC.settings{data.vars.curTrial}.lporder = lporder;
@@ -315,7 +321,7 @@ switch choice
             'N_LPC',lporder, 'F0_RANGE',range, ... % obsolete: delete this line
             'FMT_ARGS',{'lpcorder',lporder, 'windowsize',windowsizeF, 'viterbifilter',viterbfilter, 'medianfilter', medianfilterF}, ...
             'F0_ARGS', {'windowsize',windowsizeP, 'methods',methods, 'range',range, 'hr_min',hr_min, 'medianfilter',medianfilterP, 'outlierfilter',outlierfilter}, ...
-            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur);
+            'OUT_WINDOW', OUT_WINDOW, 'REFERENCE_TIME', ReferenceTime, 'CROP_TIME', CropTime, 'MINAMP', MinAmp, 'MINDUR', MinDur,'MINTHRESHTIME',minThreshTime, 'RMSTHRESH', rmsThresh);
 %             'SKIP_LOWAMP', SKIP_LOWAMP);
 
     case 'Cancel'
@@ -1511,6 +1517,18 @@ data.vars.curRunQC = curRunQC;
 % gets information from output files to update GUI values
 if isfield(curOutputData,'options') && ~isempty(curOutputData(trial).options.formants) && ~isempty(curOutputData(trial).options.pitch)
     if isempty(curOutputData(trial).options.formants.lpcorder); lporder = '[ ]'; else; lporder =  num2str(curOutputData(trial).options.formants.lpcorder); end
+    if isfield(curOutputData(trial),'options') && isstruct(curOutputData(trial).options) && isfield(curOutputData(trial).options,'minThreshTime')
+        if isempty(curOutputData(trial).options.minThreshTime); minThreshTime = ''; else; minThreshTime =  num2str(curOutputData(trial).options.minThreshTime); end
+    else
+        minThreshTime = '';
+    end
+    if isfield(curOutputData(trial),'options') && isstruct(curOutputData(trial).options) && isfield(curOutputData(trial).options, 'rmsThresh')
+        if isempty(curOutputData(trial).options.rmsThresh); rmsThresh = ''; else; rmsThresh =  num2str(curOutputData(trial).options.rmsThresh); end
+    else
+        rmsThresh = '';
+    end
+    set(data.handles.selectminThreshTime, 'String', minThreshTime);
+    set(data.handles.selectrmsThresh, 'String', rmsThresh);
     set(data.handles.NLPCtxtBox, 'String', lporder);
     set(data.handles.winSizeFtxtBox, 'String', num2str(curOutputData(trial).options.formants.windowsize));
     set(data.handles.vfiltertxtBox, 'String', num2str(curOutputData(trial).options.formants.viterbifilter));
@@ -1570,6 +1588,10 @@ elseif isfield(curInputData(trial), 'timingTrial')&&numel(curInputData(trial).ti
 elseif isfield(curInputData,'pertOnset')&&~isempty(curInputData(trial).pertOnset)
     pertOnset = curInputData(trial).pertOnset;
     pertLabel = {'Pert onset'};
+end
+if isfield(curOutputData(trial), 'reference_time')&&~isempty(curOutputData(trial).reference_time)
+    pertOnset = curOutputData(trial).reference_time;
+    pertLabel = {'Reference time'};
 end
 reference_time = str2num(get(data.handles.selectReference,'string'));
 if isempty(reference_time), reference_time = pertOnset(end); end
