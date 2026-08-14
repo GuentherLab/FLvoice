@@ -488,7 +488,7 @@ for nsub=1:numel(USUBS)
             for n1=1:size(effect,1)
                 assert(numel(t)==size(effect,2),'mismatch between plot time axis (%d timepoints) and effect-size data (%d timepoints)',numel(t),size(effect,2));
                 masknan=true|~(isnan(t)|any(isnan(effect),1));
-                h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',2,'color',color(n1,:))];
+                h=[h plot(t(masknan),effect(n1,masknan),'.-','linewidth',3,'color',color(n1,:))];
                 hold all;
                 tempx=[t,fliplr(t)];
                 tempy=[effect_CI(n1,:),fliplr(effect_CI(n1+size(effect_CI,1)/2,:))];
@@ -503,9 +503,15 @@ for nsub=1:numel(USUBS)
                 end
             end
             grid on;
-            if isequal(Tlabel,'time (ms)'), xline(0,'linewidth',3); end
-            yline(0);
-            xlabel(Tlabel); ylabel(Ylabel); ht=title(FIRSTLEVEL_NAME); set(ht,'interpreter','none');
+            if isequal(Tlabel,'time (ms)')
+                xline(0,'linewidth',3);
+            end
+            yline(0, 'linewidth',3);
+            set(gca, 'FontSize', 20, 'LineWidth', 3);
+            xlabel(Tlabel, 'FontSize', 25);
+            ylabel(Ylabel, 'FontSize', 25);
+            ht = title(FIRSTLEVEL_NAME, 'FontSize', 30);
+            set(ht, 'Interpreter', 'none');
             %         legend(h,dispconds(1:3));
             if numel(effect(~isnan(effect)))>1, set(gca,'ylim',sort([min(effect(:)),max(effect(:))]*[1.5 -.5; -.5 1.5])); end
             if size(effect,1)>1||~isempty(OPTIONS.PLOTLABELS), 

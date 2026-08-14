@@ -1175,7 +1175,18 @@ function loadFigure(src, condLabels, handle, initax, out_trialData, hax, lnames,
             end
         end
     end
-    for idx=1:numel(lnames), axis(hax(idx),'tight'); title(hax(idx),lnames{idx}); grid(hax(idx),'on'); hold(hax(idx),"off"); end
+    for idx=1:numel(lnames)
+        axis(hax(idx),'tight'); 
+        yl = ylim(hax(idx));
+        yrange = diff(yl);
+
+        if yrange > 0
+            ylim(hax(idx), [yl(1)-0.50*yrange, ...
+                yl(2)+0.50*yrange]);
+        end
+        title(hax(idx),lnames{idx}); 
+        grid(hax(idx),'on'); 
+        hold(hax(idx),"off"); end
     drawnow
 
 end
